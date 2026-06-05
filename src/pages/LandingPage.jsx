@@ -1,12 +1,13 @@
 import React from "react";
 import movie from "../assets/movie.jpeg";
 import Navbar from "../layouts/Navbar";
+import Footer from "../layouts/Footer";
 
 function LandingPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen  px-6 py-10 text-gray-900 md:px-12 lg:px-20">
+      <main className="min-h-screentext-gray-900 ">
         {/* Hero Section */}
         <article className="mx-auto flex max-w-7xl items-center gap-10 py-12">
           <section className="w-7/10 space-y-5">
@@ -299,6 +300,7 @@ function LandingPage() {
           </form>{" "}
         </article>{" "}
       </main>
+      <Footer />
     </>
   );
 }
