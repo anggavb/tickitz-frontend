@@ -1,7 +1,7 @@
 import React from "react";
 
 function LandingPage() {
-  return <div>LandingPage</div>;
+  return <div className="text-primary bg-mainbg">LandingPage</div>;
 }
 
 export default LandingPage;
