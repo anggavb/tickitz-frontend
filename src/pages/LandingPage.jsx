@@ -6,7 +6,7 @@ function LandingPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-(--bg-primary) px-6 py-10 text-gray-900 md:px-12 lg:px-20">
+      <main className="min-h-screen  px-6 py-10 text-gray-900 md:px-12 lg:px-20">
         {/* Hero Section */}
         <article className="mx-auto flex max-w-7xl items-center gap-10 py-12">
           <section className="w-7/10 space-y-5">
