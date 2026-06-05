@@ -7,7 +7,7 @@ function LandingPage() {
       {/* Hero Section */}
       <article className="mx-auto flex max-w-7xl items-center gap-10 py-12">
         <section className="w-7/10 space-y-5">
-          <p className="text-sm font-semibold uppercase tracking-widest text-(--primary)">
+          <p className="text-sm font-semibold uppercase tracking-widest text-primary">
             Movie Ticket Purchases #1 in Indonesia
           </p>
 
@@ -50,7 +50,7 @@ function LandingPage() {
       </article>
       {/* Why Choose Us */}
       <article className="mx-auto max-w-7xl py-16">
-        <p className="mb-8 text-sm font-semibold uppercase tracking-widest text-(--primary)">
+        <p className="mb-8 text-sm font-semibold uppercase tracking-widest text-primary">
           Why Choose Us
         </p>
         <h2 className="mb-12 max-w-2xl text-4xl font-bold leading-tight text-neutral-900 md:text-5xl">
@@ -113,7 +113,7 @@ function LandingPage() {
 
       {/* Movies */}
       <article className="mx-auto max-w-7xl py-16">
-        <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-(--primary)">
+        <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-primary">
           Movies
         </p>
 
@@ -144,7 +144,7 @@ function LandingPage() {
         </section>
 
         <div className="mt-8">
-          <button className="rounded-full border border-(--primary) px-6 py-3 text-sm font-semibold text-(--primary) hover:bg-(--primary) hover:text-white">
+          <button className="rounded-full border border-primary px-6 py-3 text-sm font-semibold text-primary hover:bg-primary hover:text-white">
             View All
           </button>
         </div>
@@ -163,19 +163,19 @@ function LandingPage() {
         <form className="mt-8">
           <div className="grid gap-4 md:grid-cols-[1fr_1fr_auto]">
             <input
-              className="rounded-full border border-gray-300 px-5 py-3 outline-none focus:border-(--primary)"
+              className="rounded-full border border-gray-300 px-5 py-3 outline-none focus:border-primary"
               type="text"
               placeholder="First name"
             />
 
             <input
-              className="rounded-full border border-gray-300 px-5 py-3 outline-none focus:border-(--primary)"
+              className="rounded-full border border-gray-300 px-5 py-3 outline-none focus:border-primary"
               type="email"
               placeholder="Email address"
             />
 
             <button
-              className="rounded-full bg-(--primary) px-6 py-3 font-semibold text-white hover:opacity-90"
+              className="rounded-full bg-primary px-6 py-3 font-semibold text-white hover:opacity-90"
               type="submit"
             >
               Subscribe Now
