@@ -1,0 +1,1 @@
+all components should be added here. This is the main entry point for all components in the project. Each component should be exported from this file to be easily imported in other parts of the application.
