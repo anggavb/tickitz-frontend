@@ -62,9 +62,9 @@ function Footer() {
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1.2fr_1.2fr]">
           {/* Brand */}
           <section>
-            <img className="" src={logo} alt="" />
+            <img className="w-50" src={logo} alt="" />
 
-            <p className="mt-10 max-w-sm text-2xl leading-relaxed tracking-wide text-violet-900/60">
+            <p className="mt-10 max-w-sm text-xl leading-relaxed tracking-wide text-violet-900/60">
               Stop waiting in line. Buy tickets conveniently, watch movies
               quietly.
             </p>
