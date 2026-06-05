@@ -10,7 +10,7 @@ const Navbar = () => {
         <a href="#" className="flex items-center space-x-3 rtl:space-x-reverse">
           <img src={logo} className="h-9 w-auto" alt="Logo" />
           <span className="self-center text-2xl font-bold whitespace-nowrap text-gray-900 dark:text-white">
-            Brand
+            Tickitz
           </span>
         </a>
 

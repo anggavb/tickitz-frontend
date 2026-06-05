@@ -37,7 +37,7 @@ function LandingPage() {
               />
             </div>
 
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-3">
               <img
                 src={movie}
                 alt="Movie poster"
