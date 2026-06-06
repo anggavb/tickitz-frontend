@@ -6,11 +6,10 @@ function MovieCard({ movie }) {
       {/* Poster */}
       <div className="relative overflow-hidden rounded-lg border border-slate-200 bg-white">
         {movie.recommended && (
-          <div className="absolute left-0 top-0 z-20 rounded-br-lg rounded-tl-lg bg-blue-600 px-4 py-1 text-xs text-white">
+          <div className="absolute left-0 top-0 z-20 rounded-br-lg rounded-tl-lg bg-primary px-4 py-1 text-xs text-white">
             Recommended
           </div>
         )}
-
         <img
           src={movie.poster}
           alt={movie.title}
@@ -24,7 +23,7 @@ function MovieCard({ movie }) {
               Details
             </button>
 
-            <button className="rounded bg-blue-600 py-2 text-sm text-white transition hover:bg-blue-700">
+            <button className="rounded bg-primary py-2 text-sm text-white transition hover:bg-primary/80">
               Buy Ticket
             </button>
           </div>
