@@ -1,11 +1,11 @@
 import { Route, Routes } from "react-router";
 
-import LandingPage from "@/pages/LandingPage";
+import HomeMoviePage from "@/pages/HomeMoviePage";
 
 function AppRouter() {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
+      <Route path="/" element={<HomeMoviePage />} />
       {/* <Route path="/about" element={<About />} /> */}
     </Routes>
   );
