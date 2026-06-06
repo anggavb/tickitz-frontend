@@ -20,13 +20,13 @@ function Navbar() {
         {/* Buttons Desktop */}
         <div className="hidden gap-3 md:flex">
           <Link
-            to="/login"
+            to="/auth/login"
             className="rounded border border-primary px-5 py-2 text-sm text-primary"
           >
             Sign In
           </Link>
           <Link
-            to="/signup"
+            to="/auth/signup"
             className="rounded bg-primary px-5 py-2 text-sm text-white"
           >
             Sign Up
