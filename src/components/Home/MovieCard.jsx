@@ -1,9 +1,18 @@
-import movie from "../../assets/movie.jpeg";
+function MovieCard({ title, date, genres = [], image, recommended = false }) {
+  const handleImageError = (e) => {
+    e.currentTarget.style.display = "none";
 
-function MovieCard({ title, date, genres = [], recommended = false }) {
+    const placeholder = e.currentTarget.nextElementSibling;
+    if (placeholder) {
+      placeholder.style.display = "flex";
+    }
+  };
+
   return (
-    <div className="group relative flex w-36.25 shrink-0 snap-start flex-col sm:w-auto">
-      <div className="relative aspect-2/3 w-full overflow rounded-lg transition-transform duration-300 group-hover:scale-[1.02] md:rounded-2xl">
+    <div className="group relative flex w-36 shrink-0 snap-start flex-col sm:w-auto">
+      {/* Poster Container */}
+      <div className="relative aspect-[2/3] w-full overflow-hidden rounded-lg transition-transform duration-300 group-hover:scale-[1.02] md:rounded-2xl">
+        {/* Recommended Badge */}
         {recommended && (
           <div className="absolute -left-2 top-2 z-20">
             <div className="relative">
@@ -11,26 +20,51 @@ function MovieCard({ title, date, genres = [], recommended = false }) {
                 Recommended
               </div>
 
-              <div className="h-0 w-0 border-l-8 border-t-10 border-l-transparent border-t-primary" />
+              <div className="h-0 w-0 border-l-8 border-t-[10px] border-l-transparent border-t-primary" />
             </div>
           </div>
         )}
 
-        <img src={movie} alt={title} className="h-full w-full object-cover" />
+        {/* Poster Image */}
+        {image && (
+          <img
+            src={image}
+            alt={title}
+            className="h-full w-full object-cover"
+            onError={handleImageError}
+          />
+        )}
 
+        {/* Fallback Placeholder */}
+        <div
+          className="h-full w-full items-center justify-center bg-neutral-200 text-xs text-neutral-400"
+          style={{ display: image ? "none" : "flex" }}
+        >
+          No Poster Available
+        </div>
+
+        {/* Hover Overlay */}
         <div className="absolute inset-0 bg-black/60 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
+        {/* Hover Buttons */}
         <div className="absolute left-1/2 top-1/2 z-20 flex w-[80%] -translate-x-1/2 translate-y-6 flex-col gap-2 opacity-0 transition-all duration-300 group-hover:-translate-y-1/2 group-hover:opacity-100">
-          <button className="rounded-lg border border-white bg-black/20 px-3 py-2 text-xs font-semibold text-white backdrop-blur-sm transition hover:bg-white hover:text-neutral-900">
+          <button
+            type="button"
+            className="rounded-lg border border-white bg-black/20 px-3 py-2 text-xs font-semibold text-white backdrop-blur-sm transition hover:bg-white hover:text-neutral-900"
+          >
             Details
           </button>
 
-          <button className="rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90">
+          <button
+            type="button"
+            className="rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90"
+          >
             Buy Ticket
           </button>
         </div>
       </div>
 
+      {/* Card Info */}
       <div className="mt-3 flex flex-col gap-2">
         <h3 className="truncate text-xs font-bold text-neutral-900 transition-colors group-hover:text-primary md:text-xl">
           {title}

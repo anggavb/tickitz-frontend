@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import SectionHeader from "./SectionHeader";
 import MovieCard from "./MovieCard";
 
@@ -10,6 +11,27 @@ function MovieSection({
   showViewAll = false,
 }) {
   const isUpcoming = variant === "upcoming";
+  const sliderRef = useRef(null);
+
+  const handlePrev = () => {
+    if (!sliderRef.current) return;
+
+    sliderRef.current.scrollBy({
+      left: -sliderRef.current.clientWidth / 4,
+      behavior: "smooth",
+    });
+  };
+
+  const handleNext = () => {
+    if (!sliderRef.current) return;
+
+    sliderRef.current.scrollBy({
+      left: sliderRef.current.clientWidth / 4,
+      behavior: "smooth",
+    });
+  };
+
+  const shouldShowArrows = showArrows && movies.length > 4;
 
   return (
     <article className="mx-auto max-w-7xl px-5 py-10 md:px-8 md:py-14">
@@ -25,11 +47,12 @@ function MovieSection({
             </h2>
           </div>
 
-          {showArrows && (
+          {shouldShowArrows && (
             <div className="hidden items-center gap-4 md:flex">
               <button
                 type="button"
                 aria-label="Previous movie"
+                onClick={handlePrev}
                 className="flex h-14 w-14 items-center justify-center rounded-full bg-violet-200 text-2xl font-semibold text-white transition hover:bg-primary md:h-16 md:w-16 md:text-3xl"
               >
                 ←
@@ -38,6 +61,7 @@ function MovieSection({
               <button
                 type="button"
                 aria-label="Next movie"
+                onClick={handleNext}
                 className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-2xl font-semibold text-white transition hover:opacity-90 md:h-16 md:w-16 md:text-3xl"
               >
                 →
@@ -54,15 +78,23 @@ function MovieSection({
         />
       )}
 
-      <section className="-mx-5 flex snap-x gap-4 overflow-x-auto px-5 pb-3 scrollbar-hide sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-4">
+      <section
+        ref={sliderRef}
+        className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-5 pb-3 scrollbar-hide sm:mx-0 sm:px-0"
+      >
         {movies.map((item) => (
-          <MovieCard
+          <div
             key={item.id}
-            title={item.title}
-            date={item.date}
-            genres={item.genres}
-            recommended={item.recommended}
-          />
+            className="min-w-[75%] snap-start sm:min-w-[calc(50%-8px)] lg:min-w-[calc(25%-12px)]"
+          >
+            <MovieCard
+              title={item.title}
+              date={item.date}
+              genres={item.genres}
+              image={item.image}
+              recommended={item.recommended}
+            />
+          </div>
         ))}
       </section>
 
@@ -77,11 +109,12 @@ function MovieSection({
         </div>
       )}
 
-      {showArrows && (
+      {shouldShowArrows && (
         <div className="mt-8 flex items-center justify-center gap-4 md:hidden">
           <button
             type="button"
             aria-label="Previous movie"
+            onClick={handlePrev}
             className="flex h-12 w-12 items-center justify-center rounded-full bg-violet-200 text-2xl font-semibold text-white transition hover:bg-primary"
           >
             ←
@@ -90,6 +123,7 @@ function MovieSection({
           <button
             type="button"
             aria-label="Next movie"
+            onClick={handleNext}
             className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-2xl font-semibold text-white transition hover:opacity-90"
           >
             →
