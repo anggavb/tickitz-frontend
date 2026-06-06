@@ -2,6 +2,7 @@ import React from "react";
 import movie from "../assets/movie.jpeg";
 import Navbar from "../layouts/Navbar";
 import Footer from "../layouts/Footer";
+import Newsletter from "../components/Newsletter";
 
 function LandingPage() {
   const movies = [
@@ -194,7 +195,7 @@ function LandingPage() {
                 key={item.id}
                 className="group relative flex w-[150px] shrink-0 flex-col sm:w-auto"
               >
-                <div className="relative aspect-[2/3] w-full overflow-hidden rounded-lg shadow-sm transition-transform duration-300 md:rounded-2xl md:group-hover:scale-[1.02]">
+                <div className="relative aspect-[2/3] w-full overflow rounded-lg shadow-sm transition-transform duration-300 md:rounded-2xl md:group-hover:scale-[1.02]">
                   {item.recommended && (
                     <div className="absolute -left-1 top-2 z-20 md:-left-2">
                       <div className="relative">
@@ -313,38 +314,7 @@ function LandingPage() {
             ))}
           </section>
         </article>
-
-        {/* Newsletter Section */}
-        <article className="relative mx-5 my-8 overflow-hidden rounded-2xl bg-primary px-5 py-10 text-center md:mx-auto md:max-w-7xl md:rounded-4xl md:px-12 md:py-20">
-          <div className="pointer-events-none absolute -bottom-24 -right-24 h-48 w-48 rounded-full border-[10px] border-white md:-bottom-44 md:-right-28 md:h-80 md:w-80 md:border-[14px]" />
-
-          <h2 className="relative z-10 text-2xl font-light tracking-wide text-white md:text-3xl lg:text-4xl">
-            Subscribe to our newsletter
-          </h2>
-
-          <form className="relative z-10 mx-auto mt-6 max-w-3xl">
-            <div className="grid gap-3 md:grid-cols-[1fr_1fr_0.8fr]">
-              <input
-                className="h-12 rounded-lg border border-white/80 bg-white/5 px-4 text-sm text-white outline-none placeholder:text-white/70 focus:border-white focus:bg-white/10 md:text-base"
-                type="text"
-                placeholder="First name"
-              />
-
-              <input
-                className="h-12 rounded-lg border border-white/80 bg-white/5 px-4 text-sm text-white outline-none placeholder:text-white/70 focus:border-white focus:bg-white/10 md:text-base"
-                type="email"
-                placeholder="Email address"
-              />
-
-              <button
-                className="h-12 rounded-lg bg-white px-4 text-sm font-bold text-primary transition hover:bg-gray-100 md:text-base"
-                type="submit"
-              >
-                Subscribe Now
-              </button>
-            </div>
-          </form>
-        </article>
+        <Newsletter />
       </main>
 
       <Footer />
