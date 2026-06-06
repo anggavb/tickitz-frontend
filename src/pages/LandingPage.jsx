@@ -1,9 +1,10 @@
-import Navbar from "../layouts/Navbar";
-import Footer from "../layouts/Footer";
 import HeroSection from "../components/Home/HeroSection";
 import WhyChooseUs from "../components/Home/WhyChooseUs";
 import MovieSection from "../components/Home/MovieSection";
-import NewsletterSection from "../components/Home/NewsletterSection";
+import UpcomingMovieSection from "../components/Home/UpcomingMovieSection";
+import Navbar from "../components/Navbar";
+import Newsletter from "../components/Newsletter";
+import Footer from "../components/Footer";
 
 function LandingPage() {
   const featured = [
@@ -17,32 +18,32 @@ function LandingPage() {
     {
       id: 1,
       title: "Black Widow",
-      genres: ["Action", "Adventure"],
+      genre: "Action, Adventure",
       recommended: false,
-      image:
+      poster:
         "https://image.tmdb.org/t/p/original/qAZ0pzat24kLdO3o8ejmbLxyOac.jpg",
     },
     {
       id: 2,
       title: "The Witches",
-      genres: ["Comedy", "Adventure"],
+      genre: "Comedy, Adventure",
       recommended: true,
-      image:
+      poster:
         "https://upload.wikimedia.org/wikipedia/en/1/14/Tenet_movie_poster.jpg",
     },
     {
       id: 3,
       title: "Tenet",
-      genres: ["Action", "Sci-Fi"],
+      genre: "Action, Sci-Fi",
       recommended: true,
-      image: "https://image.tmdb.org/t/p/w500/k68nPLbIST6NP96JmTxmZijEvCA.jpg",
+      poster: "https://image.tmdb.org/t/p/w500/k68nPLbIST6NP96JmTxmZijEvCA.jpg",
     },
     {
       id: 4,
       title: "Spiderman",
-      genres: ["Action", "Adventure"],
+      genre: "Action, Adventure",
       recommended: false,
-      image: "https://image.tmdb.org/t/p/w500/rweIrveL43TaxUN0akQEaAXL6x0.jpg",
+      poster: "https://image.tmdb.org/t/p/w500/rweIrveL43TaxUN0akQEaAXL6x0.jpg",
     },
   ];
 
@@ -51,48 +52,48 @@ function LandingPage() {
       id: 1,
       title: "Black Widow",
       date: "December 2026",
-      genres: ["Action", "Adventure"],
-      image:
+      genre: "Action, Adventure",
+      poster:
         "https://upload.wikimedia.org/wikipedia/en/e/e9/Black_Widow_%282021_film%29_poster.jpg",
     },
     {
       id: 2,
       title: "The Witches",
       date: "January 2027",
-      genres: ["Comedy", "Adventure"],
-      image: "https://upload.wikimedia.org/wikipedia/en/1/1a/Witches2020.jpg",
+      genre: "Comedy, Adventure",
+      poster: "https://upload.wikimedia.org/wikipedia/en/1/1a/Witches2020.jpg",
     },
     {
       id: 3,
       title: "Tenet",
       date: "June 2027",
-      genres: ["Action", "Sci-Fi"],
-      image:
+      genre: "Action, Sci-Fi",
+      poster:
         "https://upload.wikimedia.org/wikipedia/en/1/14/Tenet_movie_poster.jpg",
     },
     {
       id: 4,
       title: "Spiderman",
       date: "March 2027",
-      genres: ["Action", "Adventure"],
-      image:
+      genre: "Action, Adventure",
+      poster:
         "https://upload.wikimedia.org/wikipedia/commons/6/60/Spiderman.JPG",
     },
     {
       id: 5,
-      title: "Spiderman2",
+      title: "Spiderman 2",
       date: "March 2027",
-      genres: ["Action", "Adventure"],
-      image:
+      genre: "Action, Adventure",
+      poster:
         "https://upload.wikimedia.org/wikipedia/commons/6/60/Spiderman.JPG",
     },
   ];
 
   return (
-    <>
+    <div className="min-h-screen bg-white text-slate-900">
       <Navbar />
 
-      <main className="min-h-screen overflow-hidden bg-white text-neutral-900">
+      <section className="min-h-screen overflow-hidden bg-white text-neutral-900">
         <HeroSection images={featured} />
 
         <WhyChooseUs />
@@ -101,22 +102,18 @@ function LandingPage() {
           label="Movie"
           title="Exciting Movies That Should Be Watched Today"
           movies={movies}
-          showViewAll
-          showArrows
         />
 
-        <MovieSection
+        <UpcomingMovieSection
           label="Upcoming Movies"
           title="Exciting Movie Coming Soon"
           movies={upcomingMovies}
-          variant="upcoming"
-          showArrows
         />
-        <NewsletterSection />
-      </main>
+      </section>
 
+      <Newsletter />
       <Footer />
-    </>
+    </div>
   );
 }
 
