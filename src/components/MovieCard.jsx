@@ -6,13 +6,13 @@ function MovieCard({ movie }) {
       {/* Poster */}
       <div className="relative  rounded-lg border border-slate-200 bg-white">
         {movie.recommended && (
-          <div className="absolute -left-2 top-2 z-20 md:top-4">
+          <div className="absolute -left-2 top-1 z-20 md:top-4">
             <div className="relative">
               <div className="rounded-r-full rounded-tl-full bg-primary px-3 py-1 pr-5 text-[10px] font-semibold tracking-wide text-white sm:px-4 sm:py-1.5 sm:pr-6 md:text-xs">
                 Recommended
               </div>
 
-              <div className="h-0 w-0 border-l-8 border-t-10 border-l-transparent border-t-primary" />
+              <div className="h-0 w-0 border-l-8 border-t-10 border-l-transparent border-t-orange-800" />
             </div>
           </div>
         )}
