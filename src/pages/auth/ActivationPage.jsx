@@ -11,7 +11,7 @@ function ActivationPage() {
         <StepProgres step={2} />
 
         <div className="flex flex-col items-center text-center mt-8">
-          <img src="/assets/auth/email.png" alt="Email Verification" className="w-32 h-32 object-contain mb-6" />
+          <img src="/assets/auth/signup/email-sent.svg" alt="Email Verification" className="w-32 h-32 mt-6 object-contain mb-6" />
 
           <h2 className="text-2xl font-semibold text-gray-800">Check Your Email</h2>
 

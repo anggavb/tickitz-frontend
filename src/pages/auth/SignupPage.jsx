@@ -18,9 +18,6 @@ function SignupPage() {
 
   const onSubmit = async (data) => {
     console.log(data);
-
-    // TODO: Hit API Register
-
     navigate('/auth/activation');
   };
 
@@ -31,9 +28,9 @@ function SignupPage() {
       <AuthCard>
         <StepProgres step={1} />
 
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6 mt-8">
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-8 mt-8">
           {/* EMAIL */}
-          <div>
+          <div className="relative">
             <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
 
             <input
@@ -47,25 +44,18 @@ function SignupPage() {
                 },
               })}
               className={`
-                w-full
-                h-14
-                border
-                rounded-md
-                px-5
-                text-sm
+                w-full h-14 border rounded-md px-5 text-sm
                 placeholder:text-gray-400
-                focus:outline-none
-                focus:ring-2
-                focus:ring-primary
+                focus:outline-none focus:ring-2 focus:ring-primary
                 ${errors.email ? 'border-red-500' : 'border-gray-300'}
               `}
             />
 
-            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
+            {errors.email && <p className="absolute left-0 -bottom-5 text-red-500 text-xs">{errors.email.message}</p>}
           </div>
 
           {/* PASSWORD */}
-          <div>
+          <div className="relative">
             <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
 
             <div className="relative">
@@ -80,17 +70,9 @@ function SignupPage() {
                   },
                 })}
                 className={`
-                  w-full
-                  h-14
-                  border
-                  rounded-md
-                  px-5
-                  pr-12
-                  text-sm
+                  w-full h-14 border rounded-md px-5 pr-12 text-sm
                   placeholder:text-gray-400
-                  focus:outline-none
-                  focus:ring-2
-                  focus:ring-primary
+                  focus:outline-none focus:ring-2 focus:ring-primary
                   ${errors.password ? 'border-red-500' : 'border-gray-300'}
                 `}
               />
@@ -98,25 +80,17 @@ function SignupPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="
-                  absolute
-                  right-4
-                  top-1/2
-                  -translate-y-1/2
-                  text-gray-400
-                  hover:text-gray-600
-                  transition
-                "
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
                 {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
               </button>
             </div>
 
-            {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
+            {errors.password && <p className="absolute left-0 -bottom-5 text-red-500 text-xs">{errors.password.message}</p>}
           </div>
 
           {/* CHECKBOX */}
-          <div>
+          <div className="relative">
             <label className="flex items-center gap-3 text-sm text-gray-600">
               <input
                 type="checkbox"
@@ -128,32 +102,24 @@ function SignupPage() {
               I agree to terms & conditions
             </label>
 
-            {errors.agree && <p className="text-red-500 text-xs mt-1">{errors.agree.message}</p>}
+            {errors.agree && <p className="absolute left-0 -bottom-5 text-red-500 text-xs">{errors.agree.message}</p>}
           </div>
 
           {/* BUTTON */}
           <button
             type="submit"
             className="
-              w-full
-              h-14
-              bg-primary
-              text-white
-              rounded-md
-              font-semibold
+              w-full h-14 bg-primary text-white rounded-md font-semibold
+              border border-transparent
+              hover:bg-transparent hover:border-primary hover:text-primary
               transition-all
-              border
-              border-transparent
-              hover:bg-transparent
-              hover:border-primary
-              hover:text-primary
             "
           >
             Join For Free Now
           </button>
         </form>
 
-        {/* LOGIN LINK */}
+        {/* LOGIN */}
         <p className="text-center text-sm text-gray-500 mt-6">
           Already have an account?{' '}
           <Link to="/auth/login" className="text-primary font-medium underline">
@@ -161,52 +127,23 @@ function SignupPage() {
           </Link>
         </p>
 
+        {/* OR */}
         <div className="flex items-center my-3">
           <div className="flex-1 h-px bg-gray-300" />
-
-          <span className="px-4 text-sm text-gray-400 whitespace-nowrap">or</span>
-
+          <span className="px-4 text-sm text-gray-400">or</span>
           <div className="flex-1 h-px bg-gray-300" />
         </div>
 
-        {/* SOCIAL LOGIN */}
+        {/* SOCIAL */}
         <div className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            className="
-              h-14
-              bg-white
-              rounded-lg
-              shadow-md
-              hover:shadow-lg
-              transition-all
-              flex
-              items-center
-              justify-center
-              gap-3
-            "
-          >
-            <img src="/assets/auth/oauth/google.png" alt="Google" className="w-6 h-6 object-contain" />
-            <span className="text-base font-medium text-gray-400">Google</span>
+          <button className="h-14 bg-white rounded-lg shadow-md flex items-center justify-center gap-3">
+            <img src="/assets/auth/oauth/google.png" className="w-6 h-6" />
+            <span className="text-gray-400">Google</span>
           </button>
 
-          <button
-            type="button"
-            className="
-              h-14
-              bg-white
-              rounded-lg
-              shadow-md
-              hover:shadow-lg
-              transition-all
-              flex
-              items-center
-              justify-center
-              gap-3
-            "
-          >
-            <img src="/assets/auth/oauth/facebook.png" alt="Facebook" className="w-6 h-6 object-contain" />
-            <span className="text-base font-medium text-gray-400">Facebook</span>
+          <button className="h-14 bg-white rounded-lg shadow-md flex items-center justify-center gap-3">
+            <img src="/assets/auth/oauth/facebook.png" className="w-6 h-6" />
+            <span className="text-gray-400">Facebook</span>
           </button>
         </div>
       </AuthCard>
