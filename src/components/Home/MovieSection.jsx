@@ -15,9 +15,14 @@ function MovieSection({
         className="mb-8 md:mb-12"
       />
 
-      <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-5 pb-4 scrollbar-hide sm:-mx-6 sm:px-6 md:mx-0 md:grid md:grid-cols-2 md:px-0 lg:grid-cols-4 lg:gap-6">
         {movies.map((movie) => (
-          <MovieCard key={movie.id} movie={movie} />
+          <div
+            key={movie.id}
+            className="min-w-[72%] snap-start sm:min-w-[45%] md:min-w-0"
+          >
+            <MovieCard movie={movie} />
+          </div>
         ))}
       </section>
 
