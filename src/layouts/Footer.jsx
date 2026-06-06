@@ -1,21 +1,20 @@
 import React from "react";
 import logo from "../assets/logo.png";
-
 function Footer() {
   const exploreLinks = ["Cinemas", "Movies List", "My Ticket", "Notification"];
 
   const sponsors = [
     {
       name: "ebv.id",
-      className: "font-serif text-2xl font-black italic text-black md:text-5xl",
+      className: "font-serif text-5xl font-black italic text-black",
     },
     {
       name: "CineOne21",
-      className: "font-serif text-lg font-black text-violet-800 md:text-5xl",
+      className: "font-serif text-5xl font-black text-violet-800",
     },
     {
       name: "hiflix",
-      className: "text-2xl font-bold tracking-wide text-red-600 md:text-4xl",
+      className: "text-4xl font-bold tracking-wide text-red-600",
     },
   ];
 
@@ -59,28 +58,28 @@ function Footer() {
 
   return (
     <footer className="bg-white">
-      <div className="mx-auto max-w-7xl px-5 py-12 md:px-6 md:py-16">
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1.2fr_1.2fr]">
+      <div className="mx-auto max-w-7xl px-6 py-16">
+        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1.2fr_1.2fr]">
+          {/* Brand */}
           <section>
-            <img className="w-28 md:w-50" src={logo} alt="Tickitz Logo" />
+            <img className="w-50" src={logo} alt="" />
 
-            <p className="mt-4 max-w-xs text-xs leading-relaxed tracking-wide text-violet-900/60 md:mt-10 md:max-w-sm md:text-xl">
+            <p className="mt-10 max-w-sm text-xl leading-relaxed tracking-wide text-violet-900/60">
               Stop waiting in line. Buy tickets conveniently, watch movies
               quietly.
             </p>
           </section>
 
+          {/* Explore */}
           <section>
-            <h2 className="mb-4 text-sm font-bold text-black md:mb-8 md:text-2xl">
-              Explore
-            </h2>
+            <h2 className="mb-8 text-2xl font-bold text-black">Explore</h2>
 
-            <ul className="grid grid-cols-4 gap-3 md:block md:space-y-5">
+            <ul className="space-y-5">
               {exploreLinks.map((link) => (
                 <li key={link}>
                   <a
                     href="#"
-                    className="text-[10px] font-medium text-violet-900/70 transition hover:text-primary md:text-xl"
+                    className="text-xl font-medium text-violet-900/70 transition hover:text-primary"
                   >
                     {link}
                   </a>
@@ -89,12 +88,11 @@ function Footer() {
             </ul>
           </section>
 
+          {/* Sponsor */}
           <section>
-            <h2 className="mb-4 text-sm font-bold text-black md:mb-9 md:text-2xl">
-              Our Sponsor
-            </h2>
+            <h2 className="mb-9 text-2xl font-bold text-black">Our Sponsor</h2>
 
-            <div className="flex items-center gap-5 md:block md:space-y-7">
+            <div className="space-y-7">
               {sponsors.map((sponsor) => (
                 <div key={sponsor.name} className={sponsor.className}>
                   {sponsor.name}
@@ -103,30 +101,26 @@ function Footer() {
             </div>
           </section>
 
+          {/* Follow */}
           <section>
-            <h2 className="mb-4 text-sm font-bold text-black md:mb-9 md:text-2xl">
-              Follow us
-            </h2>
+            <h2 className="mb-9 text-2xl font-bold text-black">Follow us</h2>
 
-            <ul className="flex items-center gap-6 md:block md:space-y-7">
+            <ul className="space-y-7">
               {socials.map((social) => (
                 <li key={social.name}>
                   <a
                     href="#"
                     className="flex items-center gap-6 text-violet-900/70 transition hover:text-primary"
-                    aria-label={social.name}
                   >
                     <svg
-                      className="h-4 w-4 shrink-0 fill-current md:h-8 md:w-8"
+                      className="h-8 w-8 shrink-0 fill-current"
                       viewBox="0 0 24 24"
                       aria-hidden="true"
                     >
                       {social.icon}
                     </svg>
 
-                    <span className="hidden text-xl font-medium md:inline">
-                      {social.label}
-                    </span>
+                    <span className="text-xl font-medium">{social.label}</span>
                   </a>
                 </li>
               ))}
@@ -134,7 +128,7 @@ function Footer() {
           </section>
         </div>
 
-        <p className="mt-10 text-xs tracking-wide text-violet-900/70 md:mt-16 md:text-center md:text-xl">
+        <p className="mt-16 text-center text-xl tracking-wide text-violet-900/70">
           © 2020 Tickitz. All Rights Reserved.
         </p>
       </div>
