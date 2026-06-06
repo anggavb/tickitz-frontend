@@ -24,19 +24,13 @@ const Navbar = () => {
             href="#"
             className="font-medium text-gray-900 transition hover:text-primary dark:text-white"
           >
-            About
+            Movie
           </a>
           <a
             href="#"
             className="font-medium text-gray-900 transition hover:text-primary dark:text-white"
           >
-            Services
-          </a>
-          <a
-            href="#"
-            className="font-medium text-gray-900 transition hover:text-primary dark:text-white"
-          >
-            Contact
+            Buy Ticket
           </a>
         </div>
 
