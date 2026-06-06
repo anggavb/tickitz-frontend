@@ -3,12 +3,14 @@ import logo from "../assets/logo.png";
 
 const Navbar = () => {
   return (
-    // Replaced bg-white with bg-mainbg, and fixed inset-s-0 to inset-x-0
-    <nav className="bg-mainbg dark:bg-gray-900 sticky w-full z-20 top-0 inset-x-0 border-b border-gray-200 dark:border-gray-600">
-      <div className="max-w-7xl flex flex-wrap items-center justify-between mx-auto p-5">
+    // Added h-[104px] to fix the navbar height
+    <nav className="bg-mainbg dark:bg-gray-900 sticky w-full h-26 z-20 top-0 inset-x-0 border-b border-gray-200 dark:border-gray-600">
+      {/* Changed p-5 to h-full and px-5 to ensure content stretches vertically and stays centered */}
+      <div className="max-w-7xl h-full flex flex-wrap items-center justify-between mx-auto px-5">
         {/* Logo/Brand */}
         <a href="#" className="flex items-center space-x-3 rtl:space-x-reverse">
-          <img src={logo} className="h-9 w-auto" alt="Logo" />
+          {/* Adjusted height slightly to comfortably fit within the 104px container */}
+          <img src={logo} className="h-16 w-auto" alt="Logo" />
         </a>
 
         {/* Action Buttons */}
@@ -75,7 +77,7 @@ const Navbar = () => {
                 href="#"
                 className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-primary md:p-0 md:dark:hover:text-primary dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
               >
-                About
+                Movie
               </a>
             </li>
             <li>
@@ -83,15 +85,7 @@ const Navbar = () => {
                 href="#"
                 className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-primary md:p-0 md:dark:hover:text-primary dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
               >
-                Services
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-primary md:p-0 md:dark:hover:text-primary dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-              >
-                Contact
+                Buy Ticket
               </a>
             </li>
           </ul>
