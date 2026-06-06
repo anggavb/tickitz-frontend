@@ -59,7 +59,7 @@ function LandingPage() {
             <p className="mb-2 text-sm text-slate-600">Filter</p>
 
             <div className="flex flex-wrap items-center gap-6 lg:gap-20">
-              <button className="rounded-lg bg-blue-600 px-6 py-2 text-sm text-white">
+              <button className="rounded-lg bg-primary px-6 py-2 text-sm text-white">
                 Thriller
               </button>
 

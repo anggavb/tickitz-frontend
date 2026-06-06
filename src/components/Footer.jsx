@@ -1,4 +1,4 @@
-import logo from "../assets/images/logo1.png";
+import logo from "../assets/images/logo.png";
 import ebuId from "../assets/images/ebv-id.png";
 import cineOne from "../assets/images/CineOne21.png";
 import hiflix from "../assets/images/hiflix.png";
@@ -10,11 +10,11 @@ import youtube from "../assets/images/youtube.png";
 
 function Footer() {
   return (
-    <footer className="bg-white px-6 py-12 sm:py-16">
+    <footer className="bg-white px-25 py-12 sm:py-16">
       <div className="mx-auto grid max-w-7xl gap-8 sm:gap-12 grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
         {/* Logo */}
         <div>
-          <img src={logo} alt="Tickitz" className="mb-4 h-12 sm:mb-6 sm:h-16" />
+          <img src={logo} alt="Tickitz" className="mb-4 h-8 sm:mb-6 sm:h-10" />
 
           <p className="max-w-xs text-sm leading-7 text-slate-500 sm:leading-8">
             Stop waiting in line. Buy tickets conveniently, watch movies
