@@ -1,18 +1,18 @@
 import React from "react";
-import MovieCard from "@/components/MovieCard";
-import { moviesData } from "@/data/moviesData";
+import MovieCard from "../components/MovieCard";
+import { moviesData } from "../data/moviesData";
 import background from "../assets/images/background.png";
 import searchIcon from "../assets/images/Search.png";
-import Navbar from "@/components/Navbar";
-import Newsletter from "@/components/Newsletter";
-import Footer from "@/components/Footer";
+import Navbar from "../components/Navbar";
+import Newsletter from "../components/Newsletter";
+import Footer from "../components/Footer";
 import sliderIndicator from "../assets/images/slider-indicator.png";
 import pagination from "../assets/images/pagination.png";
+import HomeLayout from "../layouts/HomeLayout";
 
-function LandingPage() {
+function HomeMoviePage() {
   return (
-    <div className="min-h-screen bg-white text-slate-900">
-      <Navbar />
+    <HomeLayout>
       <section
         className="relative bg-cover bg-center bg-no-repeat px-6 py-12 text-left text-white sm:py-20 lg:py-32"
         style={{
@@ -87,9 +87,8 @@ function LandingPage() {
       </section>
 
       <Newsletter />
-      <Footer />
-    </div>
+    </HomeLayout>
   );
 }
 
-export default LandingPage;
+export default HomeMoviePage;

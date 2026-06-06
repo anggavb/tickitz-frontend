@@ -6,7 +6,7 @@ function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="border-b border-slate-200 bg-white">
+    <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
         {/* Logo */}
         <img src={logo} alt="Tickitz" className="h-10 w-auto" />
