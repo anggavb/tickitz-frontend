@@ -10,7 +10,7 @@ const Navbar = () => {
         {/* Logo/Brand */}
         <a href="#" className="flex items-center space-x-3 rtl:space-x-reverse">
           {/* Adjusted height slightly to comfortably fit within the 104px container */}
-          <img src={logo} className="h-16 w-auto" alt="Logo" />
+          <img src={logo} className="h-8 w-auto" alt="Logo" />
         </a>
 
         {/* Action Buttons */}
