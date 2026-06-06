@@ -10,7 +10,7 @@ export const moviesData = [
     title: "Ant-Man",
     poster: antManPoster,
     genre: "Action, Adventure",
-    recommended: true
+    recommended: true,
   },
   {
     id: 2,
