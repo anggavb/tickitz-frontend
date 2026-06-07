@@ -5,8 +5,8 @@ import HomeMoviePage from './pages/HomeMoviePage';
 import MovieDetailPage from './pages/MovieDetailPage';
 import AdminMoviePage from './pages/AdminMoviePage';
 import SignupPage from './pages/auth/SignupPage';
-import ActivationPage from './pages/auth/SignupPage';
-import ActivationDonePage from './pages/auth/SignupPage';
+import ActivationPage from './pages/auth/ActivationPage';
+import ActivationDonePage from './pages/auth/ActivationDonePage';
 
 function AppRouter() {
   return (
