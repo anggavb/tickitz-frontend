@@ -1,6 +1,5 @@
 import logo from "../assets/images/logo.png";
 import { useState } from "react";
-import { Link } from "react-router";
 import NavLinks from "./NavLinks";
 import NavbarAuthButtons from "./NavbarAuthButtons";
 
@@ -51,4 +50,3 @@ function Navbar() {
 }
 
 export default Navbar;
-
