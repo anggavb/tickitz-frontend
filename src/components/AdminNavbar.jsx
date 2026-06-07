@@ -1,15 +1,13 @@
 import logo from "../assets/images/logo.png";
 import { useState } from "react";
-import { Link } from "react-router";
 import NavLinks from "./NavLinks";
-import NavbarAuthButtons from "./NavbarAuthButtons";
+import NavbarProfile from "./NavbarProfile";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const homeLinks = [
-    { name: "Home", href: "/" },
-    { name: "Movie", href: "/movies" },
-    { name: "Buy Ticket", href: "/tickets" },
+  const adminLinks = [
+    { name: "Dashboard", href: "/admin/dashboard" },
+    { name: "Movie", href: "/admin/movies" },
   ];
 
   return (
@@ -20,30 +18,29 @@ function Navbar() {
 
         {/* Menu Desktop */}
         <div className="hidden md:block">
-          <NavLinks links={homeLinks} />
+          <NavLinks links={adminLinks} />
         </div>
 
-        <NavbarAuthButtons />
+        <div className="flex items-center gap-4">
+          <NavbarProfile />
 
-        {/* Hamburger Menu Mobile */}
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="flex flex-col gap-1.5 md:hidden"
-        >
-          <div className="h-1 w-6 bg-slate-700"></div>
-          <div className="h-1 w-6 bg-slate-700"></div>
-          <div className="h-1 w-6 bg-slate-700"></div>
-        </button>
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="flex flex-col gap-1.5 md:hidden"
+          >
+            <div className="h-1 w-6 bg-slate-700"></div>
+            <div className="h-1 w-6 bg-slate-700"></div>
+            <div className="h-1 w-6 bg-slate-700"></div>
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu */}
       {isOpen && (
         <div className="border-t border-slate-200 bg-slate-50 px-6 py-4 md:hidden">
           <div className="mb-4">
-            <NavLinks links={homeLinks} mobile />
+            <NavLinks links={adminLinks} mobile />
           </div>
-
-          <NavbarAuthButtons mobile />
         </div>
       )}
     </nav>
@@ -51,4 +48,3 @@ function Navbar() {
 }
 
 export default Navbar;
-

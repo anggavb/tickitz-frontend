@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import MovieCard from "../../components/MovieCard";
 
 function UpcomingMovieSection({
@@ -8,14 +8,43 @@ function UpcomingMovieSection({
 }) {
   const sliderRef = useRef(null);
 
-  const scrollSlider = (direction) => {
-    if (!sliderRef.current) return;
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
 
-    sliderRef.current.scrollBy({
-      left: direction * sliderRef.current.clientWidth * 0.85,
+  const updateScrollButtons = () => {
+    const slider = sliderRef.current;
+    if (!slider) return;
+
+    const maxScrollLeft = slider.scrollWidth - slider.clientWidth;
+
+    setCanScrollPrev(slider.scrollLeft > 0);
+    setCanScrollNext(slider.scrollLeft < maxScrollLeft - 1);
+  };
+
+  const scrollSlider = (direction) => {
+    const slider = sliderRef.current;
+    if (!slider) return;
+
+    slider.scrollBy({
+      left: direction * slider.clientWidth * 0.85,
       behavior: "smooth",
     });
   };
+
+  useEffect(() => {
+    const slider = sliderRef.current;
+    if (!slider) return;
+
+    updateScrollButtons();
+
+    slider.addEventListener("scroll", updateScrollButtons);
+    window.addEventListener("resize", updateScrollButtons);
+
+    return () => {
+      slider.removeEventListener("scroll", updateScrollButtons);
+      window.removeEventListener("resize", updateScrollButtons);
+    };
+  }, [movies]);
 
   const shouldShowArrows = movies.length > 4;
 
@@ -38,7 +67,8 @@ function UpcomingMovieSection({
               type="button"
               aria-label="Previous movie"
               onClick={() => scrollSlider(-1)}
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-2xl font-semibold text-white transition hover:opacity-90"
+              disabled={!canScrollPrev}
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-2xl font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
             >
               ←
             </button>
@@ -47,7 +77,8 @@ function UpcomingMovieSection({
               type="button"
               aria-label="Next movie"
               onClick={() => scrollSlider(1)}
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-2xl font-semibold text-white transition hover:opacity-90"
+              disabled={!canScrollNext}
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-2xl font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
             >
               →
             </button>
@@ -57,6 +88,7 @@ function UpcomingMovieSection({
 
       <section
         ref={sliderRef}
+        onScroll={updateScrollButtons}
         className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-5 pb-4 scrollbar-hide sm:-mx-6 sm:px-6 md:mx-0 md:px-0 lg:gap-6"
       >
         {movies.map((movie) => (
