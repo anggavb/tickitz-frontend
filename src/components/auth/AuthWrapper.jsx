@@ -20,7 +20,7 @@ export default function AuthWrapper({ children }) {
   }, []);
 
   return (
-    <div className="relative pb-10 overflow-hidden flex items-center justify-center px-4">
+    <div className="relative min-h-screen pb-10 flex items-center justify-center">
       {/* BACKGROUND */}
       <img
         src={images[index]}
