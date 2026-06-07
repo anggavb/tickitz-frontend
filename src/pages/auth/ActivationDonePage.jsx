@@ -63,7 +63,6 @@ function ActivationDonePage() {
             Login Now
           </Link>
 
-          {/* COUNTDOWN */}
           <p className="text-sm text-gray-400 mt-4">
             Redirecting to login in <span className="font-semibold">{countdown}</span> seconds...
           </p>
