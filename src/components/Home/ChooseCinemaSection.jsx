@@ -1,20 +1,17 @@
 import { useMemo, useState } from "react";
+import Pagination from "../Pagination";
 
 function ChooseCinemaSection({ cinemas = [], defaultSchedules = [] }) {
   const [currentPage, setCurrentPage] = useState(1);
 
   const itemsPerPage = 4;
 
-  const totalPages = Math.ceil(cinemas.length / itemsPerPage);
-
-  const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
-
   const visibleCinemas = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
 
     return cinemas.slice(startIndex, endIndex);
-  }, [cinemas, currentPage]);
+  }, [cinemas, currentPage, itemsPerPage]);
 
   return (
     <section className="mx-auto max-w-7xl">
@@ -122,25 +119,12 @@ function ChooseCinemaSection({ cinemas = [], defaultSchedules = [] }) {
         ))}
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-10 flex items-center justify-center gap-2 sm:gap-3">
-          {pages.map((page) => (
-            <button
-              key={page}
-              type="button"
-              onClick={() => setCurrentPage(page)}
-              className={`h-8 w-8 rounded-md text-xs font-semibold transition sm:h-12 sm:w-12 sm:text-base ${
-                page === currentPage
-                  ? "bg-primary text-white shadow-lg shadow-primary/30"
-                  : "border border-neutral-200 bg-white text-neutral-600 hover:border-primary hover:text-primary"
-              }`}
-            >
-              {page}
-            </button>
-          ))}
-        </div>
-      )}
+      <Pagination
+        totalItems={cinemas.length}
+        itemsPerPage={itemsPerPage}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+      />
 
       {/* Desktop Book Now */}
       <div className="mt-10 hidden justify-center lg:flex">
