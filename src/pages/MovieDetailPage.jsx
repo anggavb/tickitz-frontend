@@ -13,7 +13,7 @@ function MovieDetailPage() {
     duration: "2 hours 5 minutes",
     casts: "Emma Carter, Liam Brooks, Noah Bennett",
     synopsis:
-      "A young explorer discovers an ancient map that leads to a forgotten city hidden beyond the mountains. As the journey becomes more dangerous, the team must solve old mysteries, face betrayal, and decide whether the truth is worth the risk.",
+      "A young explorer discovers an ancient map that leads to a forgotten city hidden beyond the mountains. As the journey becomes more dangerous, the team must solve  old mysteries, face betrayal, and decide whether the truth is worth the risk.",
   };
 
   const cinemas = [
@@ -42,6 +42,44 @@ function MovieDetailPage() {
       active: false,
     },
   ];
+  const defaultSchedules = [
+    {
+      type: "REGULAR",
+      times: [
+        "08:30 AM",
+        "10:30 AM",
+        "10:30 AM",
+        "11:30 AM",
+        "12:30 AM",
+        "12:30 AM",
+        "01:00 AM",
+      ],
+    },
+    {
+      type: "GOLD",
+      times: [
+        "08:30 AM",
+        "10:30 AM",
+        "10:30 AM",
+        "11:30 AM",
+        "12:30 AM",
+        "12:30 AM",
+        "01:00 AM",
+      ],
+    },
+    {
+      type: "PLATINUM",
+      times: [
+        "08:30 AM",
+        "10:30 AM",
+        "10:30 AM",
+        "11:30 AM",
+        "12:30 AM",
+        "12:30 AM",
+        "01:00 AM",
+      ],
+    },
+  ];
 
   const pages = [1, 2, 3, 4];
 
@@ -52,7 +90,7 @@ function MovieDetailPage() {
       <main className="bg-white">
         {/* Hero Background */}
         <section
-          className="relative min-h-48 bg-cover bg-center bg-no-repeat sm:min-h-72 lg:min-h-96"
+          className="relative min-h-72 bg-cover bg-center bg-no-repeat sm:min-h-72 lg:min-h-96"
           style={{
             backgroundImage: `linear-gradient(
               rgba(0, 0, 0, 0.35),
@@ -60,90 +98,98 @@ function MovieDetailPage() {
             ), url(${movie.background})`,
           }}
         />
-
         {/* Movie Detail */}
-        <section className="relative z-10 bg-white px-6">
-          <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[280px_1fr] xl:grid-cols-[320px_1fr]">
-            <div className="-mt-24 sm:-mt-36 lg:-mt-40">
+        <section className="relative z-10 bg-white px-5 pb-12 sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-7xl items-start gap-6 lg:grid-cols-[280px_1fr] lg:gap-10 xl:grid-cols-[320px_1fr]">
+            <div className="-mt-20 flex justify-center sm:-mt-32 lg:-mt-40 lg:block">
               <img
                 src={movie.poster}
                 alt={movie.title}
-                className="aspect-[2/3] w-full max-w-56 rounded-xl object-cover shadow-xl sm:max-w-72 lg:max-w-none"
+                className="aspect-[2/3] w-full max-w-[220px] rounded-lg object-cover shadow-xl sm:max-w-72 lg:max-w-none lg:rounded-xl"
               />
             </div>
 
-            <div className="pt-2 lg:pt-10">
-              <h1 className="text-3xl font-bold text-neutral-900 sm:text-4xl lg:text-5xl">
+            <div className="text-center lg:pt-10 lg:text-left">
+              <h1 className="text-sm font-semibold text-neutral-900 sm:text-3xl lg:text-5xl">
                 {movie.title}
               </h1>
 
-              <div className="mt-5 flex flex-wrap gap-3">
+              <div className="mt-4 flex flex-wrap justify-center gap-2 lg:justify-start">
                 {movie.genres.map((genre) => (
                   <span
                     key={genre}
-                    className="rounded-full bg-neutral-100 px-5 py-2 text-sm font-medium text-neutral-700"
+                    className="rounded-full bg-neutral-100 px-4 py-1.5 text-[10px] font-medium text-neutral-500 sm:px-5 sm:py-2 sm:text-sm"
                   >
                     {genre}
                   </span>
                 ))}
               </div>
 
-              <div className="mt-6 grid grid-cols-2 gap-x-8 gap-y-5 sm:gap-y-6">
+              <div className="mt-5 grid grid-cols-2 gap-x-6 gap-y-4 text-left sm:gap-y-6 lg:max-w-xl">
                 <div>
-                  <p className="text-sm text-neutral-400">Release date</p>
-                  <p className="mt-1 text-base font-medium text-neutral-900">
+                  <p className="text-[11px] text-neutral-400 sm:text-sm">
+                    Release date
+                  </p>
+                  <p className="mt-1 text-xs font-medium text-neutral-900 sm:text-base">
                     {movie.releaseDate}
                   </p>
                 </div>
 
                 <div>
-                  <p className="text-sm text-neutral-400">Directed by</p>
-                  <p className="mt-1 text-base font-medium text-neutral-900">
+                  <p className="text-[11px] text-neutral-400 sm:text-sm">
+                    Directed by
+                  </p>
+                  <p className="mt-1 text-xs font-medium text-neutral-900 sm:text-base">
                     {movie.director}
                   </p>
                 </div>
 
                 <div>
-                  <p className="text-sm text-neutral-400">Duration</p>
-                  <p className="mt-1 text-base font-medium text-neutral-900">
+                  <p className="text-[11px] text-neutral-400 sm:text-sm">
+                    Duration
+                  </p>
+                  <p className="mt-1 text-xs font-medium text-neutral-900 sm:text-base">
                     {movie.duration}
                   </p>
                 </div>
 
                 <div>
-                  <p className="text-sm text-neutral-400">Casts</p>
-                  <p className="mt-1 text-base font-medium text-neutral-900">
+                  <p className="text-[11px] text-neutral-400 sm:text-sm">
+                    Casts
+                  </p>
+                  <p className="mt-1 line-clamp-3 text-xs font-medium text-neutral-900 sm:text-base">
                     {movie.casts}
                   </p>
                 </div>
               </div>
             </div>
           </div>
-
           {/* Synopsis */}
-          <section className="mx-auto max-w-7xl ">
-            <h2 className="text-2xl font-bold text-neutral-900">Synopsis</h2>
-            <p className="mt-5 max-w-4xl text-base leading-8 text-neutral-500">
+          <section className="mx-auto mt-8 max-w-7xl sm:mt-12">
+            <h2 className="text-base font-semibold text-neutral-900 sm:text-2xl">
+              Synopsis
+            </h2>
+
+            <p className="mt-3 max-w-4xl text-xs leading-6 text-neutral-500 sm:mt-5 sm:text-base sm:leading-8">
               {movie.synopsis}
             </p>
           </section>
-
-          {/* Book Tickets */}
+          {/* Showtimes and Tickets */}
           <section className="mx-auto max-w-7xl py-8 sm:py-12">
-            <h2 className="mb-8 text-2xl font-bold text-neutral-900 sm:text-3xl">
-              Book Tickets
+            <h2 className="mb-5 text-center text-base font-semibold text-neutral-900 sm:mb-8 sm:text-3xl">
+              Showtimes and Tickets
             </h2>
 
-            <form className="grid gap-5 lg:grid-cols-[1fr_1fr_1fr_auto] lg:items-end">
+            <form className="mx-auto grid max-w-sm gap-3 lg:max-w-none lg:grid-cols-[1fr_1fr_1fr_auto] lg:items-end lg:gap-5">
               {/* Date */}
               <label className="block">
-                <span className="mb-3 block text-sm font-semibold text-neutral-700">
+                <span className="mb-3 hidden text-sm font-semibold text-neutral-700 lg:block">
                   Choose Date
                 </span>
 
                 <div className="relative">
                   <svg
-                    className="pointer-events-none absolute left-5 top-1/2 h-6 w-6 -translate-y-1/2 text-neutral-500"
+                    className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500 sm:h-5 sm:w-5"
                     viewBox="0 0 24 24"
                     fill="none"
                     aria-hidden="true"
@@ -159,13 +205,13 @@ function MovieDetailPage() {
                   <input
                     type="date"
                     defaultValue="2026-07-21"
-                    className="h-16 w-full rounded-lg border border-neutral-200 bg-neutral-100 px-14 text-base font-semibold text-neutral-600 outline-none transition focus:border-primary focus:bg-white"
+                    className="h-10 w-full rounded-md border border-neutral-200 bg-neutral-100 px-11 text-xs font-medium text-neutral-500 outline-none transition focus:border-primary focus:bg-white sm:h-14 sm:text-sm lg:h-16 lg:px-14 lg:text-base"
                   />
                 </div>
               </label>
 
-              {/* Time */}
-              <label className="block">
+              {/* Time - desktop only */}
+              <label className="hidden lg:block">
                 <span className="mb-3 block text-sm font-semibold text-neutral-700">
                   Choose Time
                 </span>
@@ -192,25 +238,38 @@ function MovieDetailPage() {
 
                   <select
                     defaultValue="20:30"
-                    className="h-16 w-full rounded-lg border border-neutral-200 bg-neutral-100 px-14 text-base font-semibold text-neutral-600 outline-none transition focus:border-primary focus:bg-white"
+                    className="h-16 w-full appearance-none rounded-lg border border-neutral-200 bg-neutral-100 px-14 text-base font-semibold text-neutral-600 outline-none transition focus:border-primary focus:bg-white"
                   >
-                    {" "}
                     <option value="08:30">08:30</option>
                     <option value="10:00">10:00</option>
                     <option value="12:30">12:30</option>
+                    <option value="20:30">20:30</option>
                   </select>
+
+                  <svg
+                    className="pointer-events-none absolute right-5 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
                 </div>
               </label>
 
               {/* Location */}
               <label className="block">
-                <span className="mb-3 block text-sm font-semibold text-neutral-700">
+                <span className="mb-3 hidden text-sm font-semibold text-neutral-700 lg:block">
                   Choose Location
                 </span>
 
                 <div className="relative">
                   <svg
-                    className="pointer-events-none absolute left-5 top-1/2 h-6 w-6 -translate-y-1/2 text-neutral-500"
+                    className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500 sm:h-5 sm:w-5 lg:left-5 lg:h-6 lg:w-6"
                     viewBox="0 0 24 24"
                     fill="none"
                     aria-hidden="true"
@@ -229,7 +288,7 @@ function MovieDetailPage() {
 
                   <select
                     defaultValue="purwokerto"
-                    className="h-16 w-full appearance-none rounded-lg border border-neutral-200 bg-neutral-100 px-14 text-base font-semibold text-neutral-600 outline-none transition focus:border-primary focus:bg-white"
+                    className="h-10 w-full appearance-none rounded-md border border-neutral-200 bg-neutral-100 px-11 text-xs font-medium text-neutral-500 outline-none transition focus:border-primary focus:bg-white sm:h-14 sm:text-sm lg:h-16 lg:rounded-lg lg:px-14 lg:text-base"
                   >
                     <option value="purwokerto">Purwokerto</option>
                     <option value="jakarta">Jakarta</option>
@@ -238,7 +297,7 @@ function MovieDetailPage() {
                   </select>
 
                   <svg
-                    className="pointer-events-none absolute right-5 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400"
+                    className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400 lg:right-5 lg:h-5 lg:w-5"
                     viewBox="0 0 20 20"
                     fill="currentColor"
                     aria-hidden="true"
@@ -254,22 +313,100 @@ function MovieDetailPage() {
 
               <button
                 type="submit"
-                className="h-16 rounded-lg bg-primary px-10 text-base font-semibold text-white transition hover:opacity-90"
+                className="h-10 rounded-md bg-primary px-10 text-xs font-semibold text-white transition hover:opacity-90 sm:h-14 sm:text-sm lg:h-16 lg:rounded-lg lg:text-base"
               >
                 Filter
               </button>
             </form>
+            <p className="mt-4 text-center text-xs font-medium text-neutral-400 sm:text-sm">
+              39 Result
+            </p>
           </section>
           {/* Choose Cinema */}
-          <section className="mx-auto max-w-7xl ">
-            <div className="mb-8 flex flex-col gap-2 text-center sm:flex-row sm:items-center sm:justify-center sm:gap-5">
+          <section className="mx-auto max-w-7xl">
+            <div className="mb-8 hidden flex-col gap-2 text-center lg:flex lg:flex-row lg:items-center lg:justify-center lg:gap-5">
               <h2 className="text-2xl font-bold text-neutral-900">
                 Choose Cinema
               </h2>
               <p className="text-lg font-bold text-neutral-400">39 Result</p>
             </div>
 
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {/* Mobile cinema accordion with time */}
+            <div className="grid gap-4 lg:hidden">
+              {cinemas.map((cinema, cinemaIndex) => (
+                <details
+                  key={cinema.id}
+                  open={cinemaIndex === 0}
+                  className="group rounded-lg border border-neutral-200 bg-white px-5 py-5 shadow-sm"
+                >
+                  <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
+                    <div>
+                      <p
+                        className={`text-3xl font-black leading-none ${
+                          cinema.name === "Hiflix"
+                            ? "font-mono lowercase text-red-600"
+                            : cinema.name === "CineOne21"
+                              ? "font-serif text-primary"
+                              : "font-serif text-black"
+                        }`}
+                      >
+                        {cinema.logo}
+                      </p>
+
+                      <h3 className="mt-4 text-base font-semibold text-neutral-900">
+                        {cinema.name}
+                      </h3>
+
+                      <p className="mt-1 max-w-[220px] text-[11px] leading-5 text-neutral-400">
+                        Whatever street No.12, South Purwokerto
+                      </p>
+                    </div>
+
+                    <svg
+                      className="mt-8 h-4 w-4 shrink-0 text-neutral-900 transition group-open:rotate-180"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </summary>
+
+                  <div className="mt-5 border-t border-neutral-100 pt-5">
+                    {defaultSchedules.map((schedule) => (
+                      <div key={schedule.type} className="mb-6 last:mb-0">
+                        <h4 className="mb-3 text-xs font-semibold text-neutral-900">
+                          {schedule.type}
+                        </h4>
+
+                        <div className="flex flex-wrap gap-2">
+                          {schedule.times.map((time, index) => (
+                            <button
+                              key={`${schedule.type}-${time}-${index}`}
+                              type="button"
+                              className={`rounded-full px-3 py-1.5 text-[10px] font-medium transition ${
+                                index === 5
+                                  ? "bg-primary text-white"
+                                  : "bg-neutral-100 text-neutral-500 hover:bg-primary hover:text-white"
+                              }`}
+                            >
+                              {time}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              ))}
+            </div>
+
+            {/* Desktop cinema cards without time */}
+            <div className="hidden gap-5 sm:grid-cols-2 lg:grid lg:grid-cols-4">
               {cinemas.map((cinema) => (
                 <button
                   key={cinema.id}
@@ -294,12 +431,12 @@ function MovieDetailPage() {
             </div>
 
             {/* Pagination */}
-            <div className="mt-10 flex items-center justify-center gap-3">
+            <div className="mt-10 flex items-center justify-center gap-2 sm:gap-3">
               {pages.map((page) => (
                 <button
                   key={page}
                   type="button"
-                  className={`h-12 w-12 rounded-lg text-base font-semibold transition ${
+                  className={`h-8 w-8 rounded-md text-xs font-semibold transition sm:h-12 sm:w-12 sm:text-base ${
                     page === 1
                       ? "bg-primary text-white shadow-lg shadow-primary/30"
                       : "border border-neutral-200 bg-white text-neutral-600 hover:border-primary hover:text-primary"
@@ -310,7 +447,8 @@ function MovieDetailPage() {
               ))}
             </div>
 
-            <div className="mt-10 flex justify-center">
+            {/* Desktop Book Now */}
+            <div className="mt-10 hidden justify-center lg:flex">
               <button
                 type="button"
                 className="h-14 rounded-lg bg-primary px-16 text-base font-semibold text-white transition hover:opacity-90"
@@ -318,8 +456,8 @@ function MovieDetailPage() {
                 Book Now
               </button>
             </div>
-          </section>
-        </section>
+          </section>{" "}
+        </section>{" "}
       </main>
     </>
   );
