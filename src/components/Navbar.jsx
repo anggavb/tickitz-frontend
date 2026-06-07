@@ -1,37 +1,29 @@
 import logo from "../assets/images/logo.png";
 import { useState } from "react";
-import NavLinks from "./HomeNavLinks";
 import { Link } from "react-router";
+import NavLinks from "./NavLinks";
+import NavbarAuthButtons from "./NavbarAuthButtons";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const homeLinks = [
+    { name: "Home", href: "/" },
+    { name: "Movie", href: "/movies" },
+    { name: "Buy Ticket", href: "/tickets" },
+  ];
 
   return (
-    <nav className="border-b border-slate-200 bg-white">
+    <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
         {/* Logo */}
         <img src={logo} alt="Tickitz" className="h-10 w-auto" />
 
         {/* Menu Desktop */}
         <div className="hidden md:block">
-          <NavLinks />
+          <NavLinks links={homeLinks} />
         </div>
 
-        {/* Buttons Desktop */}
-        <div className="hidden gap-3 md:flex">
-          <Link
-            to="/auth/login"
-            className="rounded border border-primary px-5 py-2 text-sm text-primary"
-          >
-            Sign In
-          </Link>
-          <Link
-            to="/auth/signup"
-            className="rounded bg-primary px-5 py-2 text-sm text-white"
-          >
-            Sign Up
-          </Link>{" "}
-        </div>
+        <NavbarAuthButtons />
 
         {/* Hamburger Menu Mobile */}
         <button
@@ -48,17 +40,10 @@ function Navbar() {
       {isOpen && (
         <div className="border-t border-slate-200 bg-slate-50 px-6 py-4 md:hidden">
           <div className="mb-4">
-            <NavLinks mobile />
+            <NavLinks links={homeLinks} mobile />
           </div>
 
-          <div className="flex flex-col gap-2">
-            <button className="rounded border border-primary px-5 py-2 text-sm text-primary">
-              Sign In
-            </button>
-            <button className="rounded bg-primary px-5 py-2 text-sm text-white">
-              Sign Up
-            </button>
-          </div>
+          <NavbarAuthButtons mobile />
         </div>
       )}
     </nav>
@@ -66,3 +51,4 @@ function Navbar() {
 }
 
 export default Navbar;
+
