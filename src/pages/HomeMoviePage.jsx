@@ -9,7 +9,7 @@ import Footer from "@/components/Footer";
 import sliderIndicator from "../assets/images/slider-indicator.png";
 import pagination from "../assets/images/pagination.png";
 
-function LandingPage() {
+function HomeMoviePage() {
   return (
     <div className="min-h-screen bg-white text-slate-900">
       <Navbar />
@@ -92,4 +92,4 @@ function LandingPage() {
   );
 }
 
-export default LandingPage;
+export default HomeMoviePage;
