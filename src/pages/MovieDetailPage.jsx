@@ -1,94 +1,121 @@
+import { useMemo, useState } from "react";
 import Navbar from "../components/Navbar";
 
+const movie = {
+  title: "The Lost City of Dawn",
+  background:
+    "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
+  poster:
+    "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=600&q=80",
+  genres: ["Adventure", "Mystery", "Drama"],
+  releaseDate: "June 7, 2026",
+  director: "Alex Morgan",
+  duration: "2 hours 5 minutes",
+  casts: "Emma Carter, Liam Brooks, Noah Bennett",
+  synopsis:
+    "A young explorer discovers an ancient map that leads to a forgotten city hidden beyond the mountains. As the journey becomes more dangerous, the team must solve old mysteries, face betrayal, and decide whether the truth is worth the risk.",
+};
+
+const cinemas = [
+  { id: 1, name: "Ebv.id", logo: "ebv.id", active: false },
+  { id: 2, name: "Hiflix", logo: "hiflix", active: true },
+  { id: 3, name: "CineOne21", logo: "CineOne21", active: false },
+  { id: 4, name: "MovieMax", logo: "MovieMax", active: false },
+  { id: 5, name: "ApexCinema", logo: "apexcinema", active: true },
+  {
+    id: 6,
+    name: "Starlight Screens",
+    logo: "starlight_screens",
+    active: false,
+  },
+  {
+    id: 7,
+    name: "Velvet Pictures",
+    logo: "velvet_pictures",
+    active: true,
+  },
+  { id: 8, name: "MetroPlex", logo: "metroplex", active: false },
+  { id: 9, name: "NeoTheatre", logo: "neotheatre", active: true },
+  { id: 10, name: "Prism Cines", logo: "prism_cines", active: false },
+  { id: 11, name: "OmniMax", logo: "omnimax", active: true },
+  {
+    id: 12,
+    name: "Horizon Filmhouse",
+    logo: "horizon_filmhouse",
+    active: false,
+  },
+  { id: 13, name: "RetroScope", logo: "retroscope", active: false },
+  {
+    id: 14,
+    name: "Luminary Cinema",
+    logo: "luminary_cinema",
+    active: true,
+  },
+];
+
+const defaultSchedules = [
+  {
+    type: "REGULAR",
+    times: [
+      "08:30 AM",
+      "10:30 AM",
+      "10:30 AM",
+      "11:30 AM",
+      "12:30 AM",
+      "12:30 AM",
+      "01:00 AM",
+    ],
+  },
+  {
+    type: "GOLD",
+    times: [
+      "08:30 AM",
+      "10:30 AM",
+      "10:30 AM",
+      "11:30 AM",
+      "12:30 AM",
+      "12:30 AM",
+      "01:00 AM",
+    ],
+  },
+  {
+    type: "PLATINUM",
+    times: [
+      "08:30 AM",
+      "10:30 AM",
+      "10:30 AM",
+      "11:30 AM",
+      "12:30 AM",
+      "12:30 AM",
+      "01:00 AM",
+    ],
+  },
+];
+
 function MovieDetailPage() {
-  const movie = {
-    title: "The Lost City of Dawn",
-    background:
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
-    poster:
-      "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=600&q=80",
-    genres: ["Adventure", "Mystery", "Drama"],
-    releaseDate: "June 7, 2026",
-    director: "Alex Morgan",
-    duration: "2 hours 5 minutes",
-    casts: "Emma Carter, Liam Brooks, Noah Bennett",
-    synopsis:
-      "A young explorer discovers an ancient map that leads to a forgotten city hidden beyond the mountains. As the journey becomes more dangerous, the team must solve  old mysteries, face betrayal, and decide whether the truth is worth the risk.",
-  };
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const cinemas = [
-    {
-      id: 1,
-      name: "Ebv.id",
-      logo: "ebv.id",
-      active: false,
-    },
-    {
-      id: 2,
-      name: "Hiflix",
-      logo: "hiflix",
-      active: true,
-    },
-    {
-      id: 3,
-      name: "CineOne21",
-      logo: "CineOne21",
-      active: false,
-    },
-    {
-      id: 4,
-      name: "MovieMax",
-      logo: "MovieMax",
-      active: false,
-    },
-  ];
-  const defaultSchedules = [
-    {
-      type: "REGULAR",
-      times: [
-        "08:30 AM",
-        "10:30 AM",
-        "10:30 AM",
-        "11:30 AM",
-        "12:30 AM",
-        "12:30 AM",
-        "01:00 AM",
-      ],
-    },
-    {
-      type: "GOLD",
-      times: [
-        "08:30 AM",
-        "10:30 AM",
-        "10:30 AM",
-        "11:30 AM",
-        "12:30 AM",
-        "12:30 AM",
-        "01:00 AM",
-      ],
-    },
-    {
-      type: "PLATINUM",
-      times: [
-        "08:30 AM",
-        "10:30 AM",
-        "10:30 AM",
-        "11:30 AM",
-        "12:30 AM",
-        "12:30 AM",
-        "01:00 AM",
-      ],
-    },
-  ];
+  const cinemaPerPage = 4;
+  const totalPages = Math.ceil(cinemas.length / cinemaPerPage);
 
-  const pages = [1, 2, 3, 4];
+  const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
+
+  const visibleCinemas = useMemo(() => {
+    const startIndex = (currentPage - 1) * cinemaPerPage;
+    const endIndex = startIndex + cinemaPerPage;
+
+    return cinemas.slice(startIndex, endIndex);
+  }, [currentPage]);
+
+  const timeOptions = useMemo(() => {
+    return [...new Set(defaultSchedules.flatMap((schedule) => schedule.times))];
+  }, []);
 
   return (
     <>
       <Navbar />
 
       <main className="bg-white">
-        {/* Hero Background */}
         <section
           className="relative min-h-72 bg-cover bg-center bg-no-repeat sm:min-h-72 lg:min-h-96"
           style={{
@@ -98,6 +125,7 @@ function MovieDetailPage() {
             ), url(${movie.background})`,
           }}
         />
+
         {/* Movie Detail */}
         <section className="relative z-10 bg-white px-5 pb-12 sm:px-6 lg:px-8">
           <div className="mx-auto grid max-w-7xl items-start gap-6 lg:grid-cols-[280px_1fr] lg:gap-10 xl:grid-cols-[320px_1fr]">
@@ -105,7 +133,7 @@ function MovieDetailPage() {
               <img
                 src={movie.poster}
                 alt={movie.title}
-                className="aspect-[2/3] w-full max-w-[220px] rounded-lg object-cover shadow-xl sm:max-w-72 lg:max-w-none lg:rounded-xl"
+                className="aspect-2/3 w-full max-w-55 rounded-lg object-cover shadow-xl sm:max-w-72 lg:max-w-none lg:rounded-xl"
               />
             </div>
 
@@ -164,6 +192,7 @@ function MovieDetailPage() {
               </div>
             </div>
           </div>
+
           {/* Synopsis */}
           <section className="mx-auto mt-8 max-w-7xl sm:mt-12">
             <h2 className="text-base font-semibold text-neutral-900 sm:text-2xl">
@@ -174,6 +203,7 @@ function MovieDetailPage() {
               {movie.synopsis}
             </p>
           </section>
+
           {/* Showtimes and Tickets */}
           <section className="mx-auto max-w-7xl py-8 sm:py-12">
             <h2 className="mb-5 text-center text-base font-semibold text-neutral-900 sm:mb-8 sm:text-3xl">
@@ -237,13 +267,14 @@ function MovieDetailPage() {
                   </svg>
 
                   <select
-                    defaultValue="20:30"
+                    defaultValue={timeOptions[0]}
                     className="h-16 w-full appearance-none rounded-lg border border-neutral-200 bg-neutral-100 px-14 text-base font-semibold text-neutral-600 outline-none transition focus:border-primary focus:bg-white"
                   >
-                    <option value="08:30">08:30</option>
-                    <option value="10:00">10:00</option>
-                    <option value="12:30">12:30</option>
-                    <option value="20:30">20:30</option>
+                    {timeOptions.map((time) => (
+                      <option key={time} value={time}>
+                        {time}
+                      </option>
+                    ))}
                   </select>
 
                   <svg
@@ -318,22 +349,26 @@ function MovieDetailPage() {
                 Filter
               </button>
             </form>
+
             <p className="mt-4 text-center text-xs font-medium text-neutral-400 sm:text-sm">
-              39 Result
+              {cinemas.length} Result
             </p>
           </section>
+
           {/* Choose Cinema */}
           <section className="mx-auto max-w-7xl">
             <div className="mb-8 hidden flex-col gap-2 text-center lg:flex lg:flex-row lg:items-center lg:justify-center lg:gap-5">
               <h2 className="text-2xl font-bold text-neutral-900">
                 Choose Cinema
               </h2>
-              <p className="text-lg font-bold text-neutral-400">39 Result</p>
+              <p className="text-lg font-bold text-neutral-400">
+                {cinemas.length} Result
+              </p>
             </div>
 
             {/* Mobile cinema accordion with time */}
             <div className="grid gap-4 lg:hidden">
-              {cinemas.map((cinema, cinemaIndex) => (
+              {visibleCinemas.map((cinema, cinemaIndex) => (
                 <details
                   key={cinema.id}
                   open={cinemaIndex === 0}
@@ -357,7 +392,7 @@ function MovieDetailPage() {
                         {cinema.name}
                       </h3>
 
-                      <p className="mt-1 max-w-[220px] text-[11px] leading-5 text-neutral-400">
+                      <p className="mt-1 max-w-55 text-[11px] leading-5 text-neutral-400">
                         Whatever street No.12, South Purwokerto
                       </p>
                     </div>
@@ -406,8 +441,8 @@ function MovieDetailPage() {
             </div>
 
             {/* Desktop cinema cards without time */}
-            <div className="hidden gap-5 sm:grid-cols-2 lg:grid lg:grid-cols-4">
-              {cinemas.map((cinema) => (
+            <div className="hidden gap-5 lg:grid lg:grid-cols-4">
+              {visibleCinemas.map((cinema) => (
                 <button
                   key={cinema.id}
                   type="button"
@@ -431,21 +466,24 @@ function MovieDetailPage() {
             </div>
 
             {/* Pagination */}
-            <div className="mt-10 flex items-center justify-center gap-2 sm:gap-3">
-              {pages.map((page) => (
-                <button
-                  key={page}
-                  type="button"
-                  className={`h-8 w-8 rounded-md text-xs font-semibold transition sm:h-12 sm:w-12 sm:text-base ${
-                    page === 1
-                      ? "bg-primary text-white shadow-lg shadow-primary/30"
-                      : "border border-neutral-200 bg-white text-neutral-600 hover:border-primary hover:text-primary"
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-            </div>
+            {totalPages > 1 && (
+              <div className="mt-10 flex items-center justify-center gap-2 sm:gap-3">
+                {pages.map((page) => (
+                  <button
+                    key={page}
+                    type="button"
+                    onClick={() => setCurrentPage(page)}
+                    className={`h-8 w-8 rounded-md text-xs font-semibold transition sm:h-12 sm:w-12 sm:text-base ${
+                      page === currentPage
+                        ? "bg-primary text-white shadow-lg shadow-primary/30"
+                        : "border border-neutral-200 bg-white text-neutral-600 hover:border-primary hover:text-primary"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Desktop Book Now */}
             <div className="mt-10 hidden justify-center lg:flex">
@@ -456,8 +494,8 @@ function MovieDetailPage() {
                 Book Now
               </button>
             </div>
-          </section>{" "}
-        </section>{" "}
+          </section>
+        </section>
       </main>
     </>
   );
