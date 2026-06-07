@@ -1,7 +1,7 @@
 // Import gambar lokal
-import antManPoster from "@/assets/images/ant-man.jpg";
-import doctorStrangePoster from "@/assets/images/doctor-strange.jpg";
-import thorPoster from "@/assets/images/thor.jpg";
+import antManPoster from "../assets/images/ant-man.jpg";
+import doctorStrangePoster from "../assets/images/doctor-strange.jpg";
+import thorPoster from "../assets/images/thor.jpg";
 import spidermanPoster from "../assets/images/spiderman.jpg";
 
 export const moviesData = [
