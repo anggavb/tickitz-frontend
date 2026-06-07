@@ -38,7 +38,7 @@ function LandingPage() {
       <section className="mx-auto max-w-7xl px-6 py-8 sm:py-16">
         <div className="mb-10 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           {/* Search */}
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <label className="mb-2 block text-sm text-slate-600">
               Cari Event
             </label>

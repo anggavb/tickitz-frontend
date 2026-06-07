@@ -1,8 +1,8 @@
 function HomeNavLinks({ mobile = false }) {
   const links = [
-    { name: "Home", href: "#" },
-    { name: "Movie", href: "#" },
-    { name: "Buy Ticket", href: "#" },
+    { name: "Home", href: "/" },
+    { name: "Movie", href: "/movies" },
+    { name: "Buy Ticket", href: "/buy-tiket" },
   ];
 
   return (

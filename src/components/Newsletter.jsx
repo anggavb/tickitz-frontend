@@ -3,7 +3,7 @@ import circleDecoration from "../assets/images/shape.png";
 function Newsletter() {
   return (
     <section className="px-6 lg:px-20 py-20">
-      <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[24px] bg-primary px-8 py-14 text-center text-white lg:px-20 lg:py-16">
+      <div className="relative mx-auto max-w-7xl overflow-hidden rounded-3xl bg-primary px-8 py-14 text-center text-white lg:px-20 lg:py-16">
         <h2 className="mb-10 text-3xl font-medium lg:text-5xl">
           Subscribe to our newsletter
         </h2>
@@ -12,13 +12,13 @@ function Newsletter() {
           <input
             type="text"
             placeholder="First name"
-            className="h-12 w-full rounded border border-white/40 bg-transparent px-4 text-white placeholder:text-white/70 focus:outline-none md:w-[230px]"
+            className="h-12 w-full rounded border border-white/40 bg-transparent px-4 text-white placeholder:text-white/70 focus:outline-none md:w-57.5"
           />
 
           <input
             type="email"
             placeholder="Email address"
-            className="h-12 w-full rounded border border-white/40 bg-transparent px-4 text-white placeholder:text-white/70 focus:outline-none md:w-[230px]"
+            className="h-12 w-full rounded border border-white/40 bg-transparent px-4 text-white placeholder:text-white/70 focus:outline-none md:w-57.5"
           />
 
           <button
