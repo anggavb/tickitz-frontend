@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import eyeIcon from "../assets/images/eye.png";
 import editIcon from "../assets/images/edit.png";
@@ -12,6 +13,8 @@ const API_BASE_URL = import.meta.env.VITE_API_URL;
 const PAGE_LIMIT = 5;
 
 function AdminMoviePage() {
+  const navigate = useNavigate();
+
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -92,6 +95,7 @@ function AdminMoviePage() {
 
               <button
                 type="button"
+                onClick={() => navigate("/admin/movies/add")}
                 className="rounded-xl bg-primary px-5 py-3 text-sm font-medium text-white"
               >
                 Add Movies
@@ -228,4 +232,3 @@ function AdminMoviePage() {
 }
 
 export default AdminMoviePage;
-

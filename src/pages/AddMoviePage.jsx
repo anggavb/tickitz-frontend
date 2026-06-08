@@ -1,9 +1,21 @@
+import { useState } from "react";
 import AdminNavbar from "../components/AdminNavbar";
 
 function AddMoviePage() {
+  const [image, setImage] = useState(null);
+
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+
+    if (file) {
+      setImage(file);
+    }
+  };
+
   return (
     <>
       <AdminNavbar />
+
       <main className="min-h-screen bg-slate-100 p-4 md:p-8">
         <section className="mx-auto max-w-3xl bg-white p-6 md:p-8">
           <h1 className="mb-8 text-2xl font-semibold text-slate-800">
@@ -17,12 +29,26 @@ function AddMoviePage() {
                 Upload Image
               </label>
 
-              <button
-                type="button"
-                className="rounded-md bg-primary px-4 py-2 text-xs text-white"
+              <input
+                id="movie-image"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageChange}
+              />
+
+              <label
+                htmlFor="movie-image"
+                className="inline-block cursor-pointer rounded-md bg-primary px-4 py-2 text-xs text-white"
               >
                 Upload
-              </button>
+              </label>
+
+              {image && (
+                <p className="mt-2 text-sm text-slate-500">
+                  Selected: {image.name}
+                </p>
+              )}
             </div>
 
             {/* Movie Name */}
