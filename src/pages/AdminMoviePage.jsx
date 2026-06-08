@@ -1,4 +1,4 @@
-import { movies } from "../data/adminMovieData";
+import { useEffect, useState } from "react";
 
 import eyeIcon from "../assets/images/eye.png";
 import editIcon from "../assets/images/edit.png";
@@ -8,7 +8,60 @@ import arrowDownIcon from "../assets/images/arrow-down.png";
 
 import AdminNavbar from "../components/AdminNavbar";
 
+const API_BASE_URL = "http://localhost:8081";
+const PAGE_LIMIT = 5;
+
 function AdminMoviePage() {
+  const [movies, setMovies] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    const fetchMovies = async (pageNumber = 1) => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/admin/movies?page=${pageNumber}&limit=${PAGE_LIMIT}`,
+        );
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.message || "Failed to load movies");
+        }
+
+        setMovies(
+          result.data.map((movie) => ({
+            id: movie.id,
+            thumbnail: movie.image ? `${API_BASE_URL}${movie.image}` : "",
+            name: movie.name,
+            category: movie.categories?.join(", ") || "",
+            date: movie.release_date,
+            duration: `${movie.duration_in_minute} minute`,
+          })),
+        );
+
+        setPage(result.pagination?.page || pageNumber);
+        setTotalPages(result.pagination?.total_page || 1);
+      } catch (fetchError) {
+        setError(fetchError.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMovies(page);
+  }, [page]);
+
+  const gotoPage = (pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= totalPages && pageNumber !== page) {
+      setPage(pageNumber);
+    }
+  };
+
   return (
     <>
       <AdminNavbar />
@@ -48,98 +101,124 @@ function AdminMoviePage() {
 
           {/* Table */}
           <div className="overflow-x-auto">
-            <table className="min-w-[900px] w-full text-center text-sm">
-              <thead>
-                <tr className="border-b border-slate-200 text-xs font-medium text-slate-500">
-                  <th className="pb-5">No</th>
-                  <th className="pb-5">Thumbnail</th>
-                  <th className="pb-5">Movie Name</th>
-                  <th className="pb-5">Category</th>
-                  <th className="pb-5">Released Date</th>
-                  <th className="pb-5">Duration</th>
-                  <th className="pb-5">Action</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {movies.map((movie, index) => (
-                  <tr
-                    key={movie.id}
-                    className="border-b border-slate-100 text-slate-700"
-                  >
-                    <td className="py-4">{index + 1}</td>
-
-                    <td className="py-4">
-                      <div className="flex justify-center">
-                        <img
-                          src={movie.thumbnail}
-                          alt={movie.name}
-                          className="h-10 w-10 rounded-md object-cover"
-                        />
-                      </div>
-                    </td>
-
-                    <td className="py-4 text-primary">{movie.name}</td>
-
-                    <td className="py-4">{movie.category}</td>
-
-                    <td className="py-4">{movie.date}</td>
-
-                    <td className="py-4">{movie.duration}</td>
-
-                    <td className="py-4">
-                      <div className="flex items-center justify-center gap-2">
-                        <button type="button">
-                          <img src={eyeIcon} alt="View" className="h-7 w-7" />
-                        </button>
-
-                        <button type="button">
-                          <img src={editIcon} alt="Edit" className="h-7 w-7" />
-                        </button>
-
-                        <button type="button">
-                          <img
-                            src={deleteIcon}
-                            alt="Delete"
-                            className="h-7 w-7"
-                          />
-                        </button>
-                      </div>
-                    </td>
+            {isLoading ? (
+              <div className="p-10 text-center text-slate-600">
+                Loading movies...
+              </div>
+            ) : error ? (
+              <div className="p-10 text-center text-red-600">{error}</div>
+            ) : (
+              <table className="min-w-225 w-full text-center text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 text-xs font-medium text-slate-500">
+                    <th className="pb-5">No</th>
+                    <th className="pb-5">Thumbnail</th>
+                    <th className="pb-5">Movie Name</th>
+                    <th className="pb-5">Category</th>
+                    <th className="pb-5">Released Date</th>
+                    <th className="pb-5">Duration</th>
+                    <th className="pb-5">Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+
+                <tbody>
+                  {movies.map((movie, index) => (
+                    <tr
+                      key={movie.id}
+                      className="border-b border-slate-100 text-slate-700"
+                    >
+                      <td className="py-4">
+                        {(page - 1) * PAGE_LIMIT + index + 1}
+                      </td>
+
+                      <td className="py-4">
+                        <div className="flex justify-center">
+                          <img
+                            src={movie.thumbnail}
+                            alt={movie.name}
+                            className="h-10 w-10 rounded-md object-cover"
+                          />
+                        </div>
+                      </td>
+
+                      <td className="py-4 text-primary">{movie.name}</td>
+                      <td className="py-4">{movie.category}</td>
+                      <td className="py-4">{movie.date}</td>
+                      <td className="py-4">{movie.duration}</td>
+
+                      <td className="py-4">
+                        <div className="flex items-center justify-center gap-2">
+                          <button type="button">
+                            <img src={eyeIcon} alt="View" className="h-7 w-7" />
+                          </button>
+
+                          <button type="button">
+                            <img
+                              src={editIcon}
+                              alt="Edit"
+                              className="h-7 w-7"
+                            />
+                          </button>
+
+                          <button type="button">
+                            <img
+                              src={deleteIcon}
+                              alt="Delete"
+                              className="h-7 w-7"
+                            />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
 
           {/* Pagination */}
-          <div className="mt-8 flex justify-center gap-2 sm:mt-10">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-2 sm:mt-10">
             <button
               type="button"
-              className="h-8 w-8 rounded-lg bg-primary text-xs text-white shadow-md sm:h-10 sm:w-10 sm:text-sm"
+              onClick={() => gotoPage(page - 1)}
+              disabled={page <= 1}
+              className={`h-8 min-w-12 rounded-lg px-3 text-xs sm:h-10 sm:text-sm ${
+                page <= 1
+                  ? "cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-300"
+                  : "border border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+              }`}
             >
-              1
+              Prev
             </button>
+
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map(
+              (pageNumber) => (
+                <button
+                  key={pageNumber}
+                  type="button"
+                  onClick={() => gotoPage(pageNumber)}
+                  className={`h-8 min-w-12 rounded-lg px-3 text-xs sm:h-10 sm:text-sm ${
+                    pageNumber === page
+                      ? "bg-primary text-white shadow-md"
+                      : "border border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                  }`}
+                >
+                  {pageNumber}
+                </button>
+              ),
+            )}
 
             <button
               type="button"
-              className="h-8 w-8 rounded-lg border border-slate-200 bg-white text-xs text-slate-500 sm:h-10 sm:w-10 sm:text-sm"
+              onClick={() => gotoPage(page + 1)}
+              disabled={page >= totalPages}
+              className={`h-8 min-w-12 rounded-lg px-3 text-xs sm:h-10 sm:text-sm ${
+                page >= totalPages
+                  ? "cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-300"
+                  : "border border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+              }`}
             >
-              2
-            </button>
-
-            <button
-              type="button"
-              className="h-8 w-8 rounded-lg border border-slate-200 bg-white text-xs text-slate-500 sm:h-10 sm:w-10 sm:text-sm"
-            >
-              3
-            </button>
-
-            <button
-              type="button"
-              className="h-8 w-8 rounded-lg border border-slate-200 bg-white text-xs text-slate-500 sm:h-10 sm:w-10 sm:text-sm"
-            >
-              4
+              Next
             </button>
           </div>
         </section>
