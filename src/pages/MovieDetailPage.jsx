@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { HomeLayout } from "../layouts/HomeLayout";
+import HomeLayout from "../layouts/HomeLayout";
 const movie = {
   title: "The Lost City of Dawn",
   background:
