@@ -94,7 +94,7 @@ function SigninPage() {
           {/* LOGIN BUTTON */}
           <button
             type="submit"
-            className="w-full h-14 bg-primary text-white rounded-md font-semibold hover:bg-transparent hover:text-primary border hover:border-primary transition-all"
+            className="w-full cursor-pointer h-14 bg-primary text-white rounded-md font-semibold hover:bg-transparent hover:text-primary border hover:border-primary transition-all"
           >
             Login
           </button>

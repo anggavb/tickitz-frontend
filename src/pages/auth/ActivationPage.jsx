@@ -7,7 +7,7 @@ import AuthCard from '../../components/auth/AuthCard';
 import StepProgres from '../../components/auth/signup/StepProgres';
 import Toast from '../../components/ui/Toast';
 
-import { activate, resetAuthState } from '../../redux/slice/authSlice';
+import { activate, requestNewOTP, resetAuthState } from '../../redux/slice/authSlice';
 
 import { FourSquare } from 'react-loading-indicators';
 
@@ -23,6 +23,14 @@ function ActivationPage() {
 
   const [otp, setOtp] = useState(new Array(6).fill(''));
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const [countdown, setCountdown] = useState(0);
+
+  const [toast, setToast] = useState({
+    show: false,
+    type: '',
+    message: '',
+  });
 
   const inputsRef = useRef([]);
 
@@ -59,6 +67,54 @@ function ActivationPage() {
     );
   };
 
+  const handleResendOTP = async () => {
+    if (!email || loading || countdown > 0) return;
+
+    try {
+      const result = await dispatch(requestNewOTP({ email })).unwrap();
+
+      setCountdown(30);
+
+      setToast({
+        show: true,
+        type: 'success',
+        message: result?.message || 'OTP sent successfully',
+      });
+
+      dispatch(resetAuthState());
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    if (countdown <= 0) return;
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [countdown]);
+
+  useEffect(() => {
+    if (!error) return;
+
+    const timer = setTimeout(() => {
+      setToast({
+        show: true,
+        type: 'error',
+        message: error,
+      });
+
+      setOtp(new Array(6).fill(''));
+
+      dispatch(resetAuthState());
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [error, dispatch]);
+
   useEffect(() => {
     if (!isRegistered) {
       navigate('/auth/signup', { replace: true });
@@ -86,11 +142,11 @@ function ActivationPage() {
     };
   }, [dispatch]);
 
-  const isOtpComplete = otp.every((digit) => digit !== '');
+  const isOtpComplete = otp.every((d) => d !== '');
 
   return (
     <AuthLayout>
-      {error && <Toast message={error} type="error" onClose={() => dispatch(resetAuthState())} />}
+      {toast.show && <Toast message={toast.message} type={toast.type} onClose={() => setToast({ show: false, type: '', message: '' })} />}
 
       {loading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
@@ -104,15 +160,13 @@ function ActivationPage() {
         <StepProgres step={2} />
 
         <div className="flex flex-col items-center text-center mt-8">
-          <img src="/assets/auth/signup/email-sent.svg" alt="OTP" className="w-32 h-32 mt-6 object-contain mb-6" />
+          <img src="/assets/auth/signup/email-sent.svg" className="w-32 h-32 mt-6 mb-6" />
 
-          <h2 className="text-2xl font-semibold text-gray-800">Enter Verification Code</h2>
+          <h2 className="text-2xl font-semibold">Enter Verification Code</h2>
 
-          <p className="text-gray-500 mt-3">We’ve sent a 6-digit verification code to your email. Please enter it below.</p>
+          <p className="text-gray-500 mt-3">We sent a 6-digit code to your email</p>
 
-          <p className="mt-4 text-sm text-gray-700">Sent to:</p>
-
-          <p className="font-semibold text-primary">{email || 'No email found'}</p>
+          <p className="mt-4 font-semibold text-primary">{email}</p>
 
           <div className="flex gap-3 mt-8">
             {otp.map((digit, index) => (
@@ -125,7 +179,7 @@ function ActivationPage() {
                 disabled={loading}
                 onChange={(e) => handleChange(e.target.value, index)}
                 onKeyDown={(e) => handleKeyDown(e, index)}
-                className="w-12 h-12 text-center text-lg border rounded-md focus:outline-none focus:ring-2 focus:ring-primary disabled:bg-gray-100"
+                className="w-12 h-12 text-center border rounded-md"
               />
             ))}
           </div>
@@ -133,13 +187,13 @@ function ActivationPage() {
           <button
             onClick={handleSubmit}
             disabled={loading || !isOtpComplete}
-            className="w-full h-14 mt-8 bg-primary text-white rounded-md font-semibold hover:bg-transparent hover:text-primary hover:border-primary border transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full cursor-pointer h-14 mt-8 bg-primary text-white rounded-md disabled:opacity-50"
           >
-            {loading ? 'Verifying...' : 'Verify OTP'}
+            Verify OTP
           </button>
 
-          <button disabled={loading} className="mt-4 text-sm text-primary hover:underline disabled:opacity-50">
-            Resend Code
+          <button onClick={handleResendOTP} disabled={loading || countdown > 0} className="mt-4 text-sm text-primary">
+            {countdown > 0 ? `Resend Code (${countdown}s)` : 'Resend Code'}
           </button>
         </div>
       </AuthCard>
