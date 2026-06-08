@@ -6,8 +6,9 @@ import { FiEye, FiEyeOff } from 'react-icons/fi';
 import { Link, useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { useDispatch } from 'react-redux';
-import { signup } from '../../redux/slice/authSlice';
+import { resetAuthState, signup } from '../../redux/slice/authSlice';
 import Toast from '../../components/ui/Toast';
+import { FourSquare } from 'react-loading-indicators';
 
 function SignupPage() {
   const dispatch = useDispatch();
@@ -20,6 +21,7 @@ function SignupPage() {
     message: '',
     type: 'success',
   });
+  const [loading, setLoading] = useState(false);
 
   const {
     register,
@@ -29,6 +31,8 @@ function SignupPage() {
 
   const onSubmit = async (data) => {
     try {
+      setLoading(true);
+
       const finalData = {
         ...data,
         is_agree: true,
@@ -43,9 +47,10 @@ function SignupPage() {
       });
 
       setTimeout(() => {
-        navigate('/auth/activation', {
+        navigate('/auth/signup/activation', {
           state: { email: data.email, isRegistered: true },
         });
+        dispatch(resetAuthState());
       }, 300);
     } catch (err) {
       setToast({
@@ -53,11 +58,18 @@ function SignupPage() {
         message: err,
         type: 'error',
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <AuthLayout>
+      {loading && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center">
+          <FourSquare color={['#bb2d00', '#ee3900', '#ff5722', '#ff7e55']} />
+        </div>
+      )}
       {toast.show && <Toast message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} />}
 
       <img src="/assets/logo.png" alt="tickitz logo" className="w-60 mb-2 mx-auto" />

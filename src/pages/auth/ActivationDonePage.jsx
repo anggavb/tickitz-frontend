@@ -37,7 +37,6 @@ function ActivationDonePage() {
 
   return (
     <AuthLayout>
-      {/* LOGO */}
       <img src="/assets/logo.png" alt="tickitz logo" className="w-60 mb-2 mx-auto" />
 
       <AuthCard>
@@ -53,7 +52,7 @@ function ActivationDonePage() {
           </p>
 
           <Link
-            to="/auth/login"
+            to="/auth/signin"
             className="
               w-full
               h-14

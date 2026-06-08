@@ -56,10 +56,16 @@ export const activate = createAsyncThunk('auth/activate', async (payload, thunkA
 const authSlice = createSlice({
   name: 'auth',
   initialState,
-  reducers: {},
+  reducers: {
+    resetAuthState: (state) => {
+      state.loading = false;
+      state.error = null;
+      state.success = false;
+      state.message = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
-      // SIGNUP
       .addCase(signup.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -77,7 +83,6 @@ const authSlice = createSlice({
         state.error = action.payload;
       })
 
-      // ACTIVATE OTP
       .addCase(activate.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -97,3 +102,4 @@ const authSlice = createSlice({
   },
 });
 export default authSlice.reducer;
+export const { resetAuthState } = authSlice.actions;

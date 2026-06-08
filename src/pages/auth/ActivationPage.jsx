@@ -8,6 +8,8 @@ import StepProgres from '../../components/auth/signup/StepProgres';
 
 import { activate } from '../../redux/slice/authSlice';
 
+import { FourSquare } from 'react-loading-indicators';
+
 function ActivationPage() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -17,7 +19,7 @@ function ActivationPage() {
   const isRegistered = location.state?.isRegistered;
 
   const { loading, error, success, message } = useSelector((state) => state.auth);
-
+  console.log(error);
   const [otp, setOtp] = useState(new Array(6).fill(''));
   const inputsRef = useRef([]);
 
@@ -57,7 +59,7 @@ function ActivationPage() {
 
     if (success) {
       const timer = setTimeout(() => {
-        navigate('/auth/verified', {
+        navigate('/auth/signup/verified', {
           state: { isActive: true, isRegistered: true },
         });
       }, 800);
@@ -68,7 +70,12 @@ function ActivationPage() {
 
   return (
     <AuthLayout>
-      {/* LOGO */}
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+          <FourSquare color={['#bb2d00', '#ee3900', '#ff5722', '#ff7e55']} />
+        </div>
+      )}
+
       <img src="/assets/logo.png" alt="tickitz logo" className="w-60 mb-2 mx-auto" />
 
       <AuthCard>
@@ -82,9 +89,9 @@ function ActivationPage() {
           <p className="text-gray-500 mt-3">We’ve sent a 6-digit verification code to your email. Please enter it below.</p>
 
           <p className="mt-4 text-sm text-gray-700">Sent to:</p>
+
           <p className="font-semibold text-primary">{email || 'No email found'}</p>
 
-          {/* OTP INPUT */}
           <div className="flex gap-3 mt-8">
             {otp.map((data, index) => (
               <input
@@ -93,28 +100,29 @@ function ActivationPage() {
                 type="text"
                 maxLength={1}
                 value={data}
+                disabled={loading}
                 onChange={(e) => handleChange(e.target.value, index)}
                 onKeyDown={(e) => handleKeyDown(e, index)}
-                className="w-12 h-12 text-center text-lg border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-12 h-12 text-center text-lg border rounded-md focus:outline-none focus:ring-2 focus:ring-primary disabled:bg-gray-100"
               />
             ))}
           </div>
 
-          {/* BUTTON */}
           <button
             onClick={handleSubmit}
             disabled={loading}
             className="w-full h-14 mt-8 bg-primary text-white rounded-md font-semibold hover:bg-transparent hover:text-primary hover:border-primary border transition-all disabled:opacity-50"
           >
-            {loading ? 'Verifying...' : 'Verify OTP'}
+            Verify OTP
           </button>
 
-          {/* ERROR / SUCCESS */}
           {error && <p className="text-red-500 text-sm mt-3">{error}</p>}
 
           {success && <p className="text-green-500 text-sm mt-3">{message || 'OTP verified successfully'}</p>}
 
-          <button className="mt-4 text-sm text-primary hover:underline">Resend Code</button>
+          <button disabled={loading} className="mt-4 text-sm text-primary hover:underline disabled:opacity-50">
+            Resend Code
+          </button>
         </div>
       </AuthCard>
     </AuthLayout>
