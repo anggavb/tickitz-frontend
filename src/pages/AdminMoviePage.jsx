@@ -96,7 +96,7 @@ function AdminMoviePage() {
               <button
                 type="button"
                 onClick={() => navigate("/admin/movies/add")}
-                className="rounded-xl bg-primary px-5 py-3 text-sm font-medium text-white"
+                className="cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-medium text-white transition hover:opacity-90"
               >
                 Add Movies
               </button>
