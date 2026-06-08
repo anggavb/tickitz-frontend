@@ -2,7 +2,7 @@ import { useLocation, useNavigate } from 'react-router';
 import { useState, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import AuthWrapper from '../../components/auth/AuthWrapper';
+import AuthLayout from '../../layouts/AuthLayout';
 import AuthCard from '../../components/auth/AuthCard';
 import StepProgres from '../../components/auth/signup/StepProgres';
 
@@ -14,6 +14,7 @@ function ActivationPage() {
   const dispatch = useDispatch();
 
   const email = location.state?.email;
+  const isRegistered = location.state?.isRegistered;
 
   const { loading, error, success, message } = useSelector((state) => state.auth);
 
@@ -49,19 +50,25 @@ function ActivationPage() {
     );
   };
 
-  // ✅ redirect kalau sukses
   useEffect(() => {
+    if (!isRegistered) {
+      navigate('/auth/signup');
+    }
+
     if (success) {
       const timer = setTimeout(() => {
-        navigate('/auth/verified');
+        navigate('/auth/verified', {
+          state: { isActive: true, isRegistered: true },
+        });
       }, 800);
 
       return () => clearTimeout(timer);
     }
-  }, [success, navigate]);
+  }, [success, navigate, isRegistered]);
 
   return (
-    <AuthWrapper>
+    <AuthLayout>
+      {/* LOGO */}
       <img src="/assets/logo.png" alt="tickitz logo" className="w-60 mb-2 mx-auto" />
 
       <AuthCard>
@@ -110,7 +117,7 @@ function ActivationPage() {
           <button className="mt-4 text-sm text-primary hover:underline">Resend Code</button>
         </div>
       </AuthCard>
-    </AuthWrapper>
+    </AuthLayout>
   );
 }
 

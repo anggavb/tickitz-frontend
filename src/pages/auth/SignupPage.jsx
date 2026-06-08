@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import AuthWrapper from '../../components/auth/AuthWrapper';
+import AuthLayout from '../../layouts/AuthLayout';
 import AuthCard from '../../components/auth/AuthCard';
 import StepProgres from '../../components/auth/signup/StepProgres';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
@@ -43,9 +43,8 @@ function SignupPage() {
       });
 
       setTimeout(() => {
-        console.log('MASUK KE NAVIGATE');
         navigate('/auth/activation', {
-          state: { email: data.email },
+          state: { email: data.email, isRegistered: true },
         });
       }, 300);
     } catch (err) {
@@ -58,7 +57,7 @@ function SignupPage() {
   };
 
   return (
-    <AuthWrapper>
+    <AuthLayout>
       {toast.show && <Toast message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} />}
 
       <img src="/assets/logo.png" alt="tickitz logo" className="w-60 mb-2 mx-auto" />
@@ -120,6 +119,7 @@ function SignupPage() {
             {errors.password && <p className="absolute left-0 -bottom-5 text-red-500 text-xs">{errors.password.message}</p>}
           </div>
 
+          {/* AGREEMENT */}
           <div className="relative">
             <label className="flex items-center gap-3 text-sm text-gray-600">
               <input
@@ -135,6 +135,7 @@ function SignupPage() {
             {errors.agree && <p className="absolute left-0 -bottom-5 text-red-500 text-xs">{errors.agree.message}</p>}
           </div>
 
+          {/* SUBMIT */}
           <button
             type="submit"
             className="w-full h-14 bg-primary text-white rounded-md font-semibold hover:bg-transparent hover:text-primary border hover:border-primary transition-all"
@@ -150,7 +151,7 @@ function SignupPage() {
           </Link>
         </p>
       </AuthCard>
-    </AuthWrapper>
+    </AuthLayout>
   );
 }
 

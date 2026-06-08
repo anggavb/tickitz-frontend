@@ -1,16 +1,28 @@
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate, useLocation } from 'react-router';
 import { useEffect, useState } from 'react';
 
-import AuthWrapper from '../../components/auth/AuthWrapper';
+import AuthLayout from '../../layouts/AuthLayout';
 import AuthCard from '../../components/auth/AuthCard';
 import StepProgres from '../../components/auth/signup/StepProgres';
 
 function ActivationDonePage() {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const [countdown, setCountdown] = useState(8);
 
-  // countdown + redirect
+  const isActive = location.state?.isActive;
+  const isRegistered = location.state?.isRegistered;
+
   useEffect(() => {
+    if (!isActive) {
+      navigate('/auth/activation');
+    }
+
+    if (!isRegistered) {
+      navigate('/auth/signup');
+    }
+
     if (countdown <= 0) {
       navigate('/auth/login');
       return;
@@ -21,10 +33,11 @@ function ActivationDonePage() {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [countdown, navigate]);
+  }, [countdown, navigate, isActive, isRegistered]);
 
   return (
-    <AuthWrapper>
+    <AuthLayout>
+      {/* LOGO */}
       <img src="/assets/logo.png" alt="tickitz logo" className="w-60 mb-2 mx-auto" />
 
       <AuthCard>
@@ -68,7 +81,7 @@ function ActivationDonePage() {
           </p>
         </div>
       </AuthCard>
-    </AuthWrapper>
+    </AuthLayout>
   );
 }
 
