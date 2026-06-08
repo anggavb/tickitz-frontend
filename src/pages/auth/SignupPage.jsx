@@ -1,14 +1,28 @@
 import React, { useState } from 'react';
-import AuthWrapper from '../../components/auth/AuthWrapper';
+import AuthLayout from '../../layouts/AuthLayout';
 import AuthCard from '../../components/auth/AuthCard';
 import StepProgres from '../../components/auth/signup/StepProgres';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
 import { Link, useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
+import { useDispatch } from 'react-redux';
+import { resetAuthState, signup } from '../../redux/slice/authSlice';
+import Toast from '../../components/ui/Toast';
+import { FourSquare } from 'react-loading-indicators';
 
 function SignupPage() {
-  const [showPassword, setShowPassword] = useState(false);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const [showPassword, setShowPassword] = useState(false);
+
+  const [toast, setToast] = useState({
+    show: false,
+    message: '',
+    type: 'error',
+  });
+
+  const [loading, setLoading] = useState(false);
 
   const {
     register,
@@ -17,12 +31,45 @@ function SignupPage() {
   } = useForm();
 
   const onSubmit = async (data) => {
-    console.log(data);
-    navigate('/auth/activation');
+    try {
+      setLoading(true);
+
+      const finalData = {
+        ...data,
+        is_agree: true,
+      };
+
+      await dispatch(signup(finalData)).unwrap();
+
+      dispatch(resetAuthState());
+
+      navigate('/auth/signup/activation', {
+        state: {
+          email: data.email,
+          isRegistered: true,
+        },
+      });
+    } catch (err) {
+      setToast({
+        show: true,
+        message: typeof err === 'string' ? err : err?.message || 'Registration failed',
+        type: 'error',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <AuthWrapper>
+    <AuthLayout>
+      {loading && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center">
+          <FourSquare color={['#bb2d00', '#ee3900', '#ff5722', '#ff7e55']} />
+        </div>
+      )}
+
+      {toast.show && <Toast message={toast.message} type={toast.type} onClose={() => setToast((prev) => ({ ...prev, show: false }))} />}
+
       <img src="/assets/logo.png" alt="tickitz logo" className="w-60 mb-2 mx-auto" />
 
       <AuthCard>
@@ -43,12 +90,9 @@ function SignupPage() {
                   message: 'Invalid email format',
                 },
               })}
-              className={`
-                w-full h-14 border rounded-md px-5 text-sm
-                placeholder:text-gray-400
-                focus:outline-none focus:ring-2 focus:ring-primary
-                ${errors.email ? 'border-red-500' : 'border-gray-300'}
-              `}
+              className={`w-full h-14 border rounded-md px-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary ${
+                errors.email ? 'border-red-500' : 'border-gray-300'
+              }`}
             />
 
             {errors.email && <p className="absolute left-0 -bottom-5 text-red-500 text-xs">{errors.email.message}</p>}
@@ -69,18 +113,15 @@ function SignupPage() {
                     message: 'Password must be at least 8 characters',
                   },
                 })}
-                className={`
-                  w-full h-14 border rounded-md px-5 pr-12 text-sm
-                  placeholder:text-gray-400
-                  focus:outline-none focus:ring-2 focus:ring-primary
-                  ${errors.password ? 'border-red-500' : 'border-gray-300'}
-                `}
+                className={`w-full h-14 border rounded-md px-5 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-primary ${
+                  errors.password ? 'border-red-500' : 'border-gray-300'
+                }`}
               />
 
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
               >
                 {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
               </button>
@@ -89,7 +130,7 @@ function SignupPage() {
             {errors.password && <p className="absolute left-0 -bottom-5 text-red-500 text-xs">{errors.password.message}</p>}
           </div>
 
-          {/* CHECKBOX */}
+          {/* AGREEMENT */}
           <div className="relative">
             <label className="flex items-center gap-3 text-sm text-gray-600">
               <input
@@ -105,49 +146,48 @@ function SignupPage() {
             {errors.agree && <p className="absolute left-0 -bottom-5 text-red-500 text-xs">{errors.agree.message}</p>}
           </div>
 
-          {/* BUTTON */}
+          {/* SUBMIT */}
           <button
             type="submit"
-            className="
-              w-full h-14 bg-primary text-white rounded-md font-semibold
-              border border-transparent
-              hover:bg-transparent hover:border-primary hover:text-primary
-              transition-all
-            "
+            disabled={loading}
+            className="w-full h-14 cursor-pointer bg-primary text-white rounded-md font-semibold hover:bg-transparent hover:text-primary border hover:border-primary transition-all disabled:opacity-70 disabled:cursor-not-allowed"
           >
             Join For Free Now
           </button>
         </form>
 
-        {/* LOGIN */}
         <p className="text-center text-sm text-gray-500 mt-6">
           Already have an account?{' '}
-          <Link to="/auth/login" className="text-primary font-medium underline">
-            Log in
+          <Link to="/auth/signin" className="text-primary font-medium underline">
+            Sign in
           </Link>
         </p>
 
-        {/* OR */}
-        <div className="flex items-center my-3">
-          <div className="flex-1 h-px bg-gray-300" />
-          <span className="px-4 text-sm text-gray-400">or</span>
-          <div className="flex-1 h-px bg-gray-300" />
+        <div className="flex items-center gap-4 my-8">
+          <div className="flex-1 h-px bg-gray-300"></div>
+          <span className="text-gray-400 text-sm">Or</span>
+          <div className="flex-1 h-px bg-gray-300"></div>
         </div>
 
-        {/* SOCIAL */}
-        <div className="grid grid-cols-2 gap-2">
-          <button className="h-14 bg-white rounded-lg shadow-md flex items-center justify-center gap-3">
-            <img src="/assets/auth/oauth/google.png" className="w-6 h-6" />
-            <span className="text-gray-400">Google</span>
+        <div className="grid grid-cols-2 gap-4">
+          <button
+            type="button"
+            className="h-14 border border-gray-200 rounded-md bg-white shadow-sm cursor-pointer flex items-center justify-center gap-3 hover:shadow-md transition"
+          >
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
+            <span className="text-gray-500">Google</span>
           </button>
 
-          <button className="h-14 bg-white rounded-lg shadow-md flex items-center justify-center gap-3">
-            <img src="/assets/auth/oauth/facebook.png" className="w-6 h-6" />
-            <span className="text-gray-400">Facebook</span>
+          <button
+            type="button"
+            className="h-14 border border-gray-200 rounded-md bg-white cursor-pointer shadow-sm flex items-center justify-center gap-3 hover:shadow-md transition"
+          >
+            <img src="https://www.svgrepo.com/show/448224/facebook.svg" alt="Facebook" className="w-5 h-5" />
+            <span className="text-gray-500">Facebook</span>
           </button>
         </div>
       </AuthCard>
-    </AuthWrapper>
+    </AuthLayout>
   );
 }
 

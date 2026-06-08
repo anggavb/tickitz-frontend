@@ -1,11 +1,42 @@
-import { Link } from 'react-router';
-import AuthWrapper from '../../components/auth/AuthWrapper';
+import { Link, useNavigate, useLocation } from 'react-router';
+import { useEffect, useState } from 'react';
+
+import AuthLayout from '../../layouts/AuthLayout';
 import AuthCard from '../../components/auth/AuthCard';
 import StepProgres from '../../components/auth/signup/StepProgres';
 
 function ActivationDonePage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [countdown, setCountdown] = useState(8);
+
+  const isActive = location.state?.isActive;
+  const isRegistered = location.state?.isRegistered;
+
+  useEffect(() => {
+    if (!isActive) {
+      navigate('/auth/activation');
+    }
+
+    if (!isRegistered) {
+      navigate('/auth/signup');
+    }
+
+    if (countdown <= 0) {
+      navigate('/auth/signin');
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setCountdown((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [countdown, navigate, isActive, isRegistered]);
+
   return (
-    <AuthWrapper>
+    <AuthLayout>
       <img src="/assets/logo.png" alt="tickitz logo" className="w-60 mb-2 mx-auto" />
 
       <AuthCard>
@@ -21,7 +52,7 @@ function ActivationDonePage() {
           </p>
 
           <Link
-            to="/auth/login"
+            to="/auth/signin"
             className="
               w-full
               h-14
@@ -43,9 +74,13 @@ function ActivationDonePage() {
           >
             Login Now
           </Link>
+
+          <p className="text-sm text-gray-400 mt-4">
+            Redirecting to login in <span className="font-semibold">{countdown}</span> seconds...
+          </p>
         </div>
       </AuthCard>
-    </AuthWrapper>
+    </AuthLayout>
   );
 }
 
