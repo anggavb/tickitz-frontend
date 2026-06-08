@@ -48,7 +48,7 @@ function AdminMoviePage() {
 
           {/* Table */}
           <div className="overflow-x-auto">
-            <table className="min-w-[900px] w-full text-center text-sm">
+            <table className="min-w-225 w-full text-center text-sm">
               <thead>
                 <tr className="border-b border-slate-200 text-xs font-medium text-slate-500">
                   <th className="pb-5">No</th>
