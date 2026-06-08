@@ -8,6 +8,7 @@ import SignupPage from './pages/auth/SignupPage';
 import ActivationPage from './pages/auth/ActivationPage';
 import ActivationDonePage from './pages/auth/ActivationDonePage';
 import SigninPage from './pages/auth/SigninPage';
+import AddMoviePage from "./pages/AddMoviePage";
 
 function AppRouter() {
   return (
@@ -25,6 +26,7 @@ function AppRouter() {
       <Route path="/movies" element={<HomeMoviePage />} />
       <Route path="/movies/details" element={<MovieDetailPage />} />
       <Route path="/admin/movies" element={<AdminMoviePage />} />
+      <Route path="/admin/movies/add" element={<AddMoviePage />} />
     </Routes>
   );
 }
