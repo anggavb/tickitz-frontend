@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 import eyeIcon from "../assets/images/eye.png";
 import editIcon from "../assets/images/edit.png";
