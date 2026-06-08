@@ -24,7 +24,7 @@ function ActivationDonePage() {
     }
 
     if (countdown <= 0) {
-      navigate('/auth/login');
+      navigate('/auth/signin');
       return;
     }
 

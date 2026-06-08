@@ -5,8 +5,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import AuthLayout from '../../layouts/AuthLayout';
 import AuthCard from '../../components/auth/AuthCard';
 import StepProgres from '../../components/auth/signup/StepProgres';
+import Toast from '../../components/ui/Toast';
 
-import { activate } from '../../redux/slice/authSlice';
+import { activate, resetAuthState } from '../../redux/slice/authSlice';
 
 import { FourSquare } from 'react-loading-indicators';
 
@@ -18,9 +19,11 @@ function ActivationPage() {
   const email = location.state?.email;
   const isRegistered = location.state?.isRegistered;
 
-  const { loading, error, success, message } = useSelector((state) => state.auth);
-  console.log(error);
+  const { loading, error, success } = useSelector((state) => state.auth);
+
   const [otp, setOtp] = useState(new Array(6).fill(''));
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
   const inputsRef = useRef([]);
 
   const handleChange = (value, index) => {
@@ -44,6 +47,10 @@ function ActivationPage() {
   const handleSubmit = () => {
     const code = otp.join('');
 
+    if (code.length !== 6 || loading) return;
+
+    setIsSubmitted(true);
+
     dispatch(
       activate({
         email,
@@ -54,22 +61,37 @@ function ActivationPage() {
 
   useEffect(() => {
     if (!isRegistered) {
-      navigate('/auth/signup');
+      navigate('/auth/signup', { replace: true });
+      return;
     }
 
-    if (success) {
+    if (isSubmitted && success) {
       const timer = setTimeout(() => {
         navigate('/auth/signup/verified', {
-          state: { isActive: true, isRegistered: true },
+          replace: true,
+          state: {
+            isActive: true,
+            isRegistered: true,
+          },
         });
       }, 800);
 
       return () => clearTimeout(timer);
     }
-  }, [success, navigate, isRegistered]);
+  }, [success, isSubmitted, navigate, isRegistered]);
+
+  useEffect(() => {
+    return () => {
+      dispatch(resetAuthState());
+    };
+  }, [dispatch]);
+
+  const isOtpComplete = otp.every((digit) => digit !== '');
 
   return (
     <AuthLayout>
+      {error && <Toast message={error} type="error" onClose={() => dispatch(resetAuthState())} />}
+
       {loading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
           <FourSquare color={['#bb2d00', '#ee3900', '#ff5722', '#ff7e55']} />
@@ -93,13 +115,13 @@ function ActivationPage() {
           <p className="font-semibold text-primary">{email || 'No email found'}</p>
 
           <div className="flex gap-3 mt-8">
-            {otp.map((data, index) => (
+            {otp.map((digit, index) => (
               <input
                 key={index}
                 ref={(el) => (inputsRef.current[index] = el)}
                 type="text"
                 maxLength={1}
-                value={data}
+                value={digit}
                 disabled={loading}
                 onChange={(e) => handleChange(e.target.value, index)}
                 onKeyDown={(e) => handleKeyDown(e, index)}
@@ -110,15 +132,11 @@ function ActivationPage() {
 
           <button
             onClick={handleSubmit}
-            disabled={loading}
-            className="w-full h-14 mt-8 bg-primary text-white rounded-md font-semibold hover:bg-transparent hover:text-primary hover:border-primary border transition-all disabled:opacity-50"
+            disabled={loading || !isOtpComplete}
+            className="w-full h-14 mt-8 bg-primary text-white rounded-md font-semibold hover:bg-transparent hover:text-primary hover:border-primary border transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Verify OTP
+            {loading ? 'Verifying...' : 'Verify OTP'}
           </button>
-
-          {error && <p className="text-red-500 text-sm mt-3">{error}</p>}
-
-          {success && <p className="text-green-500 text-sm mt-3">{message || 'OTP verified successfully'}</p>}
 
           <button disabled={loading} className="mt-4 text-sm text-primary hover:underline disabled:opacity-50">
             Resend Code

@@ -7,7 +7,7 @@ import AdminMoviePage from './pages/AdminMoviePage';
 import SignupPage from './pages/auth/SignupPage';
 import ActivationPage from './pages/auth/ActivationPage';
 import ActivationDonePage from './pages/auth/ActivationDonePage';
-import SigninPage from './pages/auth/SignInPage';
+import SigninPage from './pages/auth/SigninPage';
 
 function AppRouter() {
   return (

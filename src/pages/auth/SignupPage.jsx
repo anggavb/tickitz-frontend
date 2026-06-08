@@ -19,8 +19,9 @@ function SignupPage() {
   const [toast, setToast] = useState({
     show: false,
     message: '',
-    type: 'success',
+    type: 'error',
   });
+
   const [loading, setLoading] = useState(false);
 
   const {
@@ -38,24 +39,20 @@ function SignupPage() {
         is_agree: true,
       };
 
-      const result = await dispatch(signup(finalData)).unwrap();
+      await dispatch(signup(finalData)).unwrap();
 
-      setToast({
-        show: true,
-        message: result?.message || 'Register success',
-        type: 'success',
+      dispatch(resetAuthState());
+
+      navigate('/auth/signup/activation', {
+        state: {
+          email: data.email,
+          isRegistered: true,
+        },
       });
-
-      setTimeout(() => {
-        navigate('/auth/signup/activation', {
-          state: { email: data.email, isRegistered: true },
-        });
-        dispatch(resetAuthState());
-      }, 300);
     } catch (err) {
       setToast({
         show: true,
-        message: err,
+        message: typeof err === 'string' ? err : err?.message || 'Registration failed',
         type: 'error',
       });
     } finally {
@@ -70,7 +67,8 @@ function SignupPage() {
           <FourSquare color={['#bb2d00', '#ee3900', '#ff5722', '#ff7e55']} />
         </div>
       )}
-      {toast.show && <Toast message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} />}
+
+      {toast.show && <Toast message={toast.message} type={toast.type} onClose={() => setToast((prev) => ({ ...prev, show: false }))} />}
 
       <img src="/assets/logo.png" alt="tickitz logo" className="w-60 mb-2 mx-auto" />
 
@@ -100,6 +98,7 @@ function SignupPage() {
             {errors.email && <p className="absolute left-0 -bottom-5 text-red-500 text-xs">{errors.email.message}</p>}
           </div>
 
+          {/* PASSWORD */}
           <div className="relative">
             <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
 
@@ -150,7 +149,8 @@ function SignupPage() {
           {/* SUBMIT */}
           <button
             type="submit"
-            className="w-full h-14 bg-primary text-white rounded-md font-semibold hover:bg-transparent hover:text-primary border hover:border-primary transition-all"
+            disabled={loading}
+            className="w-full h-14 cursor-pointer bg-primary text-white rounded-md font-semibold hover:bg-transparent hover:text-primary border hover:border-primary transition-all disabled:opacity-70 disabled:cursor-not-allowed"
           >
             Join For Free Now
           </button>
@@ -172,7 +172,7 @@ function SignupPage() {
         <div className="grid grid-cols-2 gap-4">
           <button
             type="button"
-            className="h-14 border border-gray-200 rounded-md bg-white shadow-sm flex items-center justify-center gap-3 hover:shadow-md transition"
+            className="h-14 border border-gray-200 rounded-md bg-white shadow-sm cursor-pointer flex items-center justify-center gap-3 hover:shadow-md transition"
           >
             <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
             <span className="text-gray-500">Google</span>
@@ -180,7 +180,7 @@ function SignupPage() {
 
           <button
             type="button"
-            className="h-14 border border-gray-200 rounded-md bg-white shadow-sm flex items-center justify-center gap-3 hover:shadow-md transition"
+            className="h-14 border border-gray-200 rounded-md bg-white cursor-pointer shadow-sm flex items-center justify-center gap-3 hover:shadow-md transition"
           >
             <img src="https://www.svgrepo.com/show/448224/facebook.svg" alt="Facebook" className="w-5 h-5" />
             <span className="text-gray-500">Facebook</span>
