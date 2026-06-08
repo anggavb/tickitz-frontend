@@ -6,15 +6,24 @@ import { FiEye, FiEyeOff } from 'react-icons/fi';
 import AuthLayout from '../../layouts/AuthLayout';
 import AuthCard from '../../components/auth/AuthCard';
 import Toast from '../../components/ui/Toast';
+import { useDispatch, useSelector } from 'react-redux';
+import { signin } from '../../redux/slice/authSlice';
+import { FourSquare } from 'react-loading-indicators';
 
 function SigninPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const dispatch = useDispatch();
+
+  const { user } = useSelector((state) => state.auth);
+  console.log(user);
 
   const [toast, setToast] = useState({
     show: false,
     message: '',
-    type: 'success',
+    type: 'error',
   });
+
+  const [loading, setLoading] = useState(false);
 
   const {
     register,
@@ -22,12 +31,29 @@ function SigninPage() {
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data) => {
-    console.log(data);
+  const onSubmit = async (data) => {
+    try {
+      console.log(data);
+      await dispatch(signin(data)).unwrap();
+    } catch (err) {
+      console.log(err);
+      setToast({
+        show: true,
+        message: typeof err === 'string' ? err : err?.message || 'Registration failed',
+        type: 'error',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <AuthLayout>
+      {loading && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center">
+          <FourSquare color={['#bb2d00', '#ee3900', '#ff5722', '#ff7e55']} />
+        </div>
+      )}
       {toast.show && <Toast message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} />}
 
       <AuthCard className="max-w-md mx-auto">
@@ -66,6 +92,10 @@ function SigninPage() {
                 placeholder="Enter your password"
                 {...register('password', {
                   required: 'Password is required',
+                  minLength: {
+                    value: 8,
+                    message: 'Password must be at least 8 characters',
+                  },
                 })}
                 className={`w-full h-14 border rounded-md px-5 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-primary ${
                   errors.password ? 'border-red-500' : 'border-gray-300'
