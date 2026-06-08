@@ -158,10 +158,34 @@ function SignupPage() {
 
         <p className="text-center text-sm text-gray-500 mt-6">
           Already have an account?{' '}
-          <Link to="/auth/login" className="text-primary font-medium underline">
-            Log in
+          <Link to="/auth/signin" className="text-primary font-medium underline">
+            Sign in
           </Link>
         </p>
+
+        <div className="flex items-center gap-4 my-8">
+          <div className="flex-1 h-px bg-gray-300"></div>
+          <span className="text-gray-400 text-sm">Or</span>
+          <div className="flex-1 h-px bg-gray-300"></div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <button
+            type="button"
+            className="h-14 border border-gray-200 rounded-md bg-white shadow-sm flex items-center justify-center gap-3 hover:shadow-md transition"
+          >
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
+            <span className="text-gray-500">Google</span>
+          </button>
+
+          <button
+            type="button"
+            className="h-14 border border-gray-200 rounded-md bg-white shadow-sm flex items-center justify-center gap-3 hover:shadow-md transition"
+          >
+            <img src="https://www.svgrepo.com/show/448224/facebook.svg" alt="Facebook" className="w-5 h-5" />
+            <span className="text-gray-500">Facebook</span>
+          </button>
+        </div>
       </AuthCard>
     </AuthLayout>
   );
