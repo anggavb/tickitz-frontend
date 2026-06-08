@@ -1,6 +1,5 @@
 import logo from "../assets/images/logo.png";
 import { useState } from "react";
-import { Link } from "react-router";
 import NavLinks from "./NavLinks";
 import NavbarAuthButtons from "./NavbarAuthButtons";
 
@@ -23,21 +22,6 @@ function Navbar() {
           <NavLinks links={homeLinks} />
         </div>
 
-        {/* Buttons Desktop */}
-        <div className="hidden gap-3 md:flex">
-          <Link
-            to="/auth/login"
-            className="rounded border border-primary px-5 py-2 text-sm text-primary"
-          >
-            Sign In
-          </Link>
-          <Link
-            to="/auth/signup"
-            className="rounded bg-primary px-5 py-2 text-sm text-white"
-          >
-            Sign Up
-          </Link>{" "}
-        </div>
         <NavbarAuthButtons />
 
         {/* Hamburger Menu Mobile */}
@@ -66,4 +50,3 @@ function Navbar() {
 }
 
 export default Navbar;
-

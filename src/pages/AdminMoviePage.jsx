@@ -8,7 +8,7 @@ import arrowDownIcon from "../assets/images/arrow-down.png";
 
 import AdminNavbar from "../components/AdminNavbar";
 
-const API_BASE_URL = "http://localhost:8081";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 const PAGE_LIMIT = 5;
 
 function AdminMoviePage() {
@@ -228,3 +228,4 @@ function AdminMoviePage() {
 }
 
 export default AdminMoviePage;
+

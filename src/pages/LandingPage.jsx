@@ -2,9 +2,8 @@ import HeroSection from "../components/Home/HeroSection";
 import WhyChooseUs from "../components/Home/WhyChooseUs";
 import MovieSection from "../components/Home/MovieSection";
 import UpcomingMovieSection from "../components/Home/UpcomingMovieSection";
-import Navbar from "../components/Navbar";
 import Newsletter from "../components/Newsletter";
-import Footer from "../components/Footer";
+import HomeLayout from "../layouts/HomeLayout";
 
 function LandingPage() {
   const featured = [
@@ -90,9 +89,7 @@ function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-white text-slate-900">
-      <Navbar />
-
+    <HomeLayout>
       <section className="min-h-screen overflow-hidden bg-white text-neutral-900">
         <HeroSection images={featured} />
 
@@ -112,8 +109,7 @@ function LandingPage() {
       </section>
 
       <Newsletter />
-      <Footer />
-    </div>
+    </HomeLayout>
   );
 }
 
