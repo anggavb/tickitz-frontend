@@ -12,7 +12,7 @@ function ProfileLayout() {
   return (
     <ProfileEditProvider>
       <ProfileNavbar />
-      <section className="bg-mainbg px-4 md:px-10 py-6 md:py-10 max-md:h-screen">
+      <section className="bg-mainbg px-4 md:px-10 py-6 md:py-10 h-screen max-md:h-screen">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           {/* Aside hilang kalau di history */}
           {!isHistory && (
