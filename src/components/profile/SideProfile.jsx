@@ -8,7 +8,7 @@ function SideProfile() {
   const user = null;
 
   const name = user?.name || 'Jonas El Rodriguez';
-  const role = user?.role || 'Moviegoers';
+  const loyalty_tier = user?.loyalty_tier || 'Moviegoers';
   const points = user?.points ?? 320;
   const targetPoints = 1000;
   const progress = Math.min((points / targetPoints) * 100, 100);
@@ -27,7 +27,7 @@ function SideProfile() {
       <div className="flex flex-col items-center mt-4">
         <img src={user?.avatar || profileImage} alt="Profile" className="h-36 w-36 md:h-44 md:w-44 rounded-full object-cover shadow-md" />
         <h2 className="mt-4 text-lg font-semibold text-slate-800">{name}</h2>
-        <p className="text-sm text-slate-500">{role}</p>
+        <p className="text-sm text-slate-500">{loyalty_tier}</p>
       </div>
 
       {/* Loyalty Section */}
@@ -36,7 +36,7 @@ function SideProfile() {
         <div className="bg-gradient-to-r from-blue-600 to-indigo-500 text-white rounded-xl p-4 relative overflow-hidden">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-sm opacity-90">{role}</p>
+              <p className="text-sm opacity-90">{loyalty_tier}</p>
               <p className="text-2xl font-bold">
                 {points} <span className="text-sm font-normal">points</span>
               </p>
