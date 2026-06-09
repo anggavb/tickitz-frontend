@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import ProfileNavbar from '../../components/ProfileNavbar';
 
 function AddMoviePage() {
   const [image, setImage] = useState(null);
@@ -14,8 +13,6 @@ function AddMoviePage() {
 
   return (
     <>
-      <ProfileNavbar role="admin" />
-
       <main className="min-h-screen bg-slate-100 p-4 md:p-8">
         <section className="mx-auto max-w-3xl bg-white p-6 md:p-8">
           <h1 className="mb-8 text-2xl font-semibold text-slate-800">Add New Movie</h1>

@@ -13,6 +13,7 @@ import ProfileLayout from './layouts/ProfileLayout';
 import SettingPage from './pages/profile/SettingPage';
 import AdminLayout from './layouts/AdminLayout';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import OrderHistoryPage from './pages/profile/OrderHistoryPage';
 
 function AppRouter() {
   return (
@@ -37,6 +38,7 @@ function AppRouter() {
       </Route>
       <Route path="/profile" element={<ProfileLayout />}>
         <Route path="setting" element={<SettingPage />} />
+        <Route path="history" element={<OrderHistoryPage />} />
       </Route>
     </Routes>
   );
