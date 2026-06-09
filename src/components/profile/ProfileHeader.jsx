@@ -9,7 +9,7 @@ function ProfileHeader() {
           to="/profile/setting"
           className={({ isActive }) =>
             `flex-1 md:flex-none text-center whitespace-nowrap pb-2 border-b-2 text-sm md:text-base transition ${
-              isActive ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500'
+              isActive ? 'border-primary text-primary' : 'border-transparent text-slate-500'
             }`
           }
         >
@@ -20,7 +20,7 @@ function ProfileHeader() {
           to="/profile/history"
           className={({ isActive }) =>
             `flex-1 md:flex-none text-center whitespace-nowrap pb-2 border-b-2 text-sm md:text-base transition ${
-              isActive ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500'
+              isActive ? 'border-primary text-primary' : 'border-transparent text-slate-500'
             }`
           }
         >
