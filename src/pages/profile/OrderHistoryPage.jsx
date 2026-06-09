@@ -130,7 +130,7 @@ function OrderHistoryPage() {
 
                     <div className="flex justify-between">
                       <p className="text-gray-400">Total Payment :</p>
-                      <p className="text-primary font-semibold">${order.total}</p>
+                      <p className="text-primary font-semibold">Rp. {order.total}</p>
                     </div>
 
                     <p className="text-gray-400 text-[10px] sm:text-xs">
@@ -175,7 +175,7 @@ function OrderHistoryPage() {
 
                             <div>
                               <p className="text-gray-400">Total</p>
-                              <p className="font-semibold">${order.total}</p>
+                              <p className="font-semibold">Rp. {order.total}</p>
                             </div>
                           </div>
 
