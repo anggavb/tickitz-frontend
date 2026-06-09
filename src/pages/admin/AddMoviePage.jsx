@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Toast from '../../components/ui/Toast';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
@@ -16,7 +17,8 @@ function AddMoviePage() {
   const [castInput, setCastInput] = useState('');
   const [casts, setCasts] = useState([]);
   const [availableCasts, setAvailableCasts] = useState([]);
-  const [status, setStatus] = useState('');
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState('success');
 
   useEffect(() => {
     const fetchSuggestions = async () => {
@@ -95,14 +97,15 @@ function AddMoviePage() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setStatus('');
+    setToastMessage('');
 
     const hours = parseInt(durationHour || '0', 10);
     const minutes = parseInt(durationMinute || '0', 10);
     const totalDuration = hours * 60 + minutes;
 
     if (!name || !releaseDate || totalDuration <= 0) {
-      setStatus('Please fill in the movie name, release date, and duration.');
+      setToastType('error');
+      setToastMessage('Please fill in the movie name, release date, and duration.');
       return;
     }
 
@@ -133,7 +136,8 @@ function AddMoviePage() {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        setStatus('Movie saved successfully.');
+        setToastType('success');
+        setToastMessage('Movie saved successfully.');
         setName('');
         setReleaseDate('');
         setDurationHour('');
@@ -146,11 +150,13 @@ function AddMoviePage() {
         setCasts([]);
         setImage(null);
       } else {
-        setStatus(data.message || 'Failed to save movie.');
+        setToastType('error');
+        setToastMessage(data.message || 'Failed to save movie.');
       }
     } catch (error) {
       console.error(error);
-      setStatus('Failed to save movie.');
+      setToastType('error');
+      setToastMessage('Failed to save movie.');
     }
   };
 
@@ -329,8 +335,6 @@ function AddMoviePage() {
               />
             </div>
 
-            {status && <p className="text-sm text-red-600">{status}</p>}
-
             {/* Submit */}
             <button type="submit" className="w-full rounded-md bg-primary py-3 font-medium text-white shadow-md transition hover:opacity-90">
               Save Movie
@@ -338,6 +342,8 @@ function AddMoviePage() {
           </form>
         </section>
       </main>
+
+      <Toast message={toastMessage} type={toastType} onClose={() => setToastMessage('')} />
     </>
   );
 }
