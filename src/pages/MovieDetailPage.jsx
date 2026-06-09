@@ -17,6 +17,13 @@ const fallbackMovie = {
   schedules: [],
 };
 
+function buildAssetUrl(path, apiBaseUrl) {
+  if (!path) return "";
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+
+  return `${apiBaseUrl}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
 function formatDuration(rawMovie) {
   const duration =
     rawMovie?.duration_in_min ??
@@ -35,7 +42,7 @@ function formatDuration(rawMovie) {
 function formatTimeToAmPm(time) {
   if (!time) return "";
 
-  const [hourValue, minute = "00"] = time.split(":");
+  const [hourValue, minute = "00"] = String(time).split(":");
   const hour = Number(hourValue);
 
   if (Number.isNaN(hour)) return time;
@@ -46,20 +53,22 @@ function formatTimeToAmPm(time) {
   return `${hour12}:${minute} ${period}`;
 }
 
-function normalizeMovie(rawMovie) {
+function normalizeMovie(rawMovie, apiBaseUrl) {
+  const posterPath =
+    rawMovie?.poster ?? rawMovie?.image_poster ?? rawMovie?.image ?? "";
+
+  const backgroundPath =
+    rawMovie?.background ??
+    rawMovie?.image_background ??
+    rawMovie?.image_poster ??
+    rawMovie?.image ??
+    "";
+
   return {
     title: rawMovie?.title ?? rawMovie?.name ?? fallbackMovie.title,
     background:
-      rawMovie?.background ??
-      rawMovie?.image_background ??
-      rawMovie?.image_poster ??
-      rawMovie?.image ??
-      fallbackMovie.background,
-    poster:
-      rawMovie?.poster ??
-      rawMovie?.image_poster ??
-      rawMovie?.image ??
-      fallbackMovie.poster,
+      buildAssetUrl(backgroundPath, apiBaseUrl) || fallbackMovie.background,
+    poster: buildAssetUrl(posterPath, apiBaseUrl) || fallbackMovie.poster,
     genres:
       rawMovie?.genres ??
       rawMovie?.genres_categories ??
@@ -76,35 +85,106 @@ function normalizeMovie(rawMovie) {
       ? rawMovie.casts.join(", ")
       : (rawMovie?.casts ?? fallbackMovie.casts),
     synopsis: rawMovie?.synopsis ?? fallbackMovie.synopsis,
-    schedules: Array.isArray(rawMovie?.schedules) ? rawMovie.schedules : [],
+    schedules: [],
   };
+}
+
+function normalizeScheduleRows(scheduleRows = []) {
+  const groupedSchedules = new Map();
+
+  scheduleRows.forEach((row) => {
+    const location = row.location ?? "Unknown Location";
+    const cinemaName = row.cinema_name ?? row.cinemaName ?? "Unknown Cinema";
+    const showtime = row.showtime ?? row.time ?? "";
+    const startDate = row.start_date ?? row.startDate ?? row.date ?? "";
+    const endDate = row.end_date ?? row.endDate ?? row.date ?? startDate;
+    if (!groupedSchedules.has(location)) {
+      groupedSchedules.set(location, {
+        location,
+        cinemas: new Map(),
+      });
+    }
+
+    const locationGroup = groupedSchedules.get(location);
+
+    if (!locationGroup.cinemas.has(cinemaName)) {
+      locationGroup.cinemas.set(cinemaName, {
+        cinema_name: cinemaName,
+        showtimes: [],
+      });
+    }
+
+    locationGroup.cinemas.get(cinemaName).showtimes.push({
+      time: showtime,
+      startDate,
+      endDate,
+    });
+  });
+
+  return Array.from(groupedSchedules.values()).map((locationGroup) => ({
+    location: locationGroup.location,
+    cinemas: Array.from(locationGroup.cinemas.values()).map((cinema) => ({
+      ...cinema,
+      showtimes: cinema.showtimes.sort((a, b) => a.time.localeCompare(b.time)),
+    })),
+  }));
+}
+
+function isDateInScheduleRange(selectedDate, showtime) {
+  if (!selectedDate) return true;
+
+  const startDate = showtime.startDate || selectedDate;
+  const endDate = showtime.endDate || startDate;
+
+  return selectedDate >= startDate && selectedDate <= endDate;
 }
 
 function MovieDetailPage() {
   const { slug } = useParams();
-  const API_BASE_URL = import.meta.env.VITE_API_URL;
+  const API_BASE_URL = (
+    import.meta.env.VITE_API_URL ?? "http://localhost:8080"
+  ).replace(/\/$/, "");
 
   const [movie, setMovie] = useState(fallbackMovie);
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedDate, setSelectedDate] = useState("2026-07-21");
+  const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
+  const [selectedCinema, setSelectedCinema] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const cinemaPerPage = 4;
 
   const locationOptions = useMemo(() => {
-    return movie.schedules.map((schedule) => schedule.location);
+    return [...new Set(movie.schedules.map((schedule) => schedule.location))];
+  }, [movie.schedules]);
+
+  const scheduleDateRange = useMemo(() => {
+    const dates = movie.schedules
+      .flatMap((schedule) => schedule.cinemas)
+      .flatMap((cinema) => cinema.showtimes)
+      .flatMap((showtime) => [showtime.startDate, showtime.endDate])
+      .filter(Boolean)
+      .sort();
+
+    return {
+      minDate: dates[0] ?? "",
+      maxDate: dates[dates.length - 1] ?? "",
+    };
   }, [movie.schedules]);
 
   const timeOptions = useMemo(() => {
     const times = movie.schedules.flatMap((schedule) =>
-      schedule.cinemas.flatMap((cinema) => cinema.showtimes),
+      schedule.cinemas.flatMap((cinema) =>
+        cinema.showtimes
+          .filter((showtime) => isDateInScheduleRange(selectedDate, showtime))
+          .map((showtime) => showtime.time),
+      ),
     );
 
-    return [...new Set(times)];
-  }, [movie.schedules]);
+    return [...new Set(times)].sort();
+  }, [movie.schedules, selectedDate]);
 
   const filteredSchedules = useMemo(() => {
     return movie.schedules
@@ -118,14 +198,19 @@ function MovieDetailPage() {
         cinemas: schedule.cinemas
           .map((cinema) => ({
             ...cinema,
-            showtimes: selectedTime
-              ? cinema.showtimes.filter((time) => time === selectedTime)
-              : cinema.showtimes,
+            showtimes: cinema.showtimes.filter((showtime) => {
+              const matchDate = isDateInScheduleRange(selectedDate, showtime);
+              const matchTime = selectedTime
+                ? showtime.time === selectedTime
+                : true;
+
+              return matchDate && matchTime;
+            }),
           }))
           .filter((cinema) => cinema.showtimes.length > 0),
       }))
       .filter((schedule) => schedule.cinemas.length > 0);
-  }, [movie.schedules, selectedLocation, selectedTime]);
+  }, [movie.schedules, selectedDate, selectedLocation, selectedTime]);
 
   const cinemaList = useMemo(() => {
     return filteredSchedules.flatMap((schedule) =>
@@ -154,7 +239,25 @@ function MovieDetailPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedLocation, selectedTime]);
+  }, [selectedDate, selectedLocation, selectedTime]);
+
+  useEffect(() => {
+    if (!scheduleDateRange.minDate || !scheduleDateRange.maxDate) return;
+
+    if (!selectedDate) {
+      setSelectedDate(scheduleDateRange.minDate);
+      return;
+    }
+
+    if (selectedDate < scheduleDateRange.minDate) {
+      setSelectedDate(scheduleDateRange.minDate);
+      return;
+    }
+
+    if (selectedDate > scheduleDateRange.maxDate) {
+      setSelectedDate(scheduleDateRange.maxDate);
+    }
+  }, [scheduleDateRange.minDate, scheduleDateRange.maxDate, selectedDate]);
 
   useEffect(() => {
     if (!selectedLocation && locationOptions.length > 0) {
@@ -166,6 +269,14 @@ function MovieDetailPage() {
     if (!selectedTime && timeOptions.length > 0) {
       setSelectedTime(timeOptions[0]);
     }
+
+    if (
+      selectedTime &&
+      timeOptions.length > 0 &&
+      !timeOptions.includes(selectedTime)
+    ) {
+      setSelectedTime(timeOptions[0]);
+    }
   }, [selectedTime, timeOptions]);
 
   useEffect(() => {
@@ -174,16 +285,40 @@ function MovieDetailPage() {
         setLoading(true);
         setError("");
 
-        const response = await fetch(`${API_BASE_URL}/movies/${slug}`);
+        const [movieResponse, scheduleResponse] = await Promise.all([
+          fetch(`${API_BASE_URL}/movies/${slug}`),
+          fetch(`${API_BASE_URL}/movies/${slug}/schedules`),
+        ]);
 
-        if (!response.ok) {
+        if (!movieResponse.ok) {
           throw new Error("Failed to fetch movie detail");
         }
 
-        const result = await response.json();
-        const rawMovie = result?.data ?? result;
+        if (!scheduleResponse.ok) {
+          throw new Error("Failed to fetch movie schedules");
+        }
 
-        setMovie(normalizeMovie(rawMovie));
+        const movieResult = await movieResponse.json();
+        const scheduleResult = await scheduleResponse.json();
+
+        const rawMovie = movieResult?.data ?? movieResult;
+        const rawSchedules = scheduleResult?.data ?? [];
+
+        const normalizedMovie = normalizeMovie(rawMovie, API_BASE_URL);
+        const normalizedSchedules = normalizeScheduleRows(rawSchedules);
+
+        setMovie({
+          ...normalizedMovie,
+          schedules: normalizedSchedules,
+        });
+
+        const firstShowtime = normalizedSchedules
+          .flatMap((schedule) => schedule.cinemas)
+          .flatMap((cinema) => cinema.showtimes)[0];
+
+        setSelectedDate(firstShowtime?.startDate ?? "");
+        setSelectedTime(firstShowtime?.time ?? "");
+        setSelectedLocation(normalizedSchedules[0]?.location ?? "");
       } catch (err) {
         setError(err.message || "Something went wrong");
       } finally {
@@ -199,6 +334,10 @@ function MovieDetailPage() {
   const handleFilter = (event) => {
     event.preventDefault();
     setCurrentPage(1);
+  };
+
+  const handleSelectCinema = (cinema) => {
+    setSelectedCinema(cinema);
   };
 
   if (loading) {
@@ -331,8 +470,13 @@ function MovieDetailPage() {
               <input
                 type="date"
                 value={selectedDate}
+                min={scheduleDateRange.minDate}
+                max={scheduleDateRange.maxDate}
+                disabled={
+                  !scheduleDateRange.minDate || !scheduleDateRange.maxDate
+                }
                 onChange={(event) => setSelectedDate(event.target.value)}
-                className="h-10 w-full rounded-md border border-neutral-200 bg-neutral-100 px-4 text-xs font-medium text-neutral-500 outline-none transition focus:border-primary focus:bg-white sm:h-14 sm:text-sm lg:h-16 lg:text-base"
+                className="h-10 w-full rounded-md border border-neutral-200 bg-neutral-100 px-4 text-xs font-medium text-neutral-500 outline-none transition focus:border-primary focus:bg-white disabled:cursor-not-allowed disabled:opacity-60 sm:h-14 sm:text-sm lg:h-16 lg:text-base"
               />
             </label>
 
@@ -346,11 +490,15 @@ function MovieDetailPage() {
                 onChange={(event) => setSelectedTime(event.target.value)}
                 className="h-16 w-full rounded-lg border border-neutral-200 bg-neutral-100 px-4 text-base font-semibold text-neutral-600 outline-none transition focus:border-primary focus:bg-white"
               >
-                {timeOptions.map((time) => (
-                  <option key={time} value={time}>
-                    {formatTimeToAmPm(time)}
-                  </option>
-                ))}
+                {timeOptions.length === 0 ? (
+                  <option value="">No time available</option>
+                ) : (
+                  timeOptions.map((time) => (
+                    <option key={time} value={time}>
+                      {formatTimeToAmPm(time)}
+                    </option>
+                  ))
+                )}
               </select>
             </label>
 
@@ -364,11 +512,15 @@ function MovieDetailPage() {
                 onChange={(event) => setSelectedLocation(event.target.value)}
                 className="h-10 w-full rounded-md border border-neutral-200 bg-neutral-100 px-4 text-xs font-medium text-neutral-500 outline-none transition focus:border-primary focus:bg-white sm:h-14 sm:text-sm lg:h-16 lg:rounded-lg lg:text-base"
               >
-                {locationOptions.map((location) => (
-                  <option key={location} value={location}>
-                    {location}
-                  </option>
-                ))}
+                {locationOptions.length === 0 ? (
+                  <option value="">No location available</option>
+                ) : (
+                  locationOptions.map((location) => (
+                    <option key={location} value={location}>
+                      {location}
+                    </option>
+                  ))
+                )}
               </select>
             </label>
 
@@ -445,18 +597,18 @@ function MovieDetailPage() {
                       </h4>
 
                       <div className="flex flex-wrap gap-2">
-                        {cinema.showtimes.map((time, index) => (
+                        {cinema.showtimes.map((showtime, index) => (
                           <button
-                            key={`${cinema.id}-${time}-${index}`}
+                            key={`${cinema.id}-${showtime.time}-${index}`}
                             type="button"
-                            onClick={() => setSelectedTime(time)}
+                            onClick={() => setSelectedTime(showtime.time)}
                             className={`rounded-full px-3 py-1.5 text-[10px] font-medium transition ${
-                              time === selectedTime
+                              showtime.time === selectedTime
                                 ? "bg-primary text-white"
                                 : "bg-neutral-100 text-neutral-500 hover:bg-primary hover:text-white"
                             }`}
                           >
-                            {formatTimeToAmPm(time)}
+                            {formatTimeToAmPm(showtime.time)}
                           </button>
                         ))}
                       </div>
@@ -466,28 +618,33 @@ function MovieDetailPage() {
               </div>
 
               <div className="hidden gap-5 lg:grid lg:grid-cols-4">
-                {visibleCinemas.map((cinema, index) => (
-                  <button
-                    key={cinema.id}
-                    type="button"
-                    className={`flex h-36 flex-col items-center justify-center rounded-lg border-2 px-6 text-center transition ${
-                      index === 0
-                        ? "border-primary bg-primary text-white shadow-lg shadow-primary/25"
-                        : "border-neutral-200 bg-white text-primary hover:border-primary"
-                    }`}
-                  >
-                    <span className="text-2xl font-black tracking-wide">
-                      {cinema.logo}
-                    </span>
-                    <span
-                      className={`mt-2 text-xs font-medium ${
-                        index === 0 ? "text-white/80" : "text-neutral-400"
+                {visibleCinemas.map((cinema) => {
+                  const isActive = selectedCinema?.id === cinema.id;
+
+                  return (
+                    <button
+                      key={cinema.id}
+                      type="button"
+                      onClick={() => handleSelectCinema(cinema)}
+                      className={`flex h-40 flex-col items-center justify-center rounded-lg border-2 px-6 text-center transition ${
+                        isActive
+                          ? "border-primary bg-primary text-white shadow-lg shadow-primary/25"
+                          : "border-neutral-200 bg-white text-primary hover:border-primary"
                       }`}
                     >
-                      {cinema.location}
-                    </span>
-                  </button>
-                ))}
+                      <span className="text-2xl font-black tracking-wide">
+                        {cinema.logo}
+                      </span>
+                      <span
+                        className={`mt-2 text-xs font-medium ${
+                          isActive ? "text-white/80" : "text-neutral-400"
+                        }`}
+                      >
+                        {cinema.location}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </>
           )}
@@ -514,7 +671,8 @@ function MovieDetailPage() {
           <div className="mt-10 hidden justify-center lg:flex">
             <button
               type="button"
-              className="h-14 rounded-lg bg-primary px-16 text-base font-semibold text-white transition hover:opacity-90"
+              disabled={visibleCinemas.length === 0}
+              className="h-14 rounded-lg bg-primary px-16 text-base font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Book Now
             </button>
