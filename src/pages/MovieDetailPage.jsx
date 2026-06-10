@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import HomeLayout from "../layouts/HomeLayout";
@@ -5,6 +6,10 @@ import HomeLayout from "../layouts/HomeLayout";
 const API_BASE_URL = (
   import.meta.env.VITE_API_URL ?? "http://localhost:8081"
 ).replace(/\/$/, "");
+
+const api = axios.create({
+  baseURL: API_BASE_URL,
+});
 
 const fallbackMovie = {
   title: "Untitled Movie",
@@ -20,6 +25,23 @@ const fallbackMovie = {
   synopsis: "-",
   schedules: [],
 };
+
+async function getMoviePageData(slug) {
+  const [movieResponse, scheduleResponse, locationResponse, timeResponse] =
+    await Promise.all([
+      api.get(`/movies/${slug}`),
+      api.get(`/movies/${slug}/schedules`),
+      api.get("/movies/locations"),
+      api.get("/movies/showtimes"),
+    ]);
+
+  return {
+    movieResult: movieResponse.data,
+    scheduleResult: scheduleResponse.data,
+    locationResult: locationResponse.data,
+    timeResult: timeResponse.data,
+  };
+}
 
 function buildAssetUrl(path) {
   if (!path) return "";
@@ -73,9 +95,7 @@ function formatDateLabel(date) {
 
   const parsedDate = new Date(`${date}T00:00:00`);
 
-  if (Number.isNaN(parsedDate.getTime())) {
-    return date;
-  }
+  if (Number.isNaN(parsedDate.getTime())) return date;
 
   return new Intl.DateTimeFormat("en-US", {
     day: "2-digit",
@@ -200,11 +220,14 @@ function normalizeSchedules(rows = []) {
   rows.forEach((row) => {
     const location = row.location ?? "Unknown Location";
     const cinemaName = row.cinema_name ?? row.cinemaName ?? "Unknown Cinema";
+
     const showDate =
       row.show_date ?? row.showDate ?? row.date ?? row.schedule_date ?? "";
+
     const time = normalizeTimeValue(
       row.showtime ?? row.time ?? row.show_time ?? "",
     );
+
     const price = row.price ?? row.ticket_price ?? row.movie_price ?? "";
 
     if (!showDate || !time) return;
@@ -254,6 +277,7 @@ function getCinemaList(schedules, date, time, location) {
       schedule.cinemas.map((cinema) => {
         const showtimes = cinema.showtimes.filter((showtime) => {
           const matchDate = date ? showtime.showDate === date : true;
+
           const matchTime = normalizedFilterTime
             ? showtime.time === normalizedFilterTime
             : true;
@@ -385,17 +409,11 @@ function MovieDetailPage() {
       )} on ${formatDateLabel(date)}.`;
     }
 
-    if (location) {
-      return `No cinema available in ${location}.`;
-    }
+    if (location) return `No cinema available in ${location}.`;
 
-    if (time) {
-      return `No cinema available at ${formatTimeToAmPm(time)}.`;
-    }
+    if (time) return `No cinema available at ${formatTimeToAmPm(time)}.`;
 
-    if (date) {
-      return `No cinema available on ${formatDateLabel(date)}.`;
-    }
+    if (date) return `No cinema available on ${formatDateLabel(date)}.`;
 
     return "No cinema schedule matches your filter.";
   }, [appliedFilter, isFilterApplied]);
@@ -406,38 +424,8 @@ function MovieDetailPage() {
         setLoading(true);
         setError("");
 
-        const [
-          movieResponse,
-          scheduleResponse,
-          locationResponse,
-          timeResponse,
-        ] = await Promise.all([
-          fetch(`${API_BASE_URL}/movies/${slug}`),
-          fetch(`${API_BASE_URL}/movies/${slug}/schedules`),
-          fetch(`${API_BASE_URL}/movies/locations`),
-          fetch(`${API_BASE_URL}/movies/showtimes`),
-        ]);
-
-        if (!movieResponse.ok) {
-          throw new Error("Failed to fetch movie detail");
-        }
-
-        if (!scheduleResponse.ok) {
-          throw new Error("Failed to fetch movie schedules");
-        }
-
-        if (!locationResponse.ok) {
-          throw new Error("Failed to fetch movie locations");
-        }
-
-        if (!timeResponse.ok) {
-          throw new Error("Failed to fetch movie times");
-        }
-
-        const movieResult = await movieResponse.json();
-        const scheduleResult = await scheduleResponse.json();
-        const locationResult = await locationResponse.json();
-        const timeResult = await timeResponse.json();
+        const { movieResult, scheduleResult, locationResult, timeResult } =
+          await getMoviePageData(slug);
 
         const rawMovie = movieResult?.data ?? movieResult;
         const rawSchedules = scheduleResult?.data ?? [];
@@ -472,7 +460,10 @@ function MovieDetailPage() {
 
         setCurrentPage(1);
       } catch (err) {
-        setError(err.message || "Something went wrong");
+        const message =
+          err.response?.data?.message || err.message || "Something went wrong";
+
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -583,6 +574,7 @@ function MovieDetailPage() {
             <h1 className="text-base font-semibold text-red-600">
               Failed to load movie
             </h1>
+
             <p className="mt-2 text-sm text-red-500">{error}</p>
           </div>
         </section>
