@@ -4,7 +4,7 @@ import Toast from "../../components/ui/Toast";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
-function AddMoviePage() {
+function AddMoviePage({ viewOnly = false }) {
   const [image, setImage] = useState(null);
   const [name, setName] = useState("");
   const [releaseDate, setReleaseDate] = useState("");
@@ -22,7 +22,8 @@ function AddMoviePage() {
   const [toastType, setToastType] = useState("success");
   const navigate = useNavigate();
   const { id } = useParams();
-  const isEditMode = Boolean(id);
+  const isViewMode = Boolean(id) && viewOnly;
+  const isEditMode = Boolean(id) && !viewOnly;
   const [existingImageUrl, setExistingImageUrl] = useState("");
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
 
@@ -57,7 +58,7 @@ function AddMoviePage() {
 
   useEffect(() => {
     const fetchMovieDetail = async () => {
-      if (!isEditMode) return;
+      if (!isEditMode && !isViewMode) return;
       const movieId = parseInt(id, 10);
       if (Number.isNaN(movieId)) return;
 
@@ -91,9 +92,9 @@ function AddMoviePage() {
     };
 
     fetchMovieDetail();
-  }, [id, isEditMode]);
+  }, [id, isEditMode, isViewMode]);
 
-  if (isEditMode && isLoadingDetail) {
+  if ((isEditMode || isViewMode) && isLoadingDetail) {
     return (
       <main className="min-h-screen flex items-center justify-center">
         <p>Loading movie data...</p>
@@ -102,6 +103,7 @@ function AddMoviePage() {
   }
 
   const handleImageChange = (event) => {
+    if (viewOnly) return;
     const file = event.target.files[0];
 
     if (file) {
@@ -126,6 +128,7 @@ function AddMoviePage() {
   };
 
   const handleCategoryKeyDown = (event) => {
+    if (viewOnly) return;
     if (event.key === "Enter" || event.key === ",") {
       event.preventDefault();
       addCategory(categoryInput.replace(/,$/, ""));
@@ -134,6 +137,7 @@ function AddMoviePage() {
   };
 
   const handleCastKeyDown = (event) => {
+    if (viewOnly) return;
     if (event.key === "Enter" || event.key === ",") {
       event.preventDefault();
       addCast(castInput.replace(/,$/, ""));
@@ -141,17 +145,19 @@ function AddMoviePage() {
     }
   };
 
-  const removeCategory = (value) => {
-    setCategories((prev) => prev.filter((item) => item !== value));
-  };
+  // const removeCategory = (value) => {
+  //   setCategories((prev) => prev.filter((item) => item !== value));
+  // };
 
-  const removeCast = (value) => {
-    setCasts((prev) => prev.filter((item) => item !== value));
-  };
+  // const removeCast = (value) => {
+  //   setCasts((prev) => prev.filter((item) => item !== value));
+  // };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setToastMessage("");
+
+    if (viewOnly) return;
 
     const hours = parseInt(durationHour || "0", 10);
     const minutes = parseInt(durationMinute || "0", 10);
@@ -238,7 +244,11 @@ function AddMoviePage() {
       <main className="min-h-screen bg-slate-100 p-4 md:p-8">
         <section className="mx-auto max-w-3xl bg-white p-6 md:p-8">
           <h1 className="mb-8 text-2xl font-semibold text-slate-800">
-            {isEditMode ? `Edit (${name || "Movie"})` : "Add New Movie"}
+            {isViewMode
+              ? `View (${name || "Movie"})`
+              : isEditMode
+              ? `Edit (${name || "Movie"})`
+              : "Add New Movie"}
           </h1>
 
           <form className="space-y-6" onSubmit={handleSubmit}>
@@ -255,14 +265,17 @@ function AddMoviePage() {
                   accept="image/*"
                   className="hidden"
                   onChange={handleImageChange}
+                  disabled={viewOnly}
                 />
 
-                <label
-                  htmlFor="movie-image"
-                  className="inline-block cursor-pointer rounded-md bg-primary px-4 py-2 text-xs text-white"
-                >
-                  Upload
-                </label>
+                {!viewOnly && (
+                  <label
+                    htmlFor="movie-image"
+                    className="inline-block cursor-pointer rounded-md bg-primary px-4 py-2 text-xs text-white"
+                  >
+                    Upload
+                  </label>
+                )}
 
                 {image && (
                   <p className="mt-2 text-sm text-slate-500">
@@ -296,6 +309,7 @@ function AddMoviePage() {
                 value={name}
                 onChange={(event) => setName(event.target.value)}
                 placeholder="Spider-Man: Homecoming"
+                readOnly={viewOnly}
                 className="w-full rounded-md border border-slate-200 px-4 py-3 outline-none focus:border-primary"
               />
             </div>
@@ -313,12 +327,13 @@ function AddMoviePage() {
                 onChange={(event) => setCategoryInput(event.target.value)}
                 onKeyDown={handleCategoryKeyDown}
                 onBlur={() => {
-                  if (categoryInput.trim()) {
+                  if (!viewOnly && categoryInput.trim()) {
                     addCategory(categoryInput);
                     setCategoryInput("");
                   }
                 }}
                 placeholder="Type and press Enter to add category"
+                readOnly={viewOnly}
                 className="w-full rounded-md border border-slate-200 px-4 py-3 outline-none focus:border-primary"
               />
               <datalist id="category-list">
@@ -329,14 +344,12 @@ function AddMoviePage() {
 
               <div className="mt-3 flex flex-wrap gap-2">
                 {categories.map((category) => (
-                  <button
+                  <span
                     key={category}
-                    type="button"
-                    onClick={() => removeCategory(category)}
-                    className="rounded-full border border-slate-300 bg-slate-100 px-3 py-1 text-sm text-slate-700 hover:bg-slate-200"
+                    className="rounded-full border border-slate-300 bg-slate-100 px-3 py-1 text-sm text-slate-700"
                   >
-                    {category} ×
-                  </button>
+                    {category}
+                  </span>
                 ))}
               </div>
             </div>
@@ -368,6 +381,7 @@ function AddMoviePage() {
                     value={durationHour}
                     onChange={(event) => setDurationHour(event.target.value)}
                     placeholder="2"
+                    readOnly={viewOnly}
                     className="rounded-md border border-slate-200 px-4 py-3 text-center outline-none focus:border-primary"
                   />
 
@@ -377,6 +391,7 @@ function AddMoviePage() {
                     value={durationMinute}
                     onChange={(event) => setDurationMinute(event.target.value)}
                     placeholder="13"
+                    readOnly={viewOnly}
                     className="rounded-md border border-slate-200 px-4 py-3 text-center outline-none focus:border-primary"
                   />
                 </div>
@@ -394,6 +409,7 @@ function AddMoviePage() {
                 value={directorName}
                 onChange={(event) => setDirectorName(event.target.value)}
                 placeholder="Jon Watts"
+                readOnly={viewOnly}
                 className="w-full rounded-md border border-slate-200 px-4 py-3 outline-none focus:border-primary"
               />
             </div>
@@ -409,12 +425,13 @@ function AddMoviePage() {
                 onChange={(event) => setCastInput(event.target.value)}
                 onKeyDown={handleCastKeyDown}
                 onBlur={() => {
-                  if (castInput.trim()) {
+                  if (!viewOnly && castInput.trim()) {
                     addCast(castInput);
                     setCastInput("");
                   }
                 }}
                 placeholder="Type and press Enter to add cast"
+                readOnly={viewOnly}
                 className="w-full rounded-md border border-slate-200 px-4 py-3 outline-none focus:border-primary"
               />
               <datalist id="cast-list">
@@ -425,14 +442,12 @@ function AddMoviePage() {
 
               <div className="mt-3 flex flex-wrap gap-2">
                 {casts.map((cast) => (
-                  <button
+                  <span
                     key={cast}
-                    type="button"
-                    onClick={() => removeCast(cast)}
-                    className="rounded-full border border-slate-300 bg-slate-100 px-3 py-1 text-sm text-slate-700 hover:bg-slate-200"
+                    className="rounded-full border border-slate-300 bg-slate-100 px-3 py-1 text-sm text-slate-700"
                   >
-                    {cast} ×
-                  </button>
+                    {cast}
+                  </span>
                 ))}
               </div>
             </div>
@@ -448,17 +463,28 @@ function AddMoviePage() {
                 value={synopsis}
                 onChange={(event) => setSynopsis(event.target.value)}
                 placeholder="Thrilled by his experience with the Avengers..."
+                readOnly={viewOnly}
                 className="w-full rounded-md border border-slate-200 px-4 py-3 outline-none focus:border-primary"
               />
             </div>
 
             {/* Submit */}
-            <button
-              type="submit"
-              className="w-full rounded-md bg-primary py-3 font-medium text-white shadow-md transition hover:opacity-90"
-            >
-              Save Movie
-            </button>
+            {viewOnly ? (
+              <button
+                type="button"
+                onClick={() => navigate('/admin/movies')}
+                className="w-full rounded-md bg-slate-700 py-3 font-medium text-white shadow-md transition hover:opacity-90"
+              >
+                Back to list
+              </button>
+            ) : (
+              <button
+                type="submit"
+                className="w-full rounded-md bg-primary py-3 font-medium text-white shadow-md transition hover:opacity-90"
+              >
+                {isEditMode ? 'Update Movie' : 'Save Movie'}
+              </button>
+            )}
           </form>
         </section>
       </main>

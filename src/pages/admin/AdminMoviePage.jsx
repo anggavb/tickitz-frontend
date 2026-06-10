@@ -164,7 +164,11 @@ function AdminMoviePage() {
 
                       <td className="py-4">
                         <div className="flex items-center justify-center gap-2">
-                          <button type="button">
+                          <button
+                            type="button"
+                            onClick={() => navigate(`/admin/movies/${movie.id}/view`)}
+                            className="hover:opacity-70 transition"
+                          >
                             <img src={eyeIcon} alt="View" className="h-7 w-7" />
                           </button>
 

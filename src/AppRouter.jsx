@@ -39,6 +39,7 @@ function AppRouter() {
         <Route path="" element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="movies/add" element={<AddMoviePage />} />
         <Route path="movies/:id/edit" element={<AddMoviePage />} />
+        <Route path="movies/:id/view" element={<AddMoviePage viewOnly />} />
       </Route>
       <Route path="/profile" element={<ProfileLayout />}>
         <Route path="setting" element={<SettingPage />} />
