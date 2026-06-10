@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useForm } from "react-hook-form";
 import HomeLayout from "../layouts/HomeLayout";
 import StepProgres from "../components/auth/signup/StepProgres";
 
@@ -48,55 +49,58 @@ const paymentMethods = [
     id: "ovo",
     label: "OVO",
     logoUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/7/72/Logo_dana_blue.svg",
+      "https://upload.wikimedia.org/wikipedia/commons/e/eb/Logo_ovo_purple.svg",
   },
 ];
 
 const paymentInfo = [
   { label: "DATE & TIME", value: "Tuesday, 07 July 2026 at 02:00pm" },
-  { label: "MOVIE TITLE", value: "Spider-Man: Homecoming" },
+  { label: "MOVIE TITLE", value: "Echoes of Jakarta" },
   { label: "CINEMA NAME", value: "CineOne21 Cinema" },
   { label: "NUMBER OF TICKETS", value: "3 pieces" },
 ];
 
 function MoviePaymentPage() {
-  const [form, setForm] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
+  const [selectedPayment, setSelectedPayment] = useState("");
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      fullName: "",
+      email: "",
+      phone: "",
+    },
   });
 
-  const [selectedPayment, setSelectedPayment] = useState(null);
+  const steps = ["Dates And Time", "Seat", "Payment"];
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = () => {
+  const onSubmit = (data) => {
     if (!selectedPayment) {
       alert("Please choose a payment method");
       return;
     }
 
-    console.log("Form submitted:", {
-      ...form,
+    const payload = {
+      ...data,
+      phone: `+62${data.phone}`,
       paymentMethod: selectedPayment,
-    });
+    };
+
+    console.log("Payment submitted:", payload);
 
     alert("Form submitted successfully!");
   };
 
-  const steps = ["Dates And Time", "Seat", "Payment"];
-
   return (
     <HomeLayout>
       <div className="flex min-h-screen items-start justify-center bg-gray-50 px-4 py-8">
-        <div className="w-full max-w-4xl space-y-8 rounded-2xl bg-white px-6 py-8 shadow-sm">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="w-full max-w-4xl space-y-8 rounded-2xl bg-white px-6 py-8 shadow-sm"
+        >
           <section className="mx-auto mb-8 flex max-w-4xl items-center justify-center gap-20 text-center">
             <StepProgres step={3} steps={steps} />
           </section>
@@ -140,16 +144,28 @@ function MoviePaymentPage() {
                 >
                   Full Name
                 </label>
+
                 <input
                   id="fullName"
                   type="text"
-                  name="fullName"
-                  value={form.fullName}
-                  onChange={handleChange}
                   placeholder="Jonas El Rodriguez"
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-indigo-100"
-                  required
+                  className={`w-full rounded-lg border px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-indigo-100 ${
+                    errors.fullName ? "border-red-500" : "border-gray-300"
+                  }`}
+                  {...register("fullName", {
+                    required: "Full name is required",
+                    minLength: {
+                      value: 3,
+                      message: "Full name must be at least 3 characters",
+                    },
+                  })}
                 />
+
+                {errors.fullName && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {errors.fullName.message}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -159,16 +175,28 @@ function MoviePaymentPage() {
                 >
                   Email
                 </label>
+
                 <input
                   id="email"
                   type="email"
-                  name="email"
-                  value={form.email}
-                  onChange={handleChange}
                   placeholder="jonasrodri123@gmail.com"
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-indigo-100"
-                  required
+                  className={`w-full rounded-lg border px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-indigo-100 ${
+                    errors.email ? "border-red-500" : "border-gray-300"
+                  }`}
+                  {...register("email", {
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: "Email format is invalid",
+                    },
+                  })}
                 />
+
+                {errors.email && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -179,7 +207,11 @@ function MoviePaymentPage() {
                   Phone Number
                 </label>
 
-                <div className="flex overflow-hidden rounded-lg border border-gray-300 transition focus-within:border-primary focus-within:ring-2 focus-within:ring-indigo-100">
+                <div
+                  className={`flex overflow-hidden rounded-lg border transition focus-within:border-primary focus-within:ring-2 focus-within:ring-indigo-100 ${
+                    errors.phone ? "border-red-500" : "border-gray-300"
+                  }`}
+                >
                   <span className="flex select-none items-center border-r border-gray-300 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-600">
                     +62
                   </span>
@@ -187,14 +219,23 @@ function MoviePaymentPage() {
                   <input
                     id="phone"
                     type="tel"
-                    name="phone"
-                    value={form.phone}
-                    onChange={handleChange}
                     placeholder="81445687121"
                     className="flex-1 bg-white px-4 py-3 text-sm text-gray-900 outline-none"
-                    required
+                    {...register("phone", {
+                      required: "Phone number is required",
+                      pattern: {
+                        value: /^[0-9]{9,14}$/,
+                        message: "Phone number must be 9-14 digits",
+                      },
+                    })}
                   />
                 </div>
+
+                {errors.phone && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {errors.phone.message}
+                  </p>
+                )}
               </div>
             </div>
           </section>
@@ -205,7 +246,7 @@ function MoviePaymentPage() {
               Payment Method
             </h2>
 
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {paymentMethods.map((method) => (
                 <button
                   key={method.id}
@@ -221,21 +262,26 @@ function MoviePaymentPage() {
                   <img
                     src={method.logoUrl}
                     alt={method.label}
-                    className="max-h-6 max-w-[82px] object-contain"
+                    className="max-h-6 max-w-20.5 object-contain"
                   />
                 </button>
               ))}
             </div>
+
+            {!selectedPayment && (
+              <p className="mt-2 text-xs text-gray-400">
+                Please choose one payment method before submitting.
+              </p>
+            )}
           </section>
 
           <button
-            type="button"
-            onClick={handleSubmit}
+            type="submit"
             className="w-full rounded-xl bg-primary py-4 text-sm font-semibold text-white transition hover:bg-primary/90 active:scale-[0.99]"
           >
             Pay your order
           </button>
-        </div>
+        </form>
       </div>
     </HomeLayout>
   );
