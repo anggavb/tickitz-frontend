@@ -8,6 +8,7 @@ import calendarIcon from '../../assets/images/calendar.png';
 import arrowDownIcon from '../../assets/images/arrow-down.png';
 
 import ProfileNavbar from '../../components/ProfileNavbar';
+import Toast from '../../components/ui/Toast';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 const PAGE_LIMIT = 5;
@@ -20,6 +21,8 @@ function AdminMoviePage() {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [toast, setToast] = useState({ message: '', type: '' });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const fetchMovies = async (pageNumber = 1) => {
@@ -60,6 +63,39 @@ function AdminMoviePage() {
   const gotoPage = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages && pageNumber !== page) {
       setPage(pageNumber);
+    }
+  };
+
+  const handleDeleteMovie = async (movieId, movieName) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${movieName}"? This action cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/movies/${movieId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to delete movie');
+      }
+
+      setToast({ message: 'Movie deleted successfully', type: 'success' });
+      
+      // Refresh the movies list
+      setPage(1);
+    } catch (deleteError) {
+      setToast({ message: deleteError.message || 'Failed to delete movie', type: 'error' });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -136,7 +172,12 @@ function AdminMoviePage() {
                             <img src={editIcon} alt="Edit" className="h-7 w-7" />
                           </button>
 
-                          <button type="button">
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteMovie(movie.id, movie.name)}
+                            disabled={isDeleting}
+                            className="hover:opacity-70 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                          >
                             <img src={deleteIcon} alt="Delete" className="h-7 w-7" />
                           </button>
                         </div>
@@ -191,6 +232,12 @@ function AdminMoviePage() {
           </div>
         </section>
       </main>
+
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ message: '', type: '' })}
+      />
     </>
   );
 }
