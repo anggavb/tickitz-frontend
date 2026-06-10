@@ -1,14 +1,30 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import HomeLayout from "../layouts/HomeLayout";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL.replace(/\/$/, "");
 
 const fallbackMovie = {
   title: "Untitled Movie",
   poster:
     "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&w=600&q=80",
   genres: [],
+};
+
+// ============================================================================
+// DUMMY DATA FOR TESTING (Self-Contained)
+// ============================================================================
+const dummyBookingState = {
+  movie: {
+    title: "Interstellar: 10th Anniversary Edition",
+    poster:
+      "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80",
+    genres: ["Sci-Fi", "Drama", "Adventure", "IMAX"],
+  },
+  selectedDate: "2026-06-12",
+  selectedTime: "19:45",
+  selectedLocation: "Grand Indonesia Mall",
+  selectedCinema: {
+    name: "CineOne21 Ultra IMAX Hall 1",
+  },
 };
 
 const seatRows = ["A", "B", "C", "D", "E", "F", "G"];
@@ -29,62 +45,25 @@ const soldSeats = [
   "G3",
 ];
 
+// F10 and F11 are merged. We'll identify the pair by the first seat code ("F10").
 const loveNestPairs = [{ first: "F10", second: "F11", label: "F10-F11" }];
-
-const allLoveNestSeats = loveNestPairs.flatMap((pair) => [
-  pair.first,
-  pair.second,
-]);
-
-function buildAssetUrl(path) {
-  if (!path) return "";
-
-  if (path.startsWith("http://") || path.startsWith("https://")) {
-    return path;
-  }
-
-  return `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
-}
-
-function normalizeMovie(rawMovie) {
-  const posterPath =
-    rawMovie?.poster ?? rawMovie?.image_poster ?? rawMovie?.image ?? "";
-
-  return {
-    title: rawMovie?.title ?? rawMovie?.name ?? fallbackMovie.title,
-    poster: buildAssetUrl(posterPath) || fallbackMovie.poster,
-    genres:
-      rawMovie?.genres ??
-      rawMovie?.genres_categories ??
-      rawMovie?.categories ??
-      [],
-  };
-}
+const allLoveNestSeats = loveNestPairs.flatMap((p) => [p.first, p.second]);
 
 function formatTimeToAmPm(time) {
   if (!time) return "-";
-
-  const [hourValue, minute = "00"] = String(time).split(":");
+  const [hourValue, minute = "00"] = time.split(":");
   const hour = Number(hourValue);
-
   if (Number.isNaN(hour)) return time;
-
   const period = hour >= 12 ? "PM" : "AM";
   const hour12 = hour % 12 || 12;
-
   return `${hour12}:${minute} ${period}`;
 }
 
 function formatDate(dateString) {
   if (!dateString) return "-";
-
   const date = new Date(dateString);
-
-  if (Number.isNaN(date.getTime())) {
-    return dateString;
-  }
-
-  return new Intl.DateTimeFormat(window.navigator.languages?.[0] ?? "en-US", {
+  if (Number.isNaN(date.getTime())) return dateString;
+  return new Intl.DateTimeFormat("en-GB", {
     weekday: "long",
     day: "2-digit",
     month: "long",
@@ -92,52 +71,24 @@ function formatDate(dateString) {
   }).format(date);
 }
 
-function formatPrice(price) {
-  if (price === null || price === undefined || price === "") {
-    return "Rp0";
-  }
-
-  const numericPrice = Number(price);
-
-  if (Number.isNaN(numericPrice)) {
-    return price;
-  }
-
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
-  }).format(numericPrice);
-}
-
 function SeatBookingPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const { state } = useLocation();
+  const { state: routerState } = useLocation();
 
+  // Uses router state if available, otherwise falls back to the local dummy data
+  const state = routerState ?? dummyBookingState;
+
+  const movie = state?.movie ?? fallbackMovie;
   const selectedDate = state?.selectedDate ?? "";
   const selectedTime = state?.selectedTime ?? "";
   const selectedLocation = state?.selectedLocation ?? "";
   const selectedCinema = state?.selectedCinema ?? null;
 
-  const [movie, setMovie] = useState(() =>
-    state?.movie ? normalizeMovie(state.movie) : fallbackMovie,
-  );
-
   const [selectedSeats, setSelectedSeats] = useState([]);
-  const [loading, setLoading] = useState(!state?.movie);
-  const [error, setError] = useState("");
 
-  const ticketPrice = Number(
-    state?.price ??
-      selectedCinema?.price ??
-      selectedCinema?.ticket_price ??
-      selectedCinema?.movie_price ??
-      0,
-  );
-
+  const ticketPrice = 10;
   const totalPayment = selectedSeats.length * ticketPrice;
-
   const genres = Array.isArray(movie.genres) ? movie.genres : [];
 
   const cinemaName =
@@ -147,10 +98,12 @@ function SeatBookingPage() {
     "Cinema";
 
   const selectedSeatText =
-    selectedSeats.length > 0 ? [...selectedSeats].sort().join(", ") : "-";
+    selectedSeats.length > 0 ? selectedSeats.sort().join(", ") : "-";
 
-  const moviePoster = movie.poster || fallbackMovie.poster;
+  const moviePoster =
+    movie.poster ?? movie.image_poster ?? movie.image ?? fallbackMovie.poster;
 
+  // Generate the seat structure mapping
   const seatMap = useMemo(() => {
     return seatRows.map((row) => {
       const rowSeats = [];
@@ -163,10 +116,7 @@ function SeatBookingPage() {
         }
 
         const seatCode = `${row}${seatNumbers[i]}`;
-
-        const loveNestMatch = loveNestPairs.find(
-          (pair) => pair.first === seatCode,
-        );
+        const loveNestMatch = loveNestPairs.find((p) => p.first === seatCode);
 
         if (loveNestMatch) {
           rowSeats.push({
@@ -176,10 +126,9 @@ function SeatBookingPage() {
             isSold: false,
             isLoveNest: true,
             isSelected: false,
-            isMerged: true,
+            isMerged: true, // Used to trigger CSS span-2
           });
-
-          skipNext = true;
+          skipNext = true; // Skip rendering the second seat of the pair
         } else {
           rowSeats.push({
             row,
@@ -192,47 +141,17 @@ function SeatBookingPage() {
           });
         }
       }
-
       return rowSeats;
     });
   }, [selectedSeats]);
 
-  useEffect(() => {
-    async function fetchMovieDetail() {
-      try {
-        setLoading(true);
-        setError("");
-
-        const response = await fetch(`${API_BASE_URL}/movies/${slug}`);
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch movie detail");
-        }
-
-        const result = await response.json();
-        const rawMovie = result?.data ?? result;
-
-        setMovie(normalizeMovie(rawMovie));
-      } catch (err) {
-        setError(err.message || "Something went wrong");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    if (slug) {
-      fetchMovieDetail();
-    }
-  }, [slug]);
-
   const handleSeatClick = (seat) => {
-    if (seat.isSold || seat.isLoveNest) return;
+    if (seat.isSold || seat.isLoveNest) return; // Keep love nest strictly disabled
 
     setSelectedSeats((currentSeats) => {
       if (currentSeats.includes(seat.code)) {
         return currentSeats.filter((seatCode) => seatCode !== seat.code);
       }
-
       return [...currentSeats, seat.code];
     });
   };
@@ -243,69 +162,18 @@ function SeatBookingPage() {
 
   const handleCheckout = () => {
     if (selectedSeats.length === 0) return;
-
-    const bookingPayload = {
-      movieSlug: slug,
-      movieTitle: movie.title,
-      cinemaName,
-      location: selectedLocation,
-      date: selectedDate,
-      time: selectedTime,
-      seats: selectedSeats,
-      ticketPrice,
-      totalPayment,
-    };
-
-    console.log("Booking payload:", bookingPayload);
-
     setSelectedSeats([]);
   };
-
-  if (loading) {
-    return (
-      <HomeLayout>
-        <section className="flex min-h-screen items-center justify-center bg-[#A7ADC5] px-5">
-          <p className="text-sm font-medium text-neutral-700">
-            Loading booking page...
-          </p>
-        </section>
-      </HomeLayout>
-    );
-  }
-
-  if (error) {
-    return (
-      <HomeLayout>
-        <section className="flex min-h-screen items-center justify-center bg-[#A7ADC5] px-5">
-          <div className="rounded-lg border border-red-200 bg-red-50 px-6 py-5 text-center">
-            <h1 className="text-base font-semibold text-red-600">
-              Failed to load movie
-            </h1>
-
-            <p className="mt-2 text-sm text-red-500">{error}</p>
-
-            <button
-              type="button"
-              onClick={handleChangeMovie}
-              className="mt-5 h-10 rounded bg-primary px-7 text-sm font-semibold text-white transition hover:opacity-90"
-            >
-              Back to movie detail
-            </button>
-          </div>
-        </section>
-      </HomeLayout>
-    );
-  }
 
   return (
     <HomeLayout>
       <main className="min-h-screen bg-[#A7ADC5] px-5 py-8 sm:px-6 lg:px-8 lg:py-10">
+        {/* Progress Stepper */}
         <section className="mx-auto mb-8 flex max-w-4xl items-center justify-center gap-20 text-center">
           <div>
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-600 text-xl font-bold text-white">
               ✓
             </div>
-
             <p className="mt-3 text-sm font-semibold text-neutral-700">
               Dates And Time
             </p>
@@ -315,7 +183,6 @@ function SeatBookingPage() {
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary text-base font-bold text-white">
               2
             </div>
-
             <p className="mt-3 text-sm font-semibold text-neutral-700">Seat</p>
           </div>
 
@@ -323,15 +190,16 @@ function SeatBookingPage() {
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full text-base font-bold text-white/80">
               3
             </div>
-
             <p className="mt-3 text-sm font-semibold text-transparent">
               Payment
             </p>
           </div>
         </section>
 
+        {/* Main Interface Layout */}
         <section className="mx-auto grid max-w-7xl gap-5 lg:grid-cols-[1fr_380px]">
           <section className="rounded-lg bg-white px-5 py-6 shadow-sm sm:px-6 lg:px-8">
+            {/* Header Movie Selection Card */}
             <div className="rounded border border-neutral-200 p-4">
               <div className="grid gap-4 sm:grid-cols-[210px_1fr_auto] sm:items-center">
                 <img
@@ -359,10 +227,6 @@ function SeatBookingPage() {
                   <p className="mt-4 text-sm text-neutral-700 sm:text-base">
                     Regular - {formatTimeToAmPm(selectedTime)}
                   </p>
-
-                  <p className="mt-2 text-sm font-semibold text-primary">
-                    {formatPrice(ticketPrice)} / ticket
-                  </p>
                 </div>
 
                 <button
@@ -379,32 +243,32 @@ function SeatBookingPage() {
               Choose Your Seat
             </h2>
 
+            {/* Completely Centered Seating Interface */}
             <div className="mt-10 overflow-x-auto pb-4">
-              <div className="mx-auto flex min-w-160 flex-col items-center justify-center">
+              <div className="mx-auto flex min-w-[640px] flex-col items-center justify-center">
                 <p className="text-center text-sm font-medium text-neutral-500">
                   Screen
                 </p>
 
-                <div className="mt-4 h-1.5 w-115 rounded-full bg-neutral-300 shadow-inner" />
+                {/* Styled screen bar matched perfectly to center width */}
+                <div className="mt-4 h-1.5 w-[460px] rounded-full bg-neutral-300 shadow-inner" />
 
                 <div className="mt-10 grid gap-3">
                   {seatMap.map((rowSeats, rowIndex) => {
-                    const leftHalf = rowSeats.filter(
-                      (seat) => seat.number <= 7,
-                    );
-                    const rightHalf = rowSeats.filter(
-                      (seat) => seat.number > 7,
-                    );
+                    const leftHalf = rowSeats.filter((s) => s.number <= 7);
+                    const rightHalf = rowSeats.filter((s) => s.number > 7);
 
                     return (
                       <div
                         key={seatRows[rowIndex]}
                         className="grid grid-cols-[24px_repeat(7,28px)_32px_repeat(7,28px)] items-center gap-2"
                       >
+                        {/* Row Identifier Letter */}
                         <span className="text-center text-sm font-bold text-neutral-400">
                           {seatRows[rowIndex]}
                         </span>
 
+                        {/* Left Column Blocks */}
                         {leftHalf.map((seat) => (
                           <SeatButton
                             key={seat.code}
@@ -413,8 +277,10 @@ function SeatBookingPage() {
                           />
                         ))}
 
+                        {/* Central Aisle Gap */}
                         <span />
 
+                        {/* Right Column Blocks */}
                         {rightHalf.map((seat) => (
                           <SeatButton
                             key={seat.code}
@@ -426,6 +292,7 @@ function SeatBookingPage() {
                     );
                   })}
 
+                  {/* Horizontal Numeric Column Guide */}
                   <div className="mt-2 grid grid-cols-[24px_repeat(7,28px)_32px_repeat(7,28px)] items-center gap-2">
                     <span />
 
@@ -453,12 +320,13 @@ function SeatBookingPage() {
               </div>
             </div>
 
+            {/* Seating Key Legend */}
             <section className="mt-10">
               <h3 className="text-xl font-semibold text-neutral-900">
                 Seating key
               </h3>
 
-              <div className="mt-6 flex flex-wrap gap-6 text-sm font-medium text-neutral-600">
+              <div className="mt-6 flex flex-wrap justify-center  gap-6 text-sm font-medium text-neutral-600">
                 <SeatLegend label="Available" className="bg-neutral-200" />
                 <SeatLegend label="Selected" className="bg-primary" />
                 <SeatLegend label="Love nest" className="bg-pink-400" />
@@ -467,6 +335,7 @@ function SeatBookingPage() {
             </section>
           </section>
 
+          {/* Sidebar Receipt Panel */}
           <aside className="space-y-5">
             <section className="rounded-lg bg-white shadow-sm">
               <div className="px-6 py-8 text-center">
@@ -481,17 +350,14 @@ function SeatBookingPage() {
 
               <div className="space-y-5 px-6 pb-8">
                 <SummaryRow label="Movie selected" value={movie.title} />
-
                 <SummaryRow
                   label={formatDate(selectedDate)}
                   value={formatTimeToAmPm(selectedTime)}
                 />
-
                 <SummaryRow
                   label="One ticket price"
-                  value={formatPrice(ticketPrice)}
+                  value={`$${ticketPrice}`}
                 />
-
                 <SummaryRow label="Seat choosed" value={selectedSeatText} />
               </div>
 
@@ -500,9 +366,8 @@ function SeatBookingPage() {
                   <p className="text-lg font-semibold text-neutral-900">
                     Total Payment
                   </p>
-
                   <p className="text-2xl font-bold text-primary">
-                    {formatPrice(totalPayment)}
+                    ${totalPayment}
                   </p>
                 </div>
               </div>
@@ -528,6 +393,7 @@ function SeatButton({ seat, onClick }) {
   let spanClass = "h-7 w-7";
 
   if (seat.isMerged) {
+    // Spans 2 grid tracks perfectly + bridges the internal 8px gap between grid items
     spanClass = "h-7 w-[64px] col-span-2 rounded-md";
   }
 
