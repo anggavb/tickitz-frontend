@@ -31,6 +31,18 @@ function buildAssetUrl(path) {
   return `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
+function normalizeTimeValue(time) {
+  if (!time) return "";
+
+  const parts = String(time).split(":");
+  const hour = parts[0]?.padStart(2, "0");
+  const minute = parts[1]?.padStart(2, "0") ?? "00";
+
+  if (!hour) return "";
+
+  return `${hour}:${minute}`;
+}
+
 function formatDuration(movie) {
   const duration =
     movie?.duration_in_min ?? movie?.duration_in_minute ?? movie?.duration;
@@ -41,9 +53,11 @@ function formatDuration(movie) {
 }
 
 function formatTimeToAmPm(time) {
-  if (!time) return "";
+  const normalizedTime = normalizeTimeValue(time);
 
-  const [hourValue, minute = "00"] = String(time).split(":");
+  if (!normalizedTime) return "";
+
+  const [hourValue, minute = "00"] = normalizedTime.split(":");
   const hour = Number(hourValue);
 
   if (Number.isNaN(hour)) return time;
@@ -167,9 +181,13 @@ function normalizeTimeOptions(rawData) {
     ...new Set(
       rows
         .map((item) => {
-          if (typeof item === "string") return item;
+          if (typeof item === "string") {
+            return normalizeTimeValue(item);
+          }
 
-          return item?.showtime ?? item?.time ?? item?.show_time ?? "";
+          return normalizeTimeValue(
+            item?.showtime ?? item?.time ?? item?.show_time ?? "",
+          );
         })
         .filter(Boolean),
     ),
@@ -184,7 +202,9 @@ function normalizeSchedules(rows = []) {
     const cinemaName = row.cinema_name ?? row.cinemaName ?? "Unknown Cinema";
     const showDate =
       row.show_date ?? row.showDate ?? row.date ?? row.schedule_date ?? "";
-    const time = row.showtime ?? row.time ?? row.show_time ?? "";
+    const time = normalizeTimeValue(
+      row.showtime ?? row.time ?? row.show_time ?? "",
+    );
     const price = row.price ?? row.ticket_price ?? row.movie_price ?? "";
 
     if (!showDate || !time) return;
@@ -222,6 +242,8 @@ function normalizeSchedules(rows = []) {
 }
 
 function getCinemaList(schedules, date, time, location) {
+  const normalizedFilterTime = normalizeTimeValue(time);
+
   return schedules
     .filter((schedule) => {
       if (!location) return true;
@@ -232,7 +254,9 @@ function getCinemaList(schedules, date, time, location) {
       schedule.cinemas.map((cinema) => {
         const showtimes = cinema.showtimes.filter((showtime) => {
           const matchDate = date ? showtime.showDate === date : true;
-          const matchTime = time ? showtime.time === time : true;
+          const matchTime = normalizedFilterTime
+            ? showtime.time === normalizedFilterTime
+            : true;
 
           return matchDate && matchTime;
         });
@@ -462,7 +486,7 @@ function MovieDetailPage() {
   const handleFilter = () => {
     const nextAppliedFilter = {
       date: filterDate,
-      time: filterTime,
+      time: normalizeTimeValue(filterTime),
       location: filterLocation,
     };
 
@@ -646,7 +670,9 @@ function MovieDetailPage() {
             <FilterField label="Choose Time" className="hidden lg:block">
               <select
                 value={filterTime}
-                onChange={(event) => setFilterTime(event.target.value)}
+                onChange={(event) =>
+                  setFilterTime(normalizeTimeValue(event.target.value))
+                }
                 disabled={timeOptions.length === 0}
                 className="h-16 w-full rounded-lg border border-neutral-200 bg-neutral-100 px-4 text-base font-semibold text-neutral-600 outline-none transition focus:border-primary focus:bg-white disabled:cursor-not-allowed disabled:opacity-60"
               >
