@@ -14,6 +14,7 @@ import SettingPage from "./pages/profile/SettingPage";
 import AdminLayout from "./layouts/AdminLayout";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import OrderHistoryPage from "./pages/profile/OrderHistoryPage";
+import SeatBookingPage from "./pages/SeatBookingPage";
 
 function AppRouter() {
   return (
@@ -30,6 +31,8 @@ function AppRouter() {
       </Route>
       <Route path="/movies" element={<HomeMoviePage />} />
       <Route path="/movies/:slug" element={<MovieDetailPage />} />
+      <Route path="/movies/:slug/booking" element={<SeatBookingPage />} />
+
       <Route path="/admin" element={<AdminLayout />}>
         <Route path="movies" element={<AdminMoviePage />} />
         <Route path="dashboard" element={<AdminDashboardPage />} />
