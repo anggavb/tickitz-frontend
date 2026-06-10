@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router";
+import { Navigate, Route, Routes } from 'react-router';
 
 import LandingPage from "./pages/LandingPage";
 import HomeMoviePage from "./pages/HomeMoviePage";
@@ -42,6 +42,7 @@ function AppRouter() {
         <Route path="movies/add" element={<AddMoviePage />} />
       </Route>
       <Route path="/profile" element={<ProfileLayout />}>
+        <Route path="" element={<Navigate to="/profile/setting" replace />} />
         <Route path="setting" element={<SettingPage />} />
         <Route path="history" element={<OrderHistoryPage />} />
       </Route>
