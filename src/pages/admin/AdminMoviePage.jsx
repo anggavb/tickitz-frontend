@@ -21,6 +21,9 @@ function AdminMoviePage() {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [releaseMonths, setReleaseMonths] = useState([]);
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const [showMonthDropdown, setShowMonthDropdown] = useState(false);
   const [toast, setToast] = useState({ message: '', type: '' });
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -30,7 +33,15 @@ function AdminMoviePage() {
       setError(null);
 
       try {
-        const response = await fetch(`${API_BASE_URL}/admin/movies?page=${pageNumber}&limit=${PAGE_LIMIT}`);
+        const query = new URLSearchParams({
+          page: String(pageNumber),
+          limit: String(PAGE_LIMIT),
+        });
+        if (selectedMonth) {
+          query.set('month', selectedMonth);
+        }
+
+        const response = await fetch(`${API_BASE_URL}/admin/movies?${query.toString()}`);
         const result = await response.json();
 
         if (!response.ok) {
@@ -58,13 +69,48 @@ function AdminMoviePage() {
     };
 
     fetchMovies(page);
-  }, [page]);
+  }, [page, selectedMonth]);
 
   const gotoPage = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages && pageNumber !== page) {
       setPage(pageNumber);
     }
   };
+
+  const formatMonthLabel = (monthValue) => {
+    if (!monthValue) {
+      return 'All Months';
+    }
+
+    const [year, month] = monthValue.split('-');
+    if (!year || !month) {
+      return monthValue;
+    }
+
+    return new Date(Date.UTC(Number(year), Number(month) - 1, 1)).toLocaleString('default', {
+      month: 'long',
+      year: 'numeric',
+    });
+  };
+
+  useEffect(() => {
+    const fetchReleaseMonths = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/admin/movies/months`);
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.message || 'Failed to load release months');
+        }
+
+        setReleaseMonths(Array.isArray(result.data) ? result.data : []);
+      } catch (fetchError) {
+        console.error(fetchError);
+      }
+    };
+
+    fetchReleaseMonths();
+  }, []);
 
   const handleDeleteMovie = async (movieId, movieName) => {
     const confirmed = window.confirm(
@@ -108,13 +154,49 @@ function AdminMoviePage() {
             <h1 className="text-2xl font-semibold text-slate-800 sm:text-3xl">List Movie</h1>
 
             <div className="flex flex-col gap-6 sm:flex-row">
-              <button type="button" className="flex items-center justify-center gap-3 rounded-xl bg-slate-100 px-4 py-3 text-sm text-slate-600">
-                <img src={calendarIcon} alt="Calendar" className="h-4 w-4" />
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowMonthDropdown((prev) => !prev)}
+                  className="flex items-center justify-center gap-3 rounded-xl bg-slate-100 px-4 py-3 text-sm text-slate-600"
+                >
+                  <img src={calendarIcon} alt="Calendar" className="h-4 w-4" />
 
-                <span>November 2023</span>
+                  <span>{formatMonthLabel(selectedMonth)}</span>
 
-                <img src={arrowDownIcon} alt="Dropdown" className="ml-8 h-3 w-3" />
-              </button>
+                  <img src={arrowDownIcon} alt="Dropdown" className="ml-8 h-3 w-3" />
+                </button>
+
+                {showMonthDropdown && (
+                  <div className="absolute left-0 z-10 mt-2 w-56 rounded-2xl border border-slate-200 bg-white shadow-lg">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedMonth('');
+                        setPage(1);
+                        setShowMonthDropdown(false);
+                      }}
+                      className="block w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-slate-100"
+                    >
+                      All Months
+                    </button>
+                    {releaseMonths.map((month) => (
+                      <button
+                        key={month}
+                        type="button"
+                        onClick={() => {
+                          setSelectedMonth(month);
+                          setPage(1);
+                          setShowMonthDropdown(false);
+                        }}
+                        className="block w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-slate-100"
+                      >
+                        {formatMonthLabel(month)}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               <button
                 type="button"
