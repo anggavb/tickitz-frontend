@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router";
+import { Navigate, Route, Routes } from 'react-router';
 
 import LandingPage from "./pages/LandingPage";
 import HomeMoviePage from "./pages/HomeMoviePage";
@@ -15,6 +15,7 @@ import AdminLayout from "./layouts/AdminLayout";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import OrderHistoryPage from "./pages/profile/OrderHistoryPage";
 import SeatBookingPage from "./pages/SeatBookingPage";
+import MoviePaymentPage from "./pages/MoviePaymentPage";
 
 function AppRouter() {
   return (
@@ -32,6 +33,7 @@ function AppRouter() {
       <Route path="/movies" element={<HomeMoviePage />} />
       <Route path="/movies/:slug" element={<MovieDetailPage />} />
       <Route path="/movies/:slug/booking" element={<SeatBookingPage />} />
+      <Route path="/movies/:slug/payment" element={<MoviePaymentPage />} />
 
       <Route path="/admin" element={<AdminLayout />}>
         <Route path="movies" element={<AdminMoviePage />} />
@@ -42,6 +44,7 @@ function AppRouter() {
         <Route path="movies/:id/view" element={<AddMoviePage viewOnly />} />
       </Route>
       <Route path="/profile" element={<ProfileLayout />}>
+        <Route path="" element={<Navigate to="/profile/setting" replace />} />
         <Route path="setting" element={<SettingPage />} />
         <Route path="history" element={<OrderHistoryPage />} />
       </Route>

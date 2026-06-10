@@ -14,7 +14,7 @@ function StepProgres({ step = 1, steps }) {
             {i < steps.length - 1 && (
               <div className="absolute top-5 left-1/2 w-full px-12">
                 <div
-                  className={`h-[2px] border-t border-dashed ${isCompleted ? "border-green-500" : "border-gray-300"}`}
+                  className={`h-0.5 border-t border-dashed ${isCompleted ? "border-green-500" : "border-gray-300"}`}
                 />
               </div>
             )}

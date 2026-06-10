@@ -4,7 +4,6 @@ import { moviesData } from "../data/moviesData";
 import background from "../assets/images/background.png";
 import searchIcon from "../assets/images/Search.png";
 import Newsletter from "../components/Newsletter";
-import Footer from "../components/Footer";
 import sliderIndicator from "../assets/images/slider-indicator.png";
 import pagination from "../assets/images/pagination.png";
 import HomeLayout from "../layouts/HomeLayout";
