@@ -166,7 +166,6 @@ function SeatBookingPage() {
 
   return (
     <HomeLayout>
-      {/* Progress Stepper */}
       <section className="mx-auto mb-8 flex max-w-4xl items-center justify-center gap-20 text-center">
         <StepProgres step={2} steps={steps} />
       </section>
@@ -219,13 +218,13 @@ function SeatBookingPage() {
 
           {/* Completely Centered Seating Interface */}
           <div className="mt-10 overflow-x-auto pb-4">
-            <div className="mx-auto flex min-w-[640px] flex-col items-center justify-center">
+            <div className="mx-auto flex min-w-160 flex-col items-center justify-center">
               <p className="text-center text-sm font-medium text-neutral-500">
                 Screen
               </p>
 
               {/* Styled screen bar matched perfectly to center width */}
-              <div className="mt-4 h-1.5 w-[460px] rounded-full bg-neutral-300 shadow-inner" />
+              <div className="mt-4 h-1.5 w-115 rounded-full bg-neutral-300 shadow-inner" />
 
               <div className="mt-10 grid gap-3">
                 {seatMap.map((rowSeats, rowIndex) => {
