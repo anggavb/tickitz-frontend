@@ -1,25 +1,26 @@
-import React, { useState } from 'react';
-import AuthLayout from '../../layouts/AuthLayout';
-import AuthCard from '../../components/auth/AuthCard';
-import StepProgres from '../../components/auth/signup/StepProgres';
-import { FiEye, FiEyeOff } from 'react-icons/fi';
-import { Link, useNavigate } from 'react-router';
-import { useForm } from 'react-hook-form';
-import { useDispatch } from 'react-redux';
-import { resetAuthState, signup } from '../../redux/slice/authSlice';
-import Toast from '../../components/ui/Toast';
-import { FourSquare } from 'react-loading-indicators';
+import React, { useState } from "react";
+import AuthLayout from "../../layouts/AuthLayout";
+import AuthCard from "../../components/auth/AuthCard";
+import StepProgres from "../../components/auth/signup/StepProgres";
+import { FiEye, FiEyeOff } from "react-icons/fi";
+import { Link, useNavigate } from "react-router";
+import { useForm } from "react-hook-form";
+import { useDispatch } from "react-redux";
+import { resetAuthState, signup } from "../../redux/slice/authSlice";
+import Toast from "../../components/ui/Toast";
+import { FourSquare } from "react-loading-indicators";
 
 function SignupPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const steps = ["Fill Form", "Activate", "Done"];
 
   const [showPassword, setShowPassword] = useState(false);
 
   const [toast, setToast] = useState({
     show: false,
-    message: '',
-    type: 'error',
+    message: "",
+    type: "error",
   });
 
   const [loading, setLoading] = useState(false);
@@ -43,7 +44,7 @@ function SignupPage() {
 
       dispatch(resetAuthState());
 
-      navigate('/auth/signup/activation', {
+      navigate("/auth/signup/activation", {
         state: {
           email: data.email,
           isRegistered: true,
@@ -52,8 +53,9 @@ function SignupPage() {
     } catch (err) {
       setToast({
         show: true,
-        message: typeof err === 'string' ? err : err?.message || 'Registration failed',
-        type: 'error',
+        message:
+          typeof err === "string" ? err : err?.message || "Registration failed",
+        type: "error",
       });
     } finally {
       setLoading(false);
@@ -64,57 +66,79 @@ function SignupPage() {
     <AuthLayout>
       {loading && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center">
-          <FourSquare color={['#bb2d00', '#ee3900', '#ff5722', '#ff7e55']} />
+          <FourSquare color={["#bb2d00", "#ee3900", "#ff5722", "#ff7e55"]} />
         </div>
       )}
 
-      {toast.show && <Toast message={toast.message} type={toast.type} onClose={() => setToast((prev) => ({ ...prev, show: false }))} />}
+      {toast.show && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast((prev) => ({ ...prev, show: false }))}
+        />
+      )}
 
-      <img src="/assets/logo.png" alt="tickitz logo" className="w-60 mb-2 mx-auto" />
+      <img
+        src="/assets/logo.png"
+        alt="tickitz logo"
+        className="w-60 mb-2 mx-auto"
+      />
 
       <AuthCard>
-        <StepProgres step={1} />
+        <StepProgres step={1} steps={steps} />
 
-        <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-8 mt-8">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate
+          className="flex flex-col gap-8 mt-8"
+        >
           {/* EMAIL */}
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Email
+            </label>
 
             <input
               type="email"
               placeholder="Enter your email"
-              {...register('email', {
-                required: 'Email is required',
+              {...register("email", {
+                required: "Email is required",
                 pattern: {
                   value: /^\S+@\S+\.\S+$/,
-                  message: 'Invalid email format',
+                  message: "Invalid email format",
                 },
               })}
               className={`w-full h-14 border rounded-md px-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary ${
-                errors.email ? 'border-red-500' : 'border-gray-300'
+                errors.email ? "border-red-500" : "border-gray-300"
               }`}
             />
 
-            {errors.email && <p className="absolute left-0 -bottom-5 text-red-500 text-xs">{errors.email.message}</p>}
+            {errors.email && (
+              <p className="absolute left-0 -bottom-5 text-red-500 text-xs">
+                {errors.email.message}
+              </p>
+            )}
           </div>
 
           {/* PASSWORD */}
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Password
+            </label>
 
             <div className="relative">
               <input
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
-                {...register('password', {
-                  required: 'Password is required',
+                {...register("password", {
+                  required: "Password is required",
                   minLength: {
                     value: 8,
-                    message: 'Password must be at least 8 characters',
+                    message: "Password must be at least 8 characters",
                   },
                 })}
                 className={`w-full h-14 border rounded-md px-5 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-primary ${
-                  errors.password ? 'border-red-500' : 'border-gray-300'
+                  errors.password ? "border-red-500" : "border-gray-300"
                 }`}
               />
 
@@ -127,7 +151,11 @@ function SignupPage() {
               </button>
             </div>
 
-            {errors.password && <p className="absolute left-0 -bottom-5 text-red-500 text-xs">{errors.password.message}</p>}
+            {errors.password && (
+              <p className="absolute left-0 -bottom-5 text-red-500 text-xs">
+                {errors.password.message}
+              </p>
+            )}
           </div>
 
           {/* AGREEMENT */}
@@ -136,14 +164,18 @@ function SignupPage() {
               <input
                 type="checkbox"
                 className="w-5 h-5 accent-primary"
-                {...register('agree', {
-                  required: 'You must agree to terms & conditions',
+                {...register("agree", {
+                  required: "You must agree to terms & conditions",
                 })}
               />
               I agree to terms & conditions
             </label>
 
-            {errors.agree && <p className="absolute left-0 -bottom-5 text-red-500 text-xs">{errors.agree.message}</p>}
+            {errors.agree && (
+              <p className="absolute left-0 -bottom-5 text-red-500 text-xs">
+                {errors.agree.message}
+              </p>
+            )}
           </div>
 
           {/* SUBMIT */}
@@ -157,8 +189,11 @@ function SignupPage() {
         </form>
 
         <p className="text-center text-sm text-gray-500 mt-6">
-          Already have an account?{' '}
-          <Link to="/auth/signin" className="text-primary font-medium underline">
+          Already have an account?{" "}
+          <Link
+            to="/auth/signin"
+            className="text-primary font-medium underline"
+          >
             Sign in
           </Link>
         </p>
@@ -174,7 +209,11 @@ function SignupPage() {
             type="button"
             className="h-14 border border-gray-200 rounded-md bg-white shadow-sm cursor-pointer flex items-center justify-center gap-3 hover:shadow-md transition"
           >
-            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
+            <img
+              src="https://www.svgrepo.com/show/475656/google-color.svg"
+              alt="Google"
+              className="w-5 h-5"
+            />
             <span className="text-gray-500">Google</span>
           </button>
 
@@ -182,7 +221,11 @@ function SignupPage() {
             type="button"
             className="h-14 border border-gray-200 rounded-md bg-white cursor-pointer shadow-sm flex items-center justify-center gap-3 hover:shadow-md transition"
           >
-            <img src="https://www.svgrepo.com/show/448224/facebook.svg" alt="Facebook" className="w-5 h-5" />
+            <img
+              src="https://www.svgrepo.com/show/448224/facebook.svg"
+              alt="Facebook"
+              className="w-5 h-5"
+            />
             <span className="text-gray-500">Facebook</span>
           </button>
         </div>

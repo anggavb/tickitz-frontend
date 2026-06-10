@@ -1,15 +1,19 @@
-import { useLocation, useNavigate } from 'react-router';
-import { useState, useRef, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useLocation, useNavigate } from "react-router";
+import { useState, useRef, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
-import AuthLayout from '../../layouts/AuthLayout';
-import AuthCard from '../../components/auth/AuthCard';
-import StepProgres from '../../components/auth/signup/StepProgres';
-import Toast from '../../components/ui/Toast';
+import AuthLayout from "../../layouts/AuthLayout";
+import AuthCard from "../../components/auth/AuthCard";
+import StepProgres from "../../components/auth/signup/StepProgres";
+import Toast from "../../components/ui/Toast";
 
-import { activate, requestNewOTP, resetAuthState } from '../../redux/slice/authSlice';
+import {
+  activate,
+  requestNewOTP,
+  resetAuthState,
+} from "../../redux/slice/authSlice";
 
-import { FourSquare } from 'react-loading-indicators';
+import { FourSquare } from "react-loading-indicators";
 
 function ActivationPage() {
   const location = useLocation();
@@ -18,18 +22,19 @@ function ActivationPage() {
 
   const email = location.state?.email;
   const isRegistered = location.state?.isRegistered;
+  const steps = ["Fill Form", "Activate", "Done"];
 
   const { loading, error, success } = useSelector((state) => state.auth);
 
-  const [otp, setOtp] = useState(new Array(6).fill(''));
+  const [otp, setOtp] = useState(new Array(6).fill(""));
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const [countdown, setCountdown] = useState(0);
 
   const [toast, setToast] = useState({
     show: false,
-    type: '',
-    message: '',
+    type: "",
+    message: "",
   });
 
   const inputsRef = useRef([]);
@@ -47,13 +52,13 @@ function ActivationPage() {
   };
 
   const handleKeyDown = (e, index) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputsRef.current[index - 1]?.focus();
     }
   };
 
   const handleSubmit = () => {
-    const code = otp.join('');
+    const code = otp.join("");
 
     if (code.length !== 6 || loading) return;
 
@@ -77,8 +82,8 @@ function ActivationPage() {
 
       setToast({
         show: true,
-        type: 'success',
-        message: result?.message || 'OTP sent successfully',
+        type: "success",
+        message: result?.message || "OTP sent successfully",
       });
 
       dispatch(resetAuthState());
@@ -103,11 +108,11 @@ function ActivationPage() {
     const timer = setTimeout(() => {
       setToast({
         show: true,
-        type: 'error',
+        type: "error",
         message: error,
       });
 
-      setOtp(new Array(6).fill(''));
+      setOtp(new Array(6).fill(""));
 
       dispatch(resetAuthState());
     }, 0);
@@ -117,13 +122,13 @@ function ActivationPage() {
 
   useEffect(() => {
     if (!isRegistered) {
-      navigate('/auth/signup', { replace: true });
+      navigate("/auth/signup", { replace: true });
       return;
     }
 
     if (isSubmitted && success) {
       const timer = setTimeout(() => {
-        navigate('/auth/signup/verified', {
+        navigate("/auth/signup/verified", {
           replace: true,
           state: {
             isActive: true,
@@ -142,29 +147,44 @@ function ActivationPage() {
     };
   }, [dispatch]);
 
-  const isOtpComplete = otp.every((d) => d !== '');
+  const isOtpComplete = otp.every((d) => d !== "");
 
   return (
     <AuthLayout>
-      {toast.show && <Toast message={toast.message} type={toast.type} onClose={() => setToast({ show: false, type: '', message: '' })} />}
+      {toast.show && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast({ show: false, type: "", message: "" })}
+        />
+      )}
 
       {loading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-          <FourSquare color={['#bb2d00', '#ee3900', '#ff5722', '#ff7e55']} />
+          <FourSquare color={["#bb2d00", "#ee3900", "#ff5722", "#ff7e55"]} />
         </div>
       )}
 
-      <img src="/assets/logo.png" alt="tickitz logo" className="w-60 mb-2 mx-auto" />
+      <img
+        src="/assets/logo.png"
+        alt="tickitz logo"
+        className="w-60 mb-2 mx-auto"
+      />
 
       <AuthCard>
-        <StepProgres step={2} />
+        <StepProgres step={2} steps={steps} />
 
         <div className="flex flex-col items-center text-center mt-8">
-          <img src="/assets/auth/signup/email-sent.svg" className="w-32 h-32 mt-6 mb-6" />
+          <img
+            src="/assets/auth/signup/email-sent.svg"
+            className="w-32 h-32 mt-6 mb-6"
+          />
 
           <h2 className="text-2xl font-semibold">Enter Verification Code</h2>
 
-          <p className="text-gray-500 mt-3">We sent a 6-digit code to your email</p>
+          <p className="text-gray-500 mt-3">
+            We sent a 6-digit code to your email
+          </p>
 
           <p className="mt-4 font-semibold text-primary">{email}</p>
 
@@ -192,8 +212,12 @@ function ActivationPage() {
             Verify OTP
           </button>
 
-          <button onClick={handleResendOTP} disabled={loading || countdown > 0} className="mt-4 text-sm text-primary">
-            {countdown > 0 ? `Resend Code (${countdown}s)` : 'Resend Code'}
+          <button
+            onClick={handleResendOTP}
+            disabled={loading || countdown > 0}
+            className="mt-4 text-sm text-primary"
+          >
+            {countdown > 0 ? `Resend Code (${countdown}s)` : "Resend Code"}
           </button>
         </div>
       </AuthCard>
