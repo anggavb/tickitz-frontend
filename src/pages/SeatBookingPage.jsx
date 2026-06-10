@@ -9,9 +9,6 @@ const fallbackMovie = {
   genres: [],
 };
 
-// ============================================================================
-// DUMMY DATA FOR TESTING (Self-Contained)
-// ============================================================================
 const dummyBookingState = {
   movie: {
     title: "Interstellar: 10th Anniversary Edition",
