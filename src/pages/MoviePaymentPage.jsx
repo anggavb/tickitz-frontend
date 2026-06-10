@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import HomeLayout from "../layouts/HomeLayout";
 import StepProgres from "../components/auth/signup/StepProgres";
+import ConfirmationModal from "../components/ConfirmationModal";
 
 const paymentMethods = [
   {
@@ -62,6 +63,9 @@ const paymentInfo = [
 
 function MoviePaymentPage() {
   const [selectedPayment, setSelectedPayment] = useState("");
+  const [paymentError, setPaymentError] = useState("");
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [paymentPayload, setPaymentPayload] = useState(null);
 
   const {
     register,
@@ -79,24 +83,35 @@ function MoviePaymentPage() {
 
   const onSubmit = (data) => {
     if (!selectedPayment) {
-      alert("Please choose a payment method");
+      setPaymentError("Please choose one payment method before submitting.");
       return;
     }
+
+    setPaymentError("");
 
     const payload = {
       ...data,
       phone: `+62${data.phone}`,
       paymentMethod: selectedPayment,
+      totalPayment: "$30",
+      virtualAccount: "12321328913829724",
     };
 
     console.log("Payment submitted:", payload);
 
-    alert("Form submitted successfully!");
+    setPaymentPayload(payload);
+    setModalOpen(true);
+  };
+
+  const handleConfirm = () => {
+    console.log("Checking payment:", paymentPayload);
+    alert("Checking payment...");
+    setModalOpen(false);
   };
 
   return (
     <HomeLayout>
-      <div className="flex min-h-screen items-start justify-center bg-gray-50 px-4 py-8">
+      <div className="flex min-h-screen items-start justify-center bg-mainbg px-4 py-8">
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="w-full max-w-4xl space-y-8 rounded-2xl bg-white px-6 py-8 shadow-sm"
@@ -149,7 +164,7 @@ function MoviePaymentPage() {
                   id="fullName"
                   type="text"
                   placeholder="Jonas El Rodriguez"
-                  className={`w-full rounded-lg border px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-indigo-100 ${
+                  className={`w-full rounded-lg border px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-orange-100 ${
                     errors.fullName ? "border-red-500" : "border-gray-300"
                   }`}
                   {...register("fullName", {
@@ -180,7 +195,7 @@ function MoviePaymentPage() {
                   id="email"
                   type="email"
                   placeholder="jonasrodri123@gmail.com"
-                  className={`w-full rounded-lg border px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-indigo-100 ${
+                  className={`w-full rounded-lg border px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-orange-100 ${
                     errors.email ? "border-red-500" : "border-gray-300"
                   }`}
                   {...register("email", {
@@ -208,7 +223,7 @@ function MoviePaymentPage() {
                 </label>
 
                 <div
-                  className={`flex overflow-hidden rounded-lg border transition focus-within:border-primary focus-within:ring-2 focus-within:ring-indigo-100 ${
+                  className={`flex overflow-hidden rounded-lg border transition focus-within:border-primary focus-within:ring-2 focus-within:ring-orange-100 ${
                     errors.phone ? "border-red-500" : "border-gray-300"
                   }`}
                 >
@@ -251,27 +266,28 @@ function MoviePaymentPage() {
                 <button
                   key={method.id}
                   type="button"
-                  onClick={() => setSelectedPayment(method.id)}
+                  onClick={() => {
+                    setSelectedPayment(method.id);
+                    setPaymentError("");
+                  }}
                   aria-label={method.label}
                   className={`flex h-14 items-center justify-center rounded-lg border bg-white px-3 transition ${
                     selectedPayment === method.id
-                      ? "border-primary ring-2 ring-indigo-100"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-primary ring-2 ring-orange-100"
+                      : "border-gray-200 hover:border-primary"
                   }`}
                 >
                   <img
                     src={method.logoUrl}
                     alt={method.label}
-                    className="max-h-6 max-w-20.5 object-contain"
+                    className="max-h-6 max-w-20 object-contain"
                   />
                 </button>
               ))}
             </div>
 
-            {!selectedPayment && (
-              <p className="mt-2 text-xs text-gray-400">
-                Please choose one payment method before submitting.
-              </p>
+            {paymentError && (
+              <p className="mt-2 text-xs text-red-500">{paymentError}</p>
             )}
           </section>
 
@@ -282,6 +298,15 @@ function MoviePaymentPage() {
             Pay your order
           </button>
         </form>
+
+        <ConfirmationModal
+          isOpen={isModalOpen}
+          onClose={() => setModalOpen(false)}
+          onConfirm={handleConfirm}
+          virtualAccount="12321328913829724"
+          totalPayment="$30"
+          dueDate="June 23, 2023"
+        />
       </div>
     </HomeLayout>
   );
