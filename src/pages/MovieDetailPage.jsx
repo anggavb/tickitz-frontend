@@ -779,14 +779,6 @@ function CinemaDesktopCard({ cinema, active, onClick }) {
       >
         {cinema.location}
       </span>
-
-      <span
-        className={`mt-3 text-sm font-bold ${
-          active ? "text-white" : "text-neutral-900"
-        }`}
-      >
-        {formatPrice(cinema.price)}
-      </span>
     </button>
   );
 }
