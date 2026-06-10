@@ -38,6 +38,7 @@ function AppRouter() {
         <Route path="dashboard" element={<AdminDashboardPage />} />
         <Route path="" element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="movies/add" element={<AddMoviePage />} />
+        <Route path="movies/:id/edit" element={<AddMoviePage />} />
       </Route>
       <Route path="/profile" element={<ProfileLayout />}>
         <Route path="setting" element={<SettingPage />} />

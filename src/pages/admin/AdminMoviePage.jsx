@@ -168,7 +168,11 @@ function AdminMoviePage() {
                             <img src={eyeIcon} alt="View" className="h-7 w-7" />
                           </button>
 
-                          <button type="button">
+                          <button
+                            type="button"
+                            onClick={() => navigate(`/admin/movies/${movie.id}/edit`)}
+                            className="hover:opacity-70 transition"
+                          >
                             <img src={editIcon} alt="Edit" className="h-7 w-7" />
                           </button>
 
