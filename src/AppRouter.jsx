@@ -1,20 +1,20 @@
-import { Navigate, Route, Routes } from "react-router";
+import { Navigate, Route, Routes } from 'react-router';
 
-import LandingPage from "./pages/LandingPage";
-import HomeMoviePage from "./pages/HomeMoviePage";
-import MovieDetailPage from "./pages/MovieDetailPage";
-import AdminMoviePage from "./pages/admin/AdminMoviePage";
-import SignupPage from "./pages/auth/SignupPage";
-import ActivationPage from "./pages/auth/ActivationPage";
-import ActivationDonePage from "./pages/auth/ActivationDonePage";
-import SigninPage from "./pages/auth/SigninPage";
-import AddMoviePage from "./pages/admin/AddMoviePage";
-import ProfileLayout from "./layouts/ProfileLayout";
-import SettingPage from "./pages/profile/SettingPage";
-import AdminLayout from "./layouts/AdminLayout";
-import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
-import OrderHistoryPage from "./pages/profile/OrderHistoryPage";
-import SeatBookingPage from "./pages/SeatBookingPage";
+import LandingPage from './pages/LandingPage';
+import HomeMoviePage from './pages/HomeMoviePage';
+import MovieDetailPage from './pages/MovieDetailPage';
+import AdminMoviePage from './pages/admin/AdminMoviePage';
+import SignupPage from './pages/auth/SignupPage';
+import ActivationPage from './pages/auth/ActivationPage';
+import ActivationDonePage from './pages/auth/ActivationDonePage';
+import SigninPage from './pages/auth/SigninPage';
+import AddMoviePage from './pages/admin/AddMoviePage';
+import ProfileLayout from './layouts/ProfileLayout';
+import SettingPage from './pages/profile/SettingPage';
+import AdminLayout from './layouts/AdminLayout';
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import OrderHistoryPage from './pages/profile/OrderHistoryPage';
+import SeatBookingPage from './pages/SeatBookingPage';
 
 function AppRouter() {
   return (
@@ -40,6 +40,7 @@ function AppRouter() {
         <Route path="movies/add" element={<AddMoviePage />} />
       </Route>
       <Route path="/profile" element={<ProfileLayout />}>
+        <Route path="" element={<Navigate to="/profile/setting" replace />} />
         <Route path="setting" element={<SettingPage />} />
         <Route path="history" element={<OrderHistoryPage />} />
       </Route>
