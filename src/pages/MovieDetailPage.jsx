@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import HomeLayout from "../layouts/HomeLayout";
+
+const API_BASE_URL = (
+  import.meta.env.VITE_API_URL ?? "http://localhost:8080"
+).replace(/\/$/, "");
 
 const fallbackMovie = {
   title: "Untitled Movie",
@@ -17,26 +21,23 @@ const fallbackMovie = {
   schedules: [],
 };
 
-function buildAssetUrl(path, apiBaseUrl) {
+function buildAssetUrl(path) {
   if (!path) return "";
-  if (path.startsWith("http://") || path.startsWith("https://")) return path;
 
-  return `${apiBaseUrl}${path.startsWith("/") ? path : `/${path}`}`;
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    return path;
+  }
+
+  return `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-function formatDuration(rawMovie) {
+function formatDuration(movie) {
   const duration =
-    rawMovie?.duration_in_min ??
-    rawMovie?.duration_in_minute ??
-    rawMovie?.duration;
+    movie?.duration_in_min ?? movie?.duration_in_minute ?? movie?.duration;
 
   if (!duration) return fallbackMovie.duration;
 
-  if (typeof duration === "number") {
-    return `${duration} minutes`;
-  }
-
-  return duration;
+  return typeof duration === "number" ? `${duration} minutes` : duration;
 }
 
 function formatTimeToAmPm(time) {
@@ -53,7 +54,25 @@ function formatTimeToAmPm(time) {
   return `${hour12}:${minute} ${period}`;
 }
 
-function normalizeMovie(rawMovie, apiBaseUrl) {
+function formatPrice(price) {
+  if (price === null || price === undefined || price === "") {
+    return "-";
+  }
+
+  const numericPrice = Number(price);
+
+  if (Number.isNaN(numericPrice)) {
+    return price;
+  }
+
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(numericPrice);
+}
+
+function normalizeMovie(rawMovie) {
   const posterPath =
     rawMovie?.poster ?? rawMovie?.image_poster ?? rawMovie?.image ?? "";
 
@@ -66,9 +85,8 @@ function normalizeMovie(rawMovie, apiBaseUrl) {
 
   return {
     title: rawMovie?.title ?? rawMovie?.name ?? fallbackMovie.title,
-    background:
-      buildAssetUrl(backgroundPath, apiBaseUrl) || fallbackMovie.background,
-    poster: buildAssetUrl(posterPath, apiBaseUrl) || fallbackMovie.poster,
+    background: buildAssetUrl(backgroundPath) || fallbackMovie.background,
+    poster: buildAssetUrl(posterPath) || fallbackMovie.poster,
     genres:
       rawMovie?.genres ??
       rawMovie?.genres_categories ??
@@ -89,48 +107,47 @@ function normalizeMovie(rawMovie, apiBaseUrl) {
   };
 }
 
-function normalizeScheduleRows(scheduleRows = []) {
-  const groupedSchedules = new Map();
+function normalizeSchedules(rows = []) {
+  const locationMap = new Map();
 
-  scheduleRows.forEach((row) => {
+  rows.forEach((row) => {
     const location = row.location ?? "Unknown Location";
     const cinemaName = row.cinema_name ?? row.cinemaName ?? "Unknown Cinema";
-    const showtime = row.showtime ?? row.time ?? "";
+    const time = row.showtime ?? row.time ?? "";
     const startDate = row.start_date ?? row.startDate ?? row.date ?? "";
     const endDate = row.end_date ?? row.endDate ?? row.date ?? startDate;
-    if (!groupedSchedules.has(location)) {
-      groupedSchedules.set(location, {
-        location,
-        cinemas: new Map(),
-      });
+    const price = row.price ?? row.ticket_price ?? row.movie_price ?? "";
+
+    if (!time) return;
+
+    if (!locationMap.has(location)) {
+      locationMap.set(location, new Map());
     }
 
-    const locationGroup = groupedSchedules.get(location);
+    const cinemaMap = locationMap.get(location);
 
-    if (!locationGroup.cinemas.has(cinemaName)) {
-      locationGroup.cinemas.set(cinemaName, {
-        cinema_name: cinemaName,
-        showtimes: [],
-      });
+    if (!cinemaMap.has(cinemaName)) {
+      cinemaMap.set(cinemaName, []);
     }
 
-    locationGroup.cinemas.get(cinemaName).showtimes.push({
-      time: showtime,
+    cinemaMap.get(cinemaName).push({
+      time,
       startDate,
       endDate,
+      price,
     });
   });
 
-  return Array.from(groupedSchedules.values()).map((locationGroup) => ({
-    location: locationGroup.location,
-    cinemas: Array.from(locationGroup.cinemas.values()).map((cinema) => ({
-      ...cinema,
-      showtimes: cinema.showtimes.sort((a, b) => a.time.localeCompare(b.time)),
+  return Array.from(locationMap.entries()).map(([location, cinemaMap]) => ({
+    location,
+    cinemas: Array.from(cinemaMap.entries()).map(([cinemaName, showtimes]) => ({
+      cinema_name: cinemaName,
+      showtimes: showtimes.sort((a, b) => a.time.localeCompare(b.time)),
     })),
   }));
 }
 
-function isDateInScheduleRange(selectedDate, showtime) {
+function isDateAvailable(selectedDate, showtime) {
   if (!selectedDate) return true;
 
   const startDate = showtime.startDate || selectedDate;
@@ -139,25 +156,74 @@ function isDateInScheduleRange(selectedDate, showtime) {
   return selectedDate >= startDate && selectedDate <= endDate;
 }
 
+function getAvailableTimes(schedules, date, location) {
+  const times = schedules
+    .filter((schedule) => {
+      if (!location) return true;
+      return schedule.location === location;
+    })
+    .flatMap((schedule) => schedule.cinemas)
+    .flatMap((cinema) => cinema.showtimes)
+    .filter((showtime) => isDateAvailable(date, showtime))
+    .map((showtime) => showtime.time);
+
+  return [...new Set(times)].sort();
+}
+
+function getCinemaList(schedules, date, time, location) {
+  return schedules
+    .filter((schedule) => {
+      if (!location) return true;
+      return schedule.location === location;
+    })
+    .flatMap((schedule) =>
+      schedule.cinemas.map((cinema) => {
+        const showtimes = cinema.showtimes.filter((showtime) => {
+          const matchDate = isDateAvailable(date, showtime);
+          const matchTime = time ? showtime.time === time : true;
+
+          return matchDate && matchTime;
+        });
+
+        const firstShowtime = showtimes[0];
+
+        return {
+          id: `${schedule.location}-${cinema.cinema_name}`,
+          location: schedule.location,
+          name: cinema.cinema_name,
+          logo: cinema.cinema_name,
+          price: firstShowtime?.price ?? "",
+          showtimes,
+        };
+      }),
+    )
+    .filter((cinema) => cinema.showtimes.length > 0);
+}
+
 function MovieDetailPage() {
   const { slug } = useParams();
-  const API_BASE_URL = (
-    import.meta.env.VITE_API_URL ?? "http://localhost:8080"
-  ).replace(/\/$/, "");
+  const navigate = useNavigate();
 
   const [movie, setMovie] = useState(fallbackMovie);
-  const [currentPage, setCurrentPage] = useState(1);
+
+  const [filterDate, setFilterDate] = useState("");
+  const [filterTime, setFilterTime] = useState("");
+  const [filterLocation, setFilterLocation] = useState("");
+
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
-  const [selectedCinema, setSelectedCinema] = useState(null);
+  const [selectedCinemaId, setSelectedCinemaId] = useState("");
+
+  const [currentPage, setCurrentPage] = useState(1);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const cinemaPerPage = 4;
 
   const locationOptions = useMemo(() => {
-    return [...new Set(movie.schedules.map((schedule) => schedule.location))];
+    return movie.schedules.map((schedule) => schedule.location);
   }, [movie.schedules]);
 
   const scheduleDateRange = useMemo(() => {
@@ -175,54 +241,30 @@ function MovieDetailPage() {
   }, [movie.schedules]);
 
   const timeOptions = useMemo(() => {
-    const times = movie.schedules.flatMap((schedule) =>
-      schedule.cinemas.flatMap((cinema) =>
-        cinema.showtimes
-          .filter((showtime) => isDateInScheduleRange(selectedDate, showtime))
-          .map((showtime) => showtime.time),
-      ),
-    );
-
-    return [...new Set(times)].sort();
-  }, [movie.schedules, selectedDate]);
-
-  const filteredSchedules = useMemo(() => {
-    return movie.schedules
-      .filter((schedule) => {
-        if (!selectedLocation) return true;
-
-        return schedule.location === selectedLocation;
-      })
-      .map((schedule) => ({
-        ...schedule,
-        cinemas: schedule.cinemas
-          .map((cinema) => ({
-            ...cinema,
-            showtimes: cinema.showtimes.filter((showtime) => {
-              const matchDate = isDateInScheduleRange(selectedDate, showtime);
-              const matchTime = selectedTime
-                ? showtime.time === selectedTime
-                : true;
-
-              return matchDate && matchTime;
-            }),
-          }))
-          .filter((cinema) => cinema.showtimes.length > 0),
-      }))
-      .filter((schedule) => schedule.cinemas.length > 0);
-  }, [movie.schedules, selectedDate, selectedLocation, selectedTime]);
+    return getAvailableTimes(movie.schedules, filterDate, filterLocation);
+  }, [movie.schedules, filterDate, filterLocation]);
 
   const cinemaList = useMemo(() => {
-    return filteredSchedules.flatMap((schedule) =>
-      schedule.cinemas.map((cinema, cinemaIndex) => ({
-        id: `${schedule.location}-${cinema.cinema_name}-${cinemaIndex}`,
-        location: schedule.location,
-        name: cinema.cinema_name,
-        logo: cinema.cinema_name,
-        showtimes: cinema.showtimes,
-      })),
+    return getCinemaList(
+      movie.schedules,
+      selectedDate,
+      selectedTime,
+      selectedLocation,
     );
-  }, [filteredSchedules]);
+  }, [movie.schedules, selectedDate, selectedTime, selectedLocation]);
+
+  const selectedCinema = useMemo(() => {
+    return cinemaList.find((cinema) => cinema.id === selectedCinemaId) ?? null;
+  }, [cinemaList, selectedCinemaId]);
+
+  const isFilterApplied =
+    selectedDate !== "" || selectedTime !== "" || selectedLocation !== "";
+
+  const activeCinemaId = selectedCinema?.id ?? "";
+  const selectedPrice = selectedCinema?.price ?? "";
+
+  const canBook =
+    selectedDate && selectedTime && selectedLocation && selectedCinema;
 
   const totalPages = Math.ceil(cinemaList.length / cinemaPerPage);
 
@@ -238,49 +280,7 @@ function MovieDetailPage() {
   }, [cinemaList, currentPage]);
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedDate, selectedLocation, selectedTime]);
-
-  useEffect(() => {
-    if (!scheduleDateRange.minDate || !scheduleDateRange.maxDate) return;
-
-    if (!selectedDate) {
-      setSelectedDate(scheduleDateRange.minDate);
-      return;
-    }
-
-    if (selectedDate < scheduleDateRange.minDate) {
-      setSelectedDate(scheduleDateRange.minDate);
-      return;
-    }
-
-    if (selectedDate > scheduleDateRange.maxDate) {
-      setSelectedDate(scheduleDateRange.maxDate);
-    }
-  }, [scheduleDateRange.minDate, scheduleDateRange.maxDate, selectedDate]);
-
-  useEffect(() => {
-    if (!selectedLocation && locationOptions.length > 0) {
-      setSelectedLocation(locationOptions[0]);
-    }
-  }, [locationOptions, selectedLocation]);
-
-  useEffect(() => {
-    if (!selectedTime && timeOptions.length > 0) {
-      setSelectedTime(timeOptions[0]);
-    }
-
-    if (
-      selectedTime &&
-      timeOptions.length > 0 &&
-      !timeOptions.includes(selectedTime)
-    ) {
-      setSelectedTime(timeOptions[0]);
-    }
-  }, [selectedTime, timeOptions]);
-
-  useEffect(() => {
-    const fetchMovie = async () => {
+    async function fetchMovie() {
       try {
         setLoading(true);
         setError("");
@@ -304,40 +304,123 @@ function MovieDetailPage() {
         const rawMovie = movieResult?.data ?? movieResult;
         const rawSchedules = scheduleResult?.data ?? [];
 
-        const normalizedMovie = normalizeMovie(rawMovie, API_BASE_URL);
-        const normalizedSchedules = normalizeScheduleRows(rawSchedules);
+        const normalizedMovie = normalizeMovie(rawMovie);
+        const normalizedSchedules = normalizeSchedules(rawSchedules);
+
+        const firstLocation = normalizedSchedules[0];
+        const firstCinema = firstLocation?.cinemas?.[0];
+        const firstShowtime = firstCinema?.showtimes?.[0];
+
+        const initialLocation = firstLocation?.location ?? "";
+        const initialDate = firstShowtime?.startDate ?? "";
+        const initialTime = firstShowtime?.time ?? "";
 
         setMovie({
           ...normalizedMovie,
           schedules: normalizedSchedules,
         });
 
-        const firstShowtime = normalizedSchedules
-          .flatMap((schedule) => schedule.cinemas)
-          .flatMap((cinema) => cinema.showtimes)[0];
+        setFilterLocation(initialLocation);
+        setFilterDate(initialDate);
+        setFilterTime(initialTime);
 
-        setSelectedDate(firstShowtime?.startDate ?? "");
-        setSelectedTime(firstShowtime?.time ?? "");
-        setSelectedLocation(normalizedSchedules[0]?.location ?? "");
+        setSelectedLocation("");
+        setSelectedDate("");
+        setSelectedTime("");
+        setSelectedCinemaId("");
+        setCurrentPage(1);
       } catch (err) {
         setError(err.message || "Something went wrong");
       } finally {
         setLoading(false);
       }
-    };
+    }
 
     if (slug) {
       fetchMovie();
     }
-  }, [API_BASE_URL, slug]);
+  }, [slug]);
 
-  const handleFilter = (event) => {
-    event.preventDefault();
+  const handleFilter = () => {
+    const validTimes = getAvailableTimes(
+      movie.schedules,
+      filterDate,
+      filterLocation,
+    );
+
+    const nextTime = validTimes.includes(filterTime)
+      ? filterTime
+      : (validTimes[0] ?? "");
+
+    const nextCinemaList = getCinemaList(
+      movie.schedules,
+      filterDate,
+      nextTime,
+      filterLocation,
+    );
+
+    setFilterTime(nextTime);
+
+    setSelectedDate(filterDate);
+    setSelectedTime(nextTime);
+    setSelectedLocation(filterLocation);
+    setSelectedCinemaId(nextCinemaList[0]?.id ?? "");
     setCurrentPage(1);
   };
 
   const handleSelectCinema = (cinema) => {
-    setSelectedCinema(cinema);
+    const firstShowtime = cinema.showtimes[0];
+
+    if (!firstShowtime) return;
+
+    const nextDate = filterDate || firstShowtime.startDate || "";
+    const nextTime = firstShowtime.time || "";
+    const nextLocation = cinema.location || "";
+
+    setSelectedCinemaId(cinema.id);
+    setSelectedDate(nextDate);
+    setSelectedTime(nextTime);
+    setSelectedLocation(nextLocation);
+
+    setFilterDate(nextDate);
+    setFilterTime(nextTime);
+    setFilterLocation(nextLocation);
+  };
+
+  const handleSelectMobileTime = (cinema, time) => {
+    const selectedShowtime = cinema.showtimes.find(
+      (showtime) => showtime.time === time,
+    );
+
+    if (!selectedShowtime) return;
+
+    const nextDate = filterDate || selectedShowtime.startDate || "";
+    const nextTime = selectedShowtime.time;
+    const nextLocation = cinema.location || "";
+
+    setSelectedCinemaId(cinema.id);
+    setSelectedDate(nextDate);
+    setSelectedTime(nextTime);
+    setSelectedLocation(nextLocation);
+
+    setFilterDate(nextDate);
+    setFilterTime(nextTime);
+    setFilterLocation(nextLocation);
+  };
+
+  const handleBookNow = () => {
+    if (!canBook) return;
+
+    navigate(`/movies/${slug}/booking`, {
+      state: {
+        movie,
+        selectedDate,
+        selectedTime,
+        selectedLocation,
+        selectedCinema,
+        price: selectedPrice,
+      },
+    });
   };
 
   if (loading) {
@@ -370,7 +453,7 @@ function MovieDetailPage() {
   return (
     <HomeLayout>
       <section
-        className="relative min-h-72 bg-cover bg-center bg-no-repeat sm:min-h-72 lg:min-h-96"
+        className="relative min-h-72 bg-cover bg-center bg-no-repeat lg:min-h-96"
         style={{
           backgroundImage: `linear-gradient(
             rgba(0, 0, 0, 0.35),
@@ -390,7 +473,7 @@ function MovieDetailPage() {
           </div>
 
           <div className="text-center lg:pt-10 lg:text-left">
-            <h1 className="text-sm font-semibold text-neutral-900 sm:text-3xl lg:text-5xl">
+            <h1 className="text-2xl font-semibold text-neutral-900 sm:text-3xl lg:text-5xl">
               {movie.title}
             </h1>
 
@@ -398,7 +481,7 @@ function MovieDetailPage() {
               {movie.genres.map((genre) => (
                 <span
                   key={genre}
-                  className="rounded-full bg-neutral-100 px-4 py-1.5 text-[10px] font-medium text-neutral-500 sm:px-5 sm:py-2 sm:text-sm"
+                  className="rounded-full bg-neutral-100 px-4 py-1.5 text-xs font-medium text-neutral-500 sm:px-5 sm:py-2 sm:text-sm"
                 >
                   {genre}
                 </span>
@@ -406,39 +489,10 @@ function MovieDetailPage() {
             </div>
 
             <div className="mt-5 grid grid-cols-2 gap-x-6 gap-y-4 text-left sm:gap-y-6 lg:max-w-xl">
-              <div>
-                <p className="text-[11px] text-neutral-400 sm:text-sm">
-                  Release date
-                </p>
-                <p className="mt-1 text-xs font-medium text-neutral-900 sm:text-base">
-                  {movie.releaseDate}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-[11px] text-neutral-400 sm:text-sm">
-                  Directed by
-                </p>
-                <p className="mt-1 text-xs font-medium text-neutral-900 sm:text-base">
-                  {movie.director}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-[11px] text-neutral-400 sm:text-sm">
-                  Duration
-                </p>
-                <p className="mt-1 text-xs font-medium text-neutral-900 sm:text-base">
-                  {movie.duration}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-[11px] text-neutral-400 sm:text-sm">Casts</p>
-                <p className="mt-1 line-clamp-3 text-xs font-medium text-neutral-900 sm:text-base">
-                  {movie.casts}
-                </p>
-              </div>
+              <MovieInfo label="Release date" value={movie.releaseDate} />
+              <MovieInfo label="Directed by" value={movie.director} />
+              <MovieInfo label="Duration" value={movie.duration} />
+              <MovieInfo label="Casts" value={movie.casts} />
             </div>
           </div>
         </div>
@@ -458,36 +512,25 @@ function MovieDetailPage() {
             Showtimes and Tickets
           </h2>
 
-          <form
-            onSubmit={handleFilter}
-            className="mx-auto grid max-w-sm gap-3 lg:max-w-none lg:grid-cols-[1fr_1fr_1fr_auto] lg:items-end lg:gap-5"
-          >
-            <label className="block">
-              <span className="mb-3 hidden text-sm font-semibold text-neutral-700 lg:block">
-                Choose Date
-              </span>
-
+          <div className="mx-auto grid max-w-sm gap-3 lg:max-w-none lg:grid-cols-[1fr_1fr_1fr_auto] lg:items-end lg:gap-5">
+            <FilterField label="Choose Date">
               <input
                 type="date"
-                value={selectedDate}
+                value={filterDate}
                 min={scheduleDateRange.minDate}
                 max={scheduleDateRange.maxDate}
                 disabled={
                   !scheduleDateRange.minDate || !scheduleDateRange.maxDate
                 }
-                onChange={(event) => setSelectedDate(event.target.value)}
+                onChange={(event) => setFilterDate(event.target.value)}
                 className="h-10 w-full rounded-md border border-neutral-200 bg-neutral-100 px-4 text-xs font-medium text-neutral-500 outline-none transition focus:border-primary focus:bg-white disabled:cursor-not-allowed disabled:opacity-60 sm:h-14 sm:text-sm lg:h-16 lg:text-base"
               />
-            </label>
+            </FilterField>
 
-            <label className="hidden lg:block">
-              <span className="mb-3 block text-sm font-semibold text-neutral-700">
-                Choose Time
-              </span>
-
+            <FilterField label="Choose Time" className="hidden lg:block">
               <select
-                value={selectedTime}
-                onChange={(event) => setSelectedTime(event.target.value)}
+                value={filterTime}
+                onChange={(event) => setFilterTime(event.target.value)}
                 className="h-16 w-full rounded-lg border border-neutral-200 bg-neutral-100 px-4 text-base font-semibold text-neutral-600 outline-none transition focus:border-primary focus:bg-white"
               >
                 {timeOptions.length === 0 ? (
@@ -500,16 +543,12 @@ function MovieDetailPage() {
                   ))
                 )}
               </select>
-            </label>
+            </FilterField>
 
-            <label className="block">
-              <span className="mb-3 hidden text-sm font-semibold text-neutral-700 lg:block">
-                Choose Location
-              </span>
-
+            <FilterField label="Choose Location">
               <select
-                value={selectedLocation}
-                onChange={(event) => setSelectedLocation(event.target.value)}
+                value={filterLocation}
+                onChange={(event) => setFilterLocation(event.target.value)}
                 className="h-10 w-full rounded-md border border-neutral-200 bg-neutral-100 px-4 text-xs font-medium text-neutral-500 outline-none transition focus:border-primary focus:bg-white sm:h-14 sm:text-sm lg:h-16 lg:rounded-lg lg:text-base"
               >
                 {locationOptions.length === 0 ? (
@@ -522,26 +561,30 @@ function MovieDetailPage() {
                   ))
                 )}
               </select>
-            </label>
+            </FilterField>
 
             <button
-              type="submit"
+              type="button"
+              onClick={handleFilter}
               className="h-10 rounded-md bg-primary px-10 text-xs font-semibold text-white transition hover:opacity-90 sm:h-14 sm:text-sm lg:h-16 lg:rounded-lg lg:text-base"
             >
               Filter
             </button>
-          </form>
+          </div>
 
           <p className="mt-4 text-center text-xs font-medium text-neutral-400 sm:text-sm">
-            {cinemaList.length} Result
+            {isFilterApplied
+              ? `${cinemaList.length} Result`
+              : `${cinemaList.length} Result - Showing all schedules`}
           </p>
         </section>
 
         <section className="mx-auto max-w-7xl">
-          <div className="mb-8 hidden flex-col gap-2 text-center lg:flex lg:flex-row lg:items-center lg:justify-center lg:gap-5">
+          <div className="mb-8 hidden text-center lg:flex lg:items-center lg:justify-center lg:gap-5">
             <h2 className="text-2xl font-bold text-neutral-900">
               Choose Cinema
             </h2>
+
             <p className="text-lg font-bold text-neutral-400">
               {cinemaList.length} Result
             </p>
@@ -557,94 +600,29 @@ function MovieDetailPage() {
             <>
               <div className="grid gap-4 lg:hidden">
                 {visibleCinemas.map((cinema, cinemaIndex) => (
-                  <details
+                  <CinemaMobileCard
                     key={cinema.id}
+                    cinema={cinema}
                     open={cinemaIndex === 0}
-                    className="group rounded-lg border border-neutral-200 bg-white px-5 py-5 shadow-sm"
-                  >
-                    <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
-                      <div>
-                        <p className="text-3xl font-black leading-none text-primary">
-                          {cinema.logo}
-                        </p>
-
-                        <h3 className="mt-4 text-base font-semibold text-neutral-900">
-                          {cinema.name}
-                        </h3>
-
-                        <p className="mt-1 max-w-55 text-[11px] leading-5 text-neutral-400">
-                          {cinema.location}
-                        </p>
-                      </div>
-
-                      <svg
-                        className="mt-8 h-4 w-4 shrink-0 text-neutral-900 transition group-open:rotate-180"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        aria-hidden="true"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </summary>
-
-                    <div className="mt-5 border-t border-neutral-100 pt-5">
-                      <h4 className="mb-3 text-xs font-semibold text-neutral-900">
-                        Available Times
-                      </h4>
-
-                      <div className="flex flex-wrap gap-2">
-                        {cinema.showtimes.map((showtime, index) => (
-                          <button
-                            key={`${cinema.id}-${showtime.time}-${index}`}
-                            type="button"
-                            onClick={() => setSelectedTime(showtime.time)}
-                            className={`rounded-full px-3 py-1.5 text-[10px] font-medium transition ${
-                              showtime.time === selectedTime
-                                ? "bg-primary text-white"
-                                : "bg-neutral-100 text-neutral-500 hover:bg-primary hover:text-white"
-                            }`}
-                          >
-                            {formatTimeToAmPm(showtime.time)}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </details>
+                    selectedTime={
+                      cinema.id === selectedCinemaId ? selectedTime : filterTime
+                    }
+                    onSelectTime={(time) =>
+                      handleSelectMobileTime(cinema, time)
+                    }
+                  />
                 ))}
               </div>
 
               <div className="hidden gap-5 lg:grid lg:grid-cols-4">
-                {visibleCinemas.map((cinema) => {
-                  const isActive = selectedCinema?.id === cinema.id;
-
-                  return (
-                    <button
-                      key={cinema.id}
-                      type="button"
-                      onClick={() => handleSelectCinema(cinema)}
-                      className={`flex h-40 flex-col items-center justify-center rounded-lg border-2 px-6 text-center transition ${
-                        isActive
-                          ? "border-primary bg-primary text-white shadow-lg shadow-primary/25"
-                          : "border-neutral-200 bg-white text-primary hover:border-primary"
-                      }`}
-                    >
-                      <span className="text-2xl font-black tracking-wide">
-                        {cinema.logo}
-                      </span>
-                      <span
-                        className={`mt-2 text-xs font-medium ${
-                          isActive ? "text-white/80" : "text-neutral-400"
-                        }`}
-                      >
-                        {cinema.location}
-                      </span>
-                    </button>
-                  );
-                })}
+                {visibleCinemas.map((cinema) => (
+                  <CinemaDesktopCard
+                    key={cinema.id}
+                    cinema={cinema}
+                    active={cinema.id === activeCinemaId}
+                    onClick={() => handleSelectCinema(cinema)}
+                  />
+                ))}
               </div>
             </>
           )}
@@ -668,10 +646,20 @@ function MovieDetailPage() {
             </div>
           )}
 
-          <div className="mt-10 hidden justify-center lg:flex">
+          <div className="mt-10 flex flex-col items-center justify-center gap-4">
+            <div className="text-center">
+              <p className="text-sm text-neutral-400">Ticket Price</p>
+              <p className="text-xl font-bold text-neutral-900">
+                {selectedCinema
+                  ? formatPrice(selectedPrice)
+                  : "Choose cinema first"}
+              </p>
+            </div>
+
             <button
               type="button"
-              disabled={visibleCinemas.length === 0}
+              onClick={handleBookNow}
+              disabled={!canBook}
               className="h-14 rounded-lg bg-primary px-16 text-base font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Book Now
@@ -680,6 +668,126 @@ function MovieDetailPage() {
         </section>
       </section>
     </HomeLayout>
+  );
+}
+
+function MovieInfo({ label, value }) {
+  return (
+    <div>
+      <p className="text-[11px] text-neutral-400 sm:text-sm">{label}</p>
+      <p className="mt-1 line-clamp-3 text-xs font-medium text-neutral-900 sm:text-base">
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function FilterField({ label, className = "block", children }) {
+  return (
+    <label className={className}>
+      <span className="mb-3 hidden text-sm font-semibold text-neutral-700 lg:block">
+        {label}
+      </span>
+
+      {children}
+    </label>
+  );
+}
+
+function CinemaMobileCard({ cinema, open, selectedTime, onSelectTime }) {
+  return (
+    <details
+      open={open}
+      className="group rounded-lg border border-neutral-200 bg-white px-5 py-5 shadow-sm"
+    >
+      <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
+        <div>
+          <p className="text-3xl font-black leading-none text-primary">
+            {cinema.logo}
+          </p>
+
+          <h3 className="mt-4 text-base font-semibold text-neutral-900">
+            {cinema.name}
+          </h3>
+
+          <p className="mt-1 max-w-55 text-[11px] leading-5 text-neutral-400">
+            {cinema.location}
+          </p>
+
+          <p className="mt-3 text-sm font-bold text-neutral-900">
+            {formatPrice(cinema.price)}
+          </p>
+        </div>
+
+        <svg
+          className="mt-8 h-4 w-4 shrink-0 text-neutral-900 transition group-open:rotate-180"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            fillRule="evenodd"
+            d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+            clipRule="evenodd"
+          />
+        </svg>
+      </summary>
+
+      <div className="mt-5 border-t border-neutral-100 pt-5">
+        <h4 className="mb-3 text-xs font-semibold text-neutral-900">
+          Available Times
+        </h4>
+
+        <div className="flex flex-wrap gap-2">
+          {cinema.showtimes.map((showtime, index) => (
+            <button
+              key={`${cinema.id}-${showtime.time}-${index}`}
+              type="button"
+              onClick={() => onSelectTime(showtime.time)}
+              className={`rounded-full px-3 py-1.5 text-[10px] font-medium transition ${
+                showtime.time === selectedTime
+                  ? "bg-primary text-white"
+                  : "bg-neutral-100 text-neutral-500 hover:bg-primary hover:text-white"
+              }`}
+            >
+              {formatTimeToAmPm(showtime.time)}
+            </button>
+          ))}
+        </div>
+      </div>
+    </details>
+  );
+}
+
+function CinemaDesktopCard({ cinema, active, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex h-44 flex-col items-center justify-center rounded-lg border-2 px-6 text-center transition ${
+        active
+          ? "border-primary bg-primary text-white shadow-lg shadow-primary/25"
+          : "border-neutral-200 bg-white text-primary hover:border-primary"
+      }`}
+    >
+      <span className="text-2xl font-black tracking-wide">{cinema.logo}</span>
+
+      <span
+        className={`mt-2 text-xs font-medium ${
+          active ? "text-white/80" : "text-neutral-400"
+        }`}
+      >
+        {cinema.location}
+      </span>
+
+      <span
+        className={`mt-3 text-sm font-bold ${
+          active ? "text-white" : "text-neutral-900"
+        }`}
+      >
+        {formatPrice(cinema.price)}
+      </span>
+    </button>
   );
 }
 
