@@ -1,10 +1,10 @@
-import Navbar from "../components/Navbar";
+import ProfileNavbar from "../components/ProfileNavbar";
 import Footer from "../components/Footer";
 
 function HomeLayout({ children }) {
   return (
     <div className="min-h-screen bg-white text-slate-900">
-      <Navbar />
+      <ProfileNavbar />
 
       <main className="flex-1">
         {children}

@@ -3,7 +3,6 @@ import MovieCard from "../components/MovieCard";
 import { moviesData } from "../data/moviesData";
 import background from "../assets/images/background.png";
 import searchIcon from "../assets/images/Search.png";
-import Navbar from "../components/Navbar";
 import Newsletter from "../components/Newsletter";
 import Footer from "../components/Footer";
 import sliderIndicator from "../assets/images/slider-indicator.png";
