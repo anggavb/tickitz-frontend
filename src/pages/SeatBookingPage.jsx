@@ -326,7 +326,7 @@ function SeatBookingPage() {
                 Seating key
               </h3>
 
-              <div className="mt-6 flex flex-wrap justify-center  gap-6 text-sm font-medium text-neutral-600">
+              <div className="mt-6 flex flex-wrap   gap-6 text-sm font-medium text-neutral-600">
                 <SeatLegend label="Available" className="bg-neutral-200" />
                 <SeatLegend label="Selected" className="bg-primary" />
                 <SeatLegend label="Love nest" className="bg-pink-400" />
