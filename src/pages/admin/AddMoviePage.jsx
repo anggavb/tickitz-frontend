@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
+import SweetAlert from "../../components/ui/SweetAlert";
 import Toast from "../../components/ui/Toast";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
@@ -204,17 +205,18 @@ function AddMoviePage({ viewOnly = false }) {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        setToastType("success");
-        setToastMessage(
-          isEditMode
-            ? "Movie updated successfully."
-            : "Movie saved successfully.",
-        );
-
         if (isEditMode) {
+          await SweetAlert.success({
+            title: "Success",
+            text: "Movie updated successfully.",
+          });
+
           navigate("/admin/movies");
           return;
         }
+
+        setToastType("success");
+        setToastMessage("Movie saved successfully.");
 
         setName("");
         setReleaseDate("");

@@ -8,7 +8,7 @@ import calendarIcon from '../../assets/images/calendar.png';
 import arrowDownIcon from '../../assets/images/arrow-down.png';
 
 import ProfileNavbar from '../../components/ProfileNavbar';
-import Toast from '../../components/ui/Toast';
+import SweetAlert from '../../components/ui/SweetAlert';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 const PAGE_LIMIT = 5;
@@ -24,7 +24,6 @@ function AdminMoviePage() {
   const [releaseMonths, setReleaseMonths] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState('');
   const [showMonthDropdown, setShowMonthDropdown] = useState(false);
-  const [toast, setToast] = useState({ message: '', type: '' });
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
@@ -113,9 +112,12 @@ function AdminMoviePage() {
   }, []);
 
   const handleDeleteMovie = async (movieId, movieName) => {
-    const confirmed = window.confirm(
-      `Are you sure you want to delete "${movieName}"? This action cannot be undone.`
-    );
+    const confirmed = await SweetAlert.confirm({
+      title: 'Confirm Delete',
+      text: `Are you sure you want to delete "${movieName}"? This action cannot be undone.`,
+      confirmButtonText: 'Delete',
+      cancelButtonText: 'Cancel',
+    });
 
     if (!confirmed) return;
 
@@ -134,12 +136,17 @@ function AdminMoviePage() {
         throw new Error(result.message || 'Failed to delete movie');
       }
 
-      setToast({ message: 'Movie deleted successfully', type: 'success' });
-      
-      // Refresh the movies list
+      await SweetAlert.success({
+        title: 'Deleted',
+        text: 'Movie deleted successfully.',
+      });
+
       setPage(1);
     } catch (deleteError) {
-      setToast({ message: deleteError.message || 'Failed to delete movie', type: 'error' });
+      await SweetAlert.error({
+        title: 'Delete Failed',
+        text: deleteError.message || 'Failed to delete movie.',
+      });
     } finally {
       setIsDeleting(false);
     }
@@ -322,12 +329,6 @@ function AdminMoviePage() {
           </div>
         </section>
       </main>
-
-      <Toast
-        message={toast.message}
-        type={toast.type}
-        onClose={() => setToast({ message: '', type: '' })}
-      />
     </>
   );
 }
