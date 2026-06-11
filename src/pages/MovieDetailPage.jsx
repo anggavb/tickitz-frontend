@@ -1,6 +1,8 @@
 import axios from "axios";
 import { useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router";
+import SweetAlert from "../components/ui/SweetAlert";
 import HomeLayout from "../layouts/HomeLayout";
 
 const API_BASE_URL = (
@@ -27,20 +29,36 @@ const fallbackMovie = {
 };
 
 async function getMoviePageData(slug) {
-  const [movieResponse, scheduleResponse, locationResponse, timeResponse] =
-    await Promise.all([
-      api.get(`/movies/${slug}`),
-      api.get(`/movies/${slug}/schedules`),
-      api.get("/movies/locations"),
-      api.get("/movies/showtimes"),
-    ]);
+  const [
+    movieResponse,
+    scheduleOptionResponse,
+    locationResponse,
+    timeResponse,
+  ] = await Promise.all([
+    api.get(`/movies/${slug}`),
+    api.get(`/movies/${slug}/schedule-options`),
+    api.get("/movies/locations"),
+    api.get("/movies/showtimes"),
+  ]);
 
   return {
     movieResult: movieResponse.data,
-    scheduleResult: scheduleResponse.data,
+    scheduleOptionResult: scheduleOptionResponse.data,
     locationResult: locationResponse.data,
     timeResult: timeResponse.data,
   };
+}
+
+async function getFilteredMovieSchedules(slug, filter) {
+  const params = {};
+
+  if (filter.date) params.date = filter.date;
+  if (filter.time) params.time = filter.time;
+  if (filter.location) params.location = filter.location;
+
+  const response = await api.get(`/movies/${slug}/schedules`, { params });
+
+  return response.data;
 }
 
 function buildAssetUrl(path) {
@@ -83,7 +101,10 @@ function getTimeValue(time) {
       hour += 12;
     }
 
-    return String(hour * 60 + minute);
+    return `${String(hour).padStart(2, "0")}:${String(minute).padStart(
+      2,
+      "0",
+    )}`;
   }
 
   const time24Match = rawTime.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
@@ -92,10 +113,48 @@ function getTimeValue(time) {
     const hour = Number(time24Match[1]);
     const minute = Number(time24Match[2]);
 
-    return String(hour * 60 + minute);
+    return `${String(hour).padStart(2, "0")}:${String(minute).padStart(
+      2,
+      "0",
+    )}`;
   }
 
   return normalizeTextValue(rawTime);
+}
+
+function getTimeSortValue(time) {
+  const timeValue = getTimeValue(time);
+  const match = timeValue.match(/^(\d{2}):(\d{2})$/);
+
+  if (!match) return Number.MAX_SAFE_INTEGER;
+
+  return Number(match[1]) * 60 + Number(match[2]);
+}
+
+function getLocalDateValue(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function getLocalTimeValue(date = new Date()) {
+  const hour = String(date.getHours()).padStart(2, "0");
+  const minute = String(date.getMinutes()).padStart(2, "0");
+
+  return `${hour}:${minute}`;
+}
+
+function isPastDateValue(dateValue, currentDateValue) {
+  return Boolean(dateValue) && dateValue < currentDateValue;
+}
+
+function isPastTimeForDate(timeValue, dateValue, currentDateValue, currentTimeValue) {
+  if (!timeValue) return false;
+  if (dateValue && dateValue > currentDateValue) return false;
+
+  return timeValue <= currentTimeValue;
 }
 
 function formatDuration(movie) {
@@ -185,16 +244,31 @@ function normalizeOptionArray(rawData, keys = []) {
 }
 
 function normalizeLocationOptions(rawData) {
-  return normalizeOptionArray(rawData, [
-    "location",
-    "name",
-    "city",
-    "location_name",
-  ]);
+  const rows = Array.isArray(rawData?.locations)
+    ? rawData.locations
+    : Array.isArray(rawData?.data?.locations)
+      ? rawData.data.locations
+      : rawData;
+
+  return normalizeOptionArray(rows, ["location", "name", "city", "location_name"]);
+}
+
+function normalizeDateOptions(rawData) {
+  const rows = Array.isArray(rawData?.dates)
+    ? rawData.dates
+    : Array.isArray(rawData?.data?.dates)
+      ? rawData.data.dates
+      : [];
+
+  return [...new Set(rows.map((date) => String(date).trim()).filter(Boolean))];
 }
 
 function normalizeTimeOptions(rawData) {
-  const rows = Array.isArray(rawData?.data)
+  const rows = Array.isArray(rawData?.showtimes)
+    ? rawData.showtimes
+    : Array.isArray(rawData?.data?.showtimes)
+      ? rawData.data.showtimes
+      : Array.isArray(rawData?.data)
     ? rawData.data
     : Array.isArray(rawData)
       ? rawData
@@ -228,8 +302,12 @@ function normalizeSchedules(rows = []) {
   const locationMap = new Map();
 
   rows.forEach((row) => {
+    const movieCinemaID =
+      row.movie_cinema_id ?? row.movieCinemaID ?? row.movie_cinemaId ?? "";
+    const cinemaID = row.cinema_id ?? row.cinemaID ?? "";
     const location = row.location ?? "Unknown Location";
     const cinemaName = row.cinema_name ?? row.cinemaName ?? "Unknown Cinema";
+    const cinemaLogo = row.cinema_logo ?? row.cinemaLogo ?? cinemaName;
 
     const showDate =
       row.show_date ?? row.showDate ?? row.date ?? row.schedule_date ?? "";
@@ -237,10 +315,11 @@ function normalizeSchedules(rows = []) {
     const rawTime = row.showtime ?? row.time ?? row.show_time ?? "";
     const timeLabel = getTimeLabel(rawTime);
     const timeValue = getTimeValue(rawTime);
+    const showtimeID = row.showtime_id ?? row.showtimeID ?? "";
 
     const price = row.price ?? row.ticket_price ?? row.movie_price ?? "";
 
-    if (!showDate || !timeLabel || !timeValue) return;
+    if (!movieCinemaID || !showDate || !timeLabel || !timeValue) return;
 
     if (!locationMap.has(location)) {
       locationMap.set(location, new Map());
@@ -253,9 +332,13 @@ function normalizeSchedules(rows = []) {
     }
 
     cinemaMap.get(cinemaName).push({
+      movieCinemaID,
+      cinemaID,
+      cinemaLogo,
       showDate,
       timeLabel,
       timeValue,
+      showtimeID,
       price,
     });
   });
@@ -269,7 +352,7 @@ function normalizeSchedules(rows = []) {
 
         if (dateCompare !== 0) return dateCompare;
 
-        return Number(a.timeValue) - Number(b.timeValue);
+        return getTimeSortValue(a.timeValue) - getTimeSortValue(b.timeValue);
       }),
     })),
   }));
@@ -297,9 +380,10 @@ function getCinemaList(schedules, date, timeValue, location) {
 
         return {
           id: `${schedule.location}-${cinema.cinema_name}`,
+          cinemaID: firstShowtime?.cinemaID ?? "",
           location: schedule.location,
           name: cinema.cinema_name,
-          logo: cinema.cinema_name,
+          logo: firstShowtime?.cinemaLogo || cinema.cinema_name,
           price: firstShowtime?.price ?? "",
           showtimes,
         };
@@ -311,11 +395,15 @@ function getCinemaList(schedules, date, timeValue, location) {
 function MovieDetailPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const { isAuthenticated, token } = useSelector((state) => state.auth);
 
+  const [now, setNow] = useState(() => new Date());
   const [movie, setMovie] = useState(fallbackMovie);
 
+  const [dateOptions, setDateOptions] = useState([]);
   const [locationOptions, setLocationOptions] = useState([]);
   const [timeOptions, setTimeOptions] = useState([]);
+  const [cinemaSchedules, setCinemaSchedules] = useState([]);
 
   const [filterDate, setFilterDate] = useState("");
   const [filterTime, setFilterTime] = useState("");
@@ -331,13 +419,36 @@ function MovieDetailPage() {
   const [selectedTime, setSelectedTime] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
   const [selectedCinemaId, setSelectedCinemaId] = useState("");
+  const [selectedMovieCinemaId, setSelectedMovieCinemaId] = useState("");
 
   const [currentPage, setCurrentPage] = useState(1);
 
+  const [hasFiltered, setHasFiltered] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [scheduleLoading, setScheduleLoading] = useState(false);
+  const [bookingLoading, setBookingLoading] = useState(false);
   const [error, setError] = useState("");
+  const [scheduleError, setScheduleError] = useState("");
 
   const cinemaPerPage = 4;
+
+  const currentDateValue = useMemo(() => getLocalDateValue(now), [now]);
+  const currentTimeValue = useMemo(() => getLocalTimeValue(now), [now]);
+
+  const selectableDateOptions = useMemo(() => {
+    return dateOptions.filter(
+      (date) => !isPastDateValue(date, currentDateValue),
+    );
+  }, [dateOptions, currentDateValue]);
+
+  const isTimeOptionDisabled = (timeValue, dateValue = filterDate) => {
+    return isPastTimeForDate(
+      timeValue,
+      dateValue,
+      currentDateValue,
+      currentTimeValue,
+    );
+  };
 
   const selectedTimeLabel = useMemo(() => {
     return (
@@ -353,32 +464,27 @@ function MovieDetailPage() {
     );
   }, [timeOptions, appliedFilter.time]);
 
-  const scheduleDateRange = useMemo(() => {
-    const dates = movie.schedules
-      .flatMap((schedule) => schedule.cinemas)
-      .flatMap((cinema) => cinema.showtimes)
-      .map((showtime) => showtime.showDate)
-      .filter(Boolean)
-      .sort();
-
-    return {
-      minDate: dates[0] ?? "",
-      maxDate: dates[dates.length - 1] ?? "",
-    };
-  }, [movie.schedules]);
-
   const cinemaList = useMemo(() => {
     return getCinemaList(
-      movie.schedules,
+      cinemaSchedules,
       appliedFilter.date,
       appliedFilter.time,
       appliedFilter.location,
     );
-  }, [movie.schedules, appliedFilter]);
+  }, [cinemaSchedules, appliedFilter]);
 
   const selectedCinema = useMemo(() => {
     return cinemaList.find((cinema) => cinema.id === selectedCinemaId) ?? null;
   }, [cinemaList, selectedCinemaId]);
+
+  const selectedShowtime = useMemo(() => {
+    return (
+      selectedCinema?.showtimes.find(
+        (showtime) =>
+          String(showtime.movieCinemaID) === String(selectedMovieCinemaId),
+      ) ?? null
+    );
+  }, [selectedCinema, selectedMovieCinemaId]);
 
   const isFilterApplied =
     appliedFilter.date !== "" ||
@@ -386,10 +492,14 @@ function MovieDetailPage() {
     appliedFilter.location !== "";
 
   const activeCinemaId = selectedCinema?.id ?? "";
-  const selectedPrice = selectedCinema?.price ?? "";
+  const selectedPrice = selectedShowtime?.price ?? selectedCinema?.price ?? "";
 
   const canBook =
-    selectedDate && selectedTime && selectedLocation && selectedCinema;
+    selectedDate &&
+    selectedTime &&
+    selectedLocation &&
+    selectedCinema &&
+    selectedMovieCinemaId;
 
   const totalPages = Math.ceil(cinemaList.length / cinemaPerPage);
 
@@ -438,29 +548,45 @@ function MovieDetailPage() {
   }, [appliedFilter, appliedTimeLabel, isFilterApplied]);
 
   useEffect(() => {
+    const timer = window.setInterval(() => {
+      setNow(new Date());
+    }, 30000);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
     async function fetchMoviePageData() {
       try {
         setLoading(true);
         setError("");
 
-        const { movieResult, scheduleResult, locationResult, timeResult } =
+        const {
+          movieResult,
+          scheduleOptionResult,
+          locationResult,
+          timeResult,
+        } =
           await getMoviePageData(slug);
 
         const rawMovie = movieResult?.data ?? movieResult;
-        const rawSchedules = scheduleResult?.data ?? [];
+        const rawScheduleOptions =
+          scheduleOptionResult?.data ?? scheduleOptionResult ?? {};
 
         const normalizedMovie = normalizeMovie(rawMovie);
-        const normalizedSchedules = normalizeSchedules(rawSchedules);
+        const normalizedDates = normalizeDateOptions(rawScheduleOptions);
         const normalizedLocations = normalizeLocationOptions(locationResult);
         const normalizedTimes = normalizeTimeOptions(timeResult);
 
         setMovie({
           ...normalizedMovie,
-          schedules: normalizedSchedules,
+          schedules: [],
         });
 
+        setDateOptions(normalizedDates);
         setLocationOptions(normalizedLocations);
         setTimeOptions(normalizedTimes);
+        setCinemaSchedules([]);
 
         setFilterLocation("");
         setFilterDate("");
@@ -476,7 +602,10 @@ function MovieDetailPage() {
         setSelectedDate("");
         setSelectedTime("");
         setSelectedCinemaId("");
+        setSelectedMovieCinemaId("");
 
+        setHasFiltered(false);
+        setScheduleError("");
         setCurrentPage(1);
       } catch (err) {
         const message =
@@ -493,31 +622,87 @@ function MovieDetailPage() {
     }
   }, [slug]);
 
-  const handleFilter = () => {
+  const resetSelectedSchedule = () => {
+    setSelectedLocation("");
+    setSelectedDate("");
+    setSelectedTime("");
+    setSelectedCinemaId("");
+    setSelectedMovieCinemaId("");
+  };
+
+  const handleFilter = async () => {
     const nextAppliedFilter = {
       date: filterDate,
       time: filterTime,
       location: filterLocation,
     };
 
-    const nextCinemaList = getCinemaList(
-      movie.schedules,
-      nextAppliedFilter.date,
-      nextAppliedFilter.time,
-      nextAppliedFilter.location,
-    );
+    if (
+      !nextAppliedFilter.date &&
+      !nextAppliedFilter.time &&
+      !nextAppliedFilter.location
+    ) {
+      setScheduleError("Choose at least one date, time, or location first.");
+      setHasFiltered(false);
+      setCinemaSchedules([]);
+      resetSelectedSchedule();
+      setCurrentPage(1);
+      return;
+    }
 
-    const firstCinema = nextCinemaList[0];
-    const firstShowtime = firstCinema?.showtimes?.[0];
+    if (isPastDateValue(nextAppliedFilter.date, currentDateValue)) {
+      setScheduleError("Choose a date that has not passed.");
+      setHasFiltered(false);
+      setCinemaSchedules([]);
+      resetSelectedSchedule();
+      setCurrentPage(1);
+      return;
+    }
+
+    if (
+      isPastTimeForDate(
+        nextAppliedFilter.time,
+        nextAppliedFilter.date,
+        currentDateValue,
+        currentTimeValue,
+      )
+    ) {
+      setScheduleError("Choose a time that has not passed.");
+      setHasFiltered(false);
+      setCinemaSchedules([]);
+      resetSelectedSchedule();
+      setCurrentPage(1);
+      return;
+    }
+
+    try {
+      setScheduleLoading(true);
+      setScheduleError("");
+
+      const scheduleResult = await getFilteredMovieSchedules(
+        slug,
+        nextAppliedFilter,
+      );
+      const rawSchedules = scheduleResult?.data ?? [];
+      const normalizedSchedules = normalizeSchedules(rawSchedules);
+
+      setCinemaSchedules(normalizedSchedules);
+      setHasFiltered(true);
+    } catch (err) {
+      const message =
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to load cinema schedules.";
+
+      setScheduleError(message);
+      setCinemaSchedules([]);
+      setHasFiltered(true);
+    } finally {
+      setScheduleLoading(false);
+    }
 
     setAppliedFilter(nextAppliedFilter);
-
-    setSelectedDate(nextAppliedFilter.date || firstShowtime?.showDate || "");
-    setSelectedTime(nextAppliedFilter.time || firstShowtime?.timeValue || "");
-    setSelectedLocation(
-      nextAppliedFilter.location || firstCinema?.location || "",
-    );
-    setSelectedCinemaId(firstCinema?.id ?? "");
+    resetSelectedSchedule();
 
     setCurrentPage(1);
   };
@@ -535,6 +720,7 @@ function MovieDetailPage() {
     setSelectedDate(nextDate);
     setSelectedTime(nextTime);
     setSelectedLocation(nextLocation);
+    setSelectedMovieCinemaId(String(firstShowtime.movieCinemaID));
 
     setFilterDate(nextDate);
     setFilterTime(nextTime);
@@ -552,25 +738,105 @@ function MovieDetailPage() {
     setSelectedDate(nextDate);
     setSelectedTime(nextTime);
     setSelectedLocation(nextLocation);
+    setSelectedMovieCinemaId(String(showtime.movieCinemaID));
 
     setFilterDate(nextDate);
     setFilterTime(nextTime);
     setFilterLocation(nextLocation);
   };
 
-  const handleBookNow = () => {
+  const handleBookNow = async () => {
     if (!canBook) return;
 
-    navigate(`/movies/${slug}/booking`, {
-      state: {
-        movie,
+    if (
+      isPastDateValue(selectedDate, currentDateValue) ||
+      isPastTimeForDate(
+        selectedTime,
         selectedDate,
-        selectedTime: selectedTimeLabel,
-        selectedLocation,
-        selectedCinema,
-        price: selectedPrice,
-      },
-    });
+        currentDateValue,
+        currentTimeValue,
+      )
+    ) {
+      await SweetAlert.error({
+        title: "Schedule unavailable",
+        text: "This schedule has already passed. Please choose another date or time.",
+      });
+      return;
+    }
+
+    if (!isAuthenticated || !token) {
+      await SweetAlert.show({
+        icon: "info",
+        title: "Login required",
+        text: "Please sign in before booking this movie.",
+        confirmButtonText: "Sign in",
+      });
+
+      navigate("/auth/signin", {
+        state: {
+          from: `/movies/${slug}`,
+        },
+      });
+      return;
+    }
+
+    try {
+      setBookingLoading(true);
+
+      const response = await api.post(
+        "/orders",
+        {
+          movie_cinema_id: Number(selectedMovieCinemaId),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const order = response.data?.data ?? response.data;
+
+      navigate(`/movies/${slug}/booking`, {
+        state: {
+          order,
+          orderId: order?.id,
+          movieCinemaId: selectedMovieCinemaId,
+          movie,
+          selectedDate,
+          selectedTime: selectedTimeLabel,
+          selectedLocation,
+          selectedCinema,
+          price: selectedPrice,
+        },
+      });
+    } catch (err) {
+      if (err.response?.status === 401) {
+        await SweetAlert.show({
+          icon: "info",
+          title: "Login required",
+          text: "Please sign in before booking this movie.",
+          confirmButtonText: "Sign in",
+        });
+
+        navigate("/auth/signin", {
+          state: {
+            from: `/movies/${slug}`,
+          },
+        });
+        return;
+      }
+
+      await SweetAlert.error({
+        title: "Failed to create order",
+        text:
+          err.response?.data?.message ||
+          err.message ||
+          "Please try again later.",
+      });
+    } finally {
+      setBookingLoading(false);
+    }
   };
 
   if (loading) {
@@ -613,7 +879,7 @@ function MovieDetailPage() {
         }}
       />
 
-      <section className="relative z-10 bg-white px-5 pb-12 sm:px-6 lg:px-8">
+      <section className="relative z-10 px-5 pb-12 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-7xl items-start gap-6 lg:grid-cols-[280px_1fr] lg:gap-10 xl:grid-cols-[320px_1fr]">
           <div className="-mt-20 flex justify-center sm:-mt-32 lg:-mt-40 lg:block">
             <img
@@ -665,25 +931,41 @@ function MovieDetailPage() {
 
           <div className="mx-auto grid max-w-sm gap-3 lg:max-w-none lg:grid-cols-[1fr_1fr_1fr_auto] lg:items-end lg:gap-5">
             <FilterField label="Choose Date">
-              <input
-                type="date"
+              <select
                 value={filterDate}
-                min={scheduleDateRange.minDate}
-                max={scheduleDateRange.maxDate}
-                disabled={
-                  !scheduleDateRange.minDate || !scheduleDateRange.maxDate
-                }
-                onChange={(event) => setFilterDate(event.target.value)}
+                disabled={selectableDateOptions.length === 0}
+                onChange={(event) => {
+                  const nextDate = event.target.value;
+
+                  setFilterDate(nextDate);
+                  if (filterTime && isTimeOptionDisabled(filterTime, nextDate)) {
+                    setFilterTime("");
+                  }
+                }}
                 className="h-10 w-full rounded-md border border-neutral-200 bg-neutral-100 px-4 text-xs font-medium text-neutral-500 outline-none transition focus:border-primary focus:bg-white disabled:cursor-not-allowed disabled:opacity-60 sm:h-14 sm:text-sm lg:h-16 lg:text-base"
-              />
+              >
+                {selectableDateOptions.length === 0 ? (
+                  <option value="">No date available</option>
+                ) : (
+                  <>
+                    <option value="">All Dates</option>
+
+                    {selectableDateOptions.map((date) => (
+                      <option key={date} value={date}>
+                        {date}
+                      </option>
+                    ))}
+                  </>
+                )}
+              </select>
             </FilterField>
 
-            <FilterField label="Choose Time" className="hidden lg:block">
+            <FilterField label="Choose Time">
               <select
                 value={filterTime}
                 onChange={(event) => setFilterTime(event.target.value)}
                 disabled={timeOptions.length === 0}
-                className="h-16 w-full rounded-lg border border-neutral-200 bg-neutral-100 px-4 text-base font-semibold text-neutral-600 outline-none transition focus:border-primary focus:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+                className="h-10 w-full rounded-md border border-neutral-200 bg-neutral-100 px-4 text-xs font-medium text-neutral-500 outline-none transition focus:border-primary focus:bg-white disabled:cursor-not-allowed disabled:opacity-60 sm:h-14 sm:text-sm lg:h-16 lg:rounded-lg lg:text-base"
               >
                 {timeOptions.length === 0 ? (
                   <option value="">No time available</option>
@@ -692,7 +974,11 @@ function MovieDetailPage() {
                     <option value="">All Times</option>
 
                     {timeOptions.map((time) => (
-                      <option key={time.value} value={time.value}>
+                      <option
+                        key={time.value}
+                        value={time.value}
+                        disabled={isTimeOptionDisabled(time.value)}
+                      >
                         {time.label}
                       </option>
                     ))}
@@ -727,19 +1013,21 @@ function MovieDetailPage() {
             <button
               type="button"
               onClick={handleFilter}
-              className="h-10 rounded-md bg-primary px-10 text-xs font-semibold text-white transition hover:opacity-90 sm:h-14 sm:text-sm lg:h-16 lg:rounded-lg lg:text-base"
+              disabled={scheduleLoading}
+              className="h-10 rounded-md bg-primary px-10 text-xs font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 sm:h-14 sm:text-sm lg:h-16 lg:rounded-lg lg:text-base"
             >
-              Filter
+              {scheduleLoading ? "Filtering..." : "Filter"}
             </button>
           </div>
 
-          <p className="mt-4 text-center text-xs font-medium text-neutral-400 sm:text-sm">
-            {isFilterApplied
-              ? `${cinemaList.length} Result`
-              : `${cinemaList.length} Result - Showing all schedules`}
-          </p>
+          {(hasFiltered || scheduleError) && (
+            <p className="mt-4 text-center text-xs font-medium text-neutral-400 sm:text-sm">
+              {scheduleError || `${cinemaList.length} Result`}
+            </p>
+          )}
         </section>
 
+        {hasFiltered && (
         <section className="mx-auto max-w-7xl">
           <div className="mb-8 hidden text-center lg:flex lg:items-center lg:justify-center lg:gap-5">
             <h2 className="text-2xl font-bold text-neutral-900">
@@ -814,6 +1102,16 @@ function MovieDetailPage() {
             </div>
           )}
 
+          {selectedCinema && (
+            <SelectedSchedulePicker
+              cinema={selectedCinema}
+              selectedMovieCinemaId={selectedMovieCinemaId}
+              onSelect={(showtime) =>
+                handleSelectMobileTime(selectedCinema, showtime)
+              }
+            />
+          )}
+
           <div className="mt-10 flex flex-col items-center justify-center gap-4">
             <div className="text-center">
               <p className="text-sm text-neutral-400">Ticket Price</p>
@@ -828,13 +1126,14 @@ function MovieDetailPage() {
             <button
               type="button"
               onClick={handleBookNow}
-              disabled={!canBook}
+              disabled={!canBook || bookingLoading}
               className="h-14 rounded-lg bg-primary px-16 text-base font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Book Now
+              {bookingLoading ? "Creating Order..." : "Book Now"}
             </button>
           </div>
         </section>
+        )}
       </section>
     </HomeLayout>
   );
@@ -937,6 +1236,40 @@ function CinemaMobileCard({
         </div>
       </div>
     </details>
+  );
+}
+
+function SelectedSchedulePicker({ cinema, selectedMovieCinemaId, onSelect }) {
+  return (
+    <section className="mx-auto mt-8 max-w-3xl rounded-lg border border-neutral-200 bg-white px-5 py-5 text-center shadow-sm">
+      <h3 className="text-sm font-semibold text-neutral-900">
+        Selected Schedule
+      </h3>
+
+      <p className="mt-1 text-xs text-neutral-400">{cinema.name}</p>
+
+      <div className="mt-4 flex flex-wrap justify-center gap-2">
+        {cinema.showtimes.map((showtime) => {
+          const isActive =
+            String(showtime.movieCinemaID) === String(selectedMovieCinemaId);
+
+          return (
+            <button
+              key={`${showtime.movieCinemaID}-${showtime.showDate}-${showtime.timeValue}`}
+              type="button"
+              onClick={() => onSelect(showtime)}
+              className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+                isActive
+                  ? "bg-primary text-white"
+                  : "bg-neutral-100 text-neutral-500 hover:bg-primary hover:text-white"
+              }`}
+            >
+              {showtime.showDate} - {showtime.timeLabel}
+            </button>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
