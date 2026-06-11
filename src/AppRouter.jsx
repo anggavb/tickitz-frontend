@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router';
+import { Navigate, Route, Routes } from "react-router";
 
 import LandingPage from "./pages/LandingPage";
 import HomeMoviePage from "./pages/HomeMoviePage";
@@ -16,6 +16,7 @@ import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import OrderHistoryPage from "./pages/profile/OrderHistoryPage";
 import SeatBookingPage from "./pages/SeatBookingPage";
 import MoviePaymentPage from "./pages/MoviePaymentPage";
+import MovieTicketResult from "./pages/MovieTicketResult";
 
 function AppRouter() {
   return (
@@ -34,6 +35,7 @@ function AppRouter() {
       <Route path="/movies/:slug" element={<MovieDetailPage />} />
       <Route path="/movies/:slug/booking" element={<SeatBookingPage />} />
       <Route path="/movies/:slug/payment" element={<MoviePaymentPage />} />
+      <Route path="/movies/:slug/result" element={<MovieTicketResult />} />
 
       <Route path="/admin" element={<AdminLayout />}>
         <Route path="movies" element={<AdminMoviePage />} />
