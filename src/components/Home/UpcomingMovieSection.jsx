@@ -13,8 +13,15 @@ function UpcomingMovieSection({
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
 
-  const { dataUpcoming } = useSelector((state) => state.movie);
   const dispatch = useDispatch();
+  const { dataUpcoming } = useSelector((state) => state.movie);
+
+  const upcomingMovies = Array.isArray(dataUpcoming)
+    ? dataUpcoming
+    : Array.isArray(dataUpcoming?.data)
+      ? dataUpcoming.data
+      : movies;
+
   const updateScrollButtons = () => {
     const slider = sliderRef.current;
     if (!slider) return;
@@ -36,6 +43,10 @@ function UpcomingMovieSection({
   };
 
   useEffect(() => {
+    dispatch(getUpcoming());
+  }, [dispatch]);
+
+  useEffect(() => {
     const slider = sliderRef.current;
     if (!slider) return;
 
@@ -48,12 +59,9 @@ function UpcomingMovieSection({
       slider.removeEventListener("scroll", updateScrollButtons);
       window.removeEventListener("resize", updateScrollButtons);
     };
-  }, [movies]);
+  }, [upcomingMovies.length]);
 
-  useEffect(() => {
-    dispatch(getUpcoming());
-  }, [dispatch]);
-  const shouldShowArrows = movies.length > 4;
+  const shouldShowArrows = upcomingMovies.length > 4;
 
   return (
     <article className="mx-auto max-w-7xl px-5 py-10 sm:px-6 md:px-8 md:py-14">
@@ -62,6 +70,7 @@ function UpcomingMovieSection({
           <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-primary sm:text-xs md:mb-6 md:text-sm">
             {label}
           </p>
+
           <h2 className="mx-auto max-w-xs text-2xl font-medium leading-snug text-neutral-900 sm:max-w-md sm:text-3xl md:mx-0 md:max-w-2xl md:text-5xl">
             {title}
           </h2>
@@ -95,18 +104,16 @@ function UpcomingMovieSection({
       <section
         ref={sliderRef}
         onScroll={updateScrollButtons}
-        className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-5 pb-4 scrollbar-hide sm:-mx-6 md:overflow-x-hidden no-scrollbar sm:px-6 md:mx-0 md:px-0 lg:gap-6"
+        className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-5 pb-4 no-scrollbar sm:-mx-6 sm:px-6 md:mx-0 md:px-0 md:overflow-x-hidden lg:gap-6"
       >
-        {dataUpcoming
-          ? dataUpcoming.map((movie) => (
-              <div
-                key={movie.ID}
-                className="min-w-[68%] snap-start sm:min-w-[45%] md:min-w-[31%] lg:min-w-[calc(25%-18px)]"
-              >
-                <MovieCard movie={movie} />
-              </div>
-            ))
-          : ""}
+        {upcomingMovies.map((movie) => (
+          <div
+            key={movie.ID || movie.id}
+            className="min-w-[68%] snap-start sm:min-w-[45%] md:min-w-[31%] lg:min-w-[calc(25%-18px)]"
+          >
+            <MovieCard movie={movie} />
+          </div>
+        ))}
       </section>
     </article>
   );
