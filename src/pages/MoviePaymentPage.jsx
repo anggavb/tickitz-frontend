@@ -61,6 +61,10 @@ const paymentInfo = [
   { label: "NUMBER OF TICKETS", value: "3 pieces" },
 ];
 
+const totalPayment = 75000;
+const virtualAccount = "12321328913829724";
+const dueDate = "June 23, 2023";
+
 function MoviePaymentPage() {
   const [selectedPayment, setSelectedPayment] = useState("");
   const [paymentError, setPaymentError] = useState("");
@@ -89,12 +93,16 @@ function MoviePaymentPage() {
 
     setPaymentError("");
 
+    const normalizedPhone = data.phone.replace(/^0+/, "");
+
     const payload = {
-      ...data,
-      phone: `+62${data.phone}`,
+      fullName: data.fullName,
+      email: data.email,
+      phone: `+62${normalizedPhone}`,
       paymentMethod: selectedPayment,
-      totalPayment: "$30",
-      virtualAccount: "12321328913829724",
+      totalPayment,
+      virtualAccount,
+      dueDate,
     };
 
     console.log("Payment submitted:", payload);
@@ -120,7 +128,6 @@ function MoviePaymentPage() {
             <StepProgres step={3} steps={steps} />
           </section>
 
-          {/* Payment Info */}
           <section>
             <h2 className="mb-5 text-xl font-bold text-gray-900">
               Payment Info
@@ -140,12 +147,13 @@ function MoviePaymentPage() {
                 <p className="mb-1 text-xs font-semibold tracking-widest text-primary">
                   TOTAL PAYMENT
                 </p>
-                <p className="text-sm font-bold text-gray-900">$30,00</p>
+                <p className="text-sm font-bold text-gray-900">
+                  Rp {totalPayment.toLocaleString("id-ID")}
+                </p>
               </div>
             </div>
           </section>
 
-          {/* Personal Information */}
           <section>
             <h2 className="mb-5 text-xl font-bold text-gray-900">
               Personal Information
@@ -239,7 +247,7 @@ function MoviePaymentPage() {
                     {...register("phone", {
                       required: "Phone number is required",
                       pattern: {
-                        value: /^[0-9]{9,14}$/,
+                        value: /^0?[0-9]{9,14}$/,
                         message: "Phone number must be 9-14 digits",
                       },
                     })}
@@ -255,7 +263,6 @@ function MoviePaymentPage() {
             </div>
           </section>
 
-          {/* Payment Method */}
           <section>
             <h2 className="mb-4 text-xl font-bold text-gray-900">
               Payment Method
@@ -299,14 +306,16 @@ function MoviePaymentPage() {
           </button>
         </form>
 
-        <ConfirmationModal
-          isOpen={isModalOpen}
-          onClose={() => setModalOpen(false)}
-          onConfirm={handleConfirm}
-          virtualAccount="12321328913829724"
-          totalPayment="$30"
-          dueDate="June 23, 2023"
-        />
+        {paymentPayload && (
+          <ConfirmationModal
+            isOpen={isModalOpen}
+            onClose={() => setModalOpen(false)}
+            onConfirm={handleConfirm}
+            virtualAccount={paymentPayload.virtualAccount}
+            totalPayment={paymentPayload.totalPayment}
+            dueDate={paymentPayload.dueDate}
+          />
+        )}
       </div>
     </HomeLayout>
   );

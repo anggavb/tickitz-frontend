@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Modal from "./Modal";
 
 const ConfirmationModal = ({
@@ -5,14 +6,49 @@ const ConfirmationModal = ({
   onClose,
   onConfirm,
   virtualAccount = "12321328913829724",
-  totalPayment = "$30",
+  totalPayment = 75000,
   dueDate = "June 23, 2023",
   confirmText = "Check Payment",
   cancelText = "Pay Later",
 }) => {
+  const [copied, setCopied] = useState(false);
+
+  const formatCurrency = (value) => {
+    if (typeof value === "number") {
+      return `Rp ${value.toLocaleString("id-ID")}`;
+    }
+
+    if (typeof value === "string") {
+      const cleanValue = value.trim();
+
+      if (cleanValue.toLowerCase().startsWith("rp")) {
+        return cleanValue;
+      }
+
+      const numericValue = Number(
+        cleanValue.replace(/\./g, "").replace(",", "."),
+      );
+
+      if (!Number.isNaN(numericValue)) {
+        return `Rp ${numericValue.toLocaleString("id-ID")}`;
+      }
+
+      return cleanValue;
+    }
+
+    return "Rp 0";
+  };
+
   const handleCopy = async () => {
+    if (!virtualAccount) return;
+
     try {
-      await navigator.clipboard.writeText(virtualAccount);
+      await navigator.clipboard.writeText(String(virtualAccount));
+      setCopied(true);
+
+      setTimeout(() => {
+        setCopied(false);
+      }, 1500);
     } catch (error) {
       console.error("Failed to copy virtual account:", error);
     }
@@ -46,7 +82,7 @@ const ConfirmationModal = ({
               onClick={handleCopy}
               className="h-11 rounded-lg border-2 border-primary px-5 text-sm font-semibold text-primary transition hover:bg-primary hover:text-white"
             >
-              Copy
+              {copied ? "Copied" : "Copy"}
             </button>
           </div>
 
@@ -57,14 +93,14 @@ const ConfirmationModal = ({
             </div>
 
             <p className="text-xl font-bold text-primary sm:text-right sm:text-2xl">
-              {totalPayment}
+              {formatCurrency(totalPayment)}
             </p>
           </div>
 
           <p className="text-base leading-relaxed tracking-wide text-slate-400 sm:text-lg">
             Pay this payment bill before it is due,{" "}
             <span className="text-primary">on {dueDate}</span>. If the bill has
-            not been paid by the specified time, it will be forfeited
+            not been paid by the specified time, it will be forfeited.
           </p>
         </div>
 
