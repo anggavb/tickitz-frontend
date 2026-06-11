@@ -613,7 +613,7 @@ function MovieDetailPage() {
         }}
       />
 
-      <section className="relative z-10 bg-white px-5 pb-12 sm:px-6 lg:px-8">
+      <section className="relative z-10 px-5 pb-12 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-7xl items-start gap-6 lg:grid-cols-[280px_1fr] lg:gap-10 xl:grid-cols-[320px_1fr]">
           <div className="-mt-20 flex justify-center sm:-mt-32 lg:-mt-40 lg:block">
             <img
