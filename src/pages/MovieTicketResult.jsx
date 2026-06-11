@@ -79,7 +79,7 @@ function MovieTicketResult() {
             <button
               type="button"
               onClick={handleDownload}
-              className="inline-flex items-center gap-5 text-base font-semibold text-white transition hover:text-primary md:text-xl"
+              className="inline-flex cursor-pointer items-center gap-5 text-base font-semibold text-white transition hover:text-primary md:text-xl"
             >
               Please Download Your Ticket
               <span className="text-2xl">→</span>
@@ -156,7 +156,7 @@ function MovieTicketResult() {
               <button
                 type="button"
                 onClick={handleDownload}
-                className="flex w-full items-center justify-center gap-4 rounded border border-primary py-4 text-base font-bold text-primary transition hover:bg-primary hover:text-white"
+                className="flex w-full cursor-pointer items-center justify-center gap-4 rounded border border-primary py-4 text-base font-bold text-primary transition hover:bg-primary hover:text-white"
               >
                 <svg
                   className="h-6 w-6"
@@ -177,7 +177,7 @@ function MovieTicketResult() {
               <button
                 type="button"
                 onClick={handleDone}
-                className="w-full rounded bg-primary py-4 text-base font-bold text-white shadow-[0_12px_30px_rgba(37,99,235,0.45)] transition hover:bg-blue-700"
+                className="w-full cursor-pointer rounded bg-primary py-4 text-base font-bold text-white shadow-[0_12px_30px_rgba(37,99,235,0.45)] transition hover:bg-primary/80"
               >
                 Done
               </button>
