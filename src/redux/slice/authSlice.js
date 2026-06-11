@@ -1,4 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import env from '../../utils/env';
 
 const initialState = {
   success: false,
@@ -10,12 +11,10 @@ const initialState = {
   isAuthenticated: false,
 };
 
-const baseAPI = import.meta.env.VITE_API_URL || '';
-
 // SIGNUP
 export const signup = createAsyncThunk('auth/signup', async (payload, thunkAPI) => {
   try {
-    const response = await fetch(`${baseAPI}/auth/signup`, {
+    const response = await fetch(`${env.baseAPI}/auth/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -36,7 +35,7 @@ export const signup = createAsyncThunk('auth/signup', async (payload, thunkAPI) 
 // ACTIVATE
 export const activate = createAsyncThunk('auth/activate', async (payload, thunkAPI) => {
   try {
-    const response = await fetch(`${baseAPI}/auth/activate`, {
+    const response = await fetch(`${env.baseAPI}/auth/activate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -57,7 +56,7 @@ export const activate = createAsyncThunk('auth/activate', async (payload, thunkA
 // REQUEST OTP
 export const requestNewOTP = createAsyncThunk('auth/requestNewOTP', async (payload, thunkAPI) => {
   try {
-    const response = await fetch(`${baseAPI}/auth/otp`, {
+    const response = await fetch(`${env.baseAPI}/auth/otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -78,7 +77,7 @@ export const requestNewOTP = createAsyncThunk('auth/requestNewOTP', async (paylo
 // SIGNIN
 export const signin = createAsyncThunk('auth/signin', async (payload, thunkAPI) => {
   try {
-    const response = await fetch(`${baseAPI}/auth/signin`, {
+    const response = await fetch(`${env.baseAPI}/auth/signin`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),

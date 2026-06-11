@@ -1,16 +1,16 @@
-import { useEffect, useRef, useState } from "react";
-import MovieCard from "../../components/MovieCard";
+import { useEffect, useRef, useState } from 'react';
+import MovieCard from '../../components/MovieCard';
+import { useDispatch, useSelector } from 'react-redux';
+import { getUpcoming } from '../../redux/slice/movieSlice';
 
-function UpcomingMovieSection({
-  label = "Upcoming Movies",
-  title = "Exciting Movie Coming Soon",
-  movies = [],
-}) {
+function UpcomingMovieSection({ label = 'Upcoming Movies', title = 'Exciting Movie Coming Soon', movies = [] }) {
   const sliderRef = useRef(null);
 
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
 
+  const { dataUpcoming } = useSelector((state) => state.movie);
+  const dispatch = useDispatch();
   const updateScrollButtons = () => {
     const slider = sliderRef.current;
     if (!slider) return;
@@ -27,7 +27,7 @@ function UpcomingMovieSection({
 
     slider.scrollBy({
       left: direction * slider.clientWidth * 0.85,
-      behavior: "smooth",
+      behavior: 'smooth',
     });
   };
 
@@ -37,25 +37,25 @@ function UpcomingMovieSection({
 
     updateScrollButtons();
 
-    slider.addEventListener("scroll", updateScrollButtons);
-    window.addEventListener("resize", updateScrollButtons);
+    slider.addEventListener('scroll', updateScrollButtons);
+    window.addEventListener('resize', updateScrollButtons);
 
     return () => {
-      slider.removeEventListener("scroll", updateScrollButtons);
-      window.removeEventListener("resize", updateScrollButtons);
+      slider.removeEventListener('scroll', updateScrollButtons);
+      window.removeEventListener('resize', updateScrollButtons);
     };
   }, [movies]);
 
+  useEffect(() => {
+    dispatch(getUpcoming());
+  }, [dispatch]);
   const shouldShowArrows = movies.length > 4;
 
   return (
     <article className="mx-auto max-w-7xl px-5 py-10 sm:px-6 md:px-8 md:py-14">
       <div className="mb-8 flex flex-col gap-6 md:mb-12 md:flex-row md:items-end md:justify-between">
         <div className="w-full text-center md:text-left">
-          <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-primary sm:text-xs md:mb-6 md:text-sm">
-            {label}
-          </p>
-
+          <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-primary sm:text-xs md:mb-6 md:text-sm">{label}</p>
           <h2 className="mx-auto max-w-xs text-2xl font-medium leading-snug text-neutral-900 sm:max-w-md sm:text-3xl md:mx-0 md:max-w-2xl md:text-5xl">
             {title}
           </h2>
@@ -91,14 +91,13 @@ function UpcomingMovieSection({
         onScroll={updateScrollButtons}
         className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-5 pb-4 scrollbar-hide sm:-mx-6 sm:px-6 md:mx-0 md:px-0 lg:gap-6"
       >
-        {movies.map((movie) => (
-          <div
-            key={movie.id}
-            className="min-w-[68%] snap-start sm:min-w-[45%] md:min-w-[31%] lg:min-w-[calc(25%-18px)]"
-          >
-            <MovieCard movie={movie} />
-          </div>
-        ))}
+        {dataUpcoming
+          ? dataUpcoming.map((movie) => (
+              <div key={movie.ID} className="min-w-[68%] snap-start sm:min-w-[45%] md:min-w-[31%] lg:min-w-[calc(25%-18px)]">
+                <MovieCard movie={movie} />
+              </div>
+            ))
+          : ''}
       </section>
     </article>
   );
