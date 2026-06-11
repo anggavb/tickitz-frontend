@@ -53,9 +53,9 @@ function MovieTicketResult() {
 
   return (
     <HomeLayout>
-      <main className="grid min-h-[calc(100vh-86px)] grid-cols-1 lg:grid-cols-[1.15fr_0.85fr]">
+      <main className="grid min-h-[calc(100vh-86px)] grid-cols-1 print:block lg:grid-cols-[1.15fr_0.85fr]">
         <section
-          className="relative flex min-h-130 items-center bg-cover bg-center px-6 py-14 text-white md:px-16 lg:min-h-[calc(100vh-86px)]"
+          className="relative flex min-h-130 items-center bg-cover bg-center px-6 py-14 text-white print:hidden md:px-16 lg:min-h-[calc(100vh-86px)]"
           style={{
             backgroundImage: `url(${heroImage})`,
           }}
@@ -87,9 +87,9 @@ function MovieTicketResult() {
           </div>
         </section>
 
-        <section className="flex items-center justify-center bg-mainbg px-5 py-12 md:px-10">
-          <div className="w-full max-w-md">
-            <div className="relative mx-auto rounded-xl bg-white px-8 pb-8 pt-12 shadow-sm">
+        <section className="flex items-center justify-center bg-mainbg px-5 py-12 print:bg-white print:px-0 print:py-0 md:px-10">
+          <div className="w-full max-w-md print:max-w-none">
+            <div className="relative mx-auto rounded-xl bg-white px-8 pb-8 pt-12 shadow-sm print:w-105 print:max-w-full print:shadow-none">
               <div className="flex justify-center">
                 <img
                   src={qrImage}
@@ -99,8 +99,8 @@ function MovieTicketResult() {
               </div>
 
               <div className="relative my-10 border-t border-dashed border-gray-300">
-                <span className="absolute -left-11 top-1/2 h-9 w-9 -translate-y-1/2 rounded-full bg-mainbg" />
-                <span className="absolute -right-11 top-1/2 h-9 w-9 -translate-y-1/2 rounded-full bg-mainbg" />
+                <span className="absolute -left-11 top-1/2 h-9 w-9 -translate-y-1/2 rounded-full bg-mainbg print:bg-white" />
+                <span className="absolute -right-11 top-1/2 h-9 w-9 -translate-y-1/2 rounded-full bg-mainbg print:bg-white" />
               </div>
 
               <div className="grid grid-cols-2 gap-x-10 gap-y-7 text-sm">
@@ -108,7 +108,7 @@ function MovieTicketResult() {
                   <p className="mb-2 text-xs font-medium tracking-wide text-gray-400">
                     Movie
                   </p>
-                  <p className="truncate  font-semibold text-gray-900 md:text-2xl">
+                  <p className="truncate font-semibold text-gray-900 md:text-2xl">
                     {title}
                   </p>
                 </div>
@@ -152,7 +152,7 @@ function MovieTicketResult() {
               </div>
             </div>
 
-            <div className="mt-8 space-y-4">
+            <div className="mt-8 space-y-4 print:hidden">
               <button
                 type="button"
                 onClick={handleDownload}

@@ -10,7 +10,7 @@ import youtube from "../assets/images/youtube.png";
 
 function Footer() {
   return (
-    <footer className="bg-white px-25 py-12 sm:py-16">
+    <footer className="bg-white px-25 py-12 print:hidden sm:py-16">
       <div className="mx-auto grid max-w-7xl gap-8 sm:gap-12 grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
         {/* Logo */}
         <div>
@@ -27,16 +27,34 @@ function Footer() {
           <h3 className="mb-4 font-semibold text-slate-900 sm:mb-6">Explore</h3>
 
           <ul className="space-y-2 text-sm text-slate-500 sm:space-y-3">
-            <li><a href="#" className="hover:text-slate-700">Cinemas</a></li>
-            <li><a href="#" className="hover:text-slate-700">Movies List</a></li>
-            <li><a href="#" className="hover:text-slate-700">My Ticket</a></li>
-            <li><a href="#" className="hover:text-slate-700">Notification</a></li>
+            <li>
+              <a href="#" className="hover:text-slate-700">
+                Cinemas
+              </a>
+            </li>
+            <li>
+              <a href="#" className="hover:text-slate-700">
+                Movies List
+              </a>
+            </li>
+            <li>
+              <a href="#" className="hover:text-slate-700">
+                My Ticket
+              </a>
+            </li>
+            <li>
+              <a href="#" className="hover:text-slate-700">
+                Notification
+              </a>
+            </li>
           </ul>
         </div>
 
         {/* Sponsor */}
         <div>
-          <h3 className="mb-4 font-semibold text-slate-900 sm:mb-6">Our Sponsor</h3>
+          <h3 className="mb-4 font-semibold text-slate-900 sm:mb-6">
+            Our Sponsor
+          </h3>
 
           <div className="flex flex-col gap-3 sm:gap-5">
             <img src={ebuId} alt="ebv.id" className="h-8 w-fit sm:h-10" />
@@ -47,7 +65,9 @@ function Footer() {
 
         {/* Social Media */}
         <div>
-          <h3 className="mb-4 font-semibold text-slate-900 sm:mb-6">Follow us</h3>
+          <h3 className="mb-4 font-semibold text-slate-900 sm:mb-6">
+            Follow us
+          </h3>
 
           <div className="space-y-3 sm:space-y-4">
             <div className="flex items-center gap-2 sm:gap-3">
