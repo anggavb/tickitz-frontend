@@ -30,7 +30,7 @@ function AppRouter() {
           <Route path="verified" element={<ActivationDonePage />} />
         </Route>
         <Route path="signin" element={<SigninPage />} />
-        <Route path="reset" element={<ResetPasswordPage />} />
+        <Route path="reset/password" element={<ResetPasswordPage />} />
       </Route>
       <Route path="/movies" element={<HomeMoviePage />} />
       <Route path="/movies/:slug" element={<MovieDetailPage />} />
