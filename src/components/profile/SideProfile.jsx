@@ -33,7 +33,7 @@ function SideProfile() {
       {/* Loyalty Section */}
       <div className="mt-6">
         <p className="text-sm font-medium text-slate-600 mb-2">Loyalty Points</p>
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-500 text-white rounded-xl p-4 relative overflow-hidden">
+        <div className="bg-gradient-to-r from-primary to-indigo-500 text-white rounded-xl p-4 relative overflow-hidden">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm opacity-90">{loyalty_tier}</p>
@@ -49,7 +49,7 @@ function SideProfile() {
         <div className="mt-3">
           <p className="text-xs text-slate-500 mb-1">{targetPoints - points} points become a master</p>
           <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-            <div className="h-full bg-blue-600 rounded-full transition-all" style={{ width: `${progress}%` }} />
+            <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${progress}%` }} />
           </div>
         </div>
       </div>
@@ -57,7 +57,7 @@ function SideProfile() {
       {/* Tombol Edit Profile — mobile only */}
       <button
         onClick={() => setShowEditModal(true)}
-        className="mt-6 md:hidden w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition font-medium"
+        className="mt-6 md:hidden w-full bg-primary text-white py-3 rounded-xl hover:bg-primary transition font-medium"
       >
         Edit Profile
       </button>

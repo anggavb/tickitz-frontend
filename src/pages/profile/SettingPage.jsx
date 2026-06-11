@@ -146,7 +146,7 @@ function SettingPage() {
             <button
               type="button"
               onClick={() => setIsEditing(true)}
-              className="cursor-pointer bg-blue-600 text-white px-8 py-3 rounded-xl hover:bg-blue-700 transition"
+              className="cursor-pointer bg-primary text-white px-8 py-3 rounded-xl hover:bg-orange-600 transition"
             >
               Edit Profile
             </button>

@@ -1,9 +1,9 @@
-import { Link, useNavigate, useLocation } from 'react-router';
-import { useEffect, useState } from 'react';
+import { Link, useNavigate, useLocation } from "react-router";
+import { useEffect, useState } from "react";
 
-import AuthLayout from '../../layouts/AuthLayout';
-import AuthCard from '../../components/auth/AuthCard';
-import StepProgres from '../../components/auth/signup/StepProgres';
+import AuthLayout from "../../layouts/AuthLayout";
+import AuthCard from "../../components/auth/AuthCard";
+import StepProgres from "../../components/auth/signup/StepProgres";
 
 function ActivationDonePage() {
   const navigate = useNavigate();
@@ -13,18 +13,19 @@ function ActivationDonePage() {
 
   const isActive = location.state?.isActive;
   const isRegistered = location.state?.isRegistered;
+  const steps = ["Fill Form", "Activate", "Done"];
 
   useEffect(() => {
     if (!isActive) {
-      navigate('/auth/activation');
+      navigate("/auth/activation");
     }
 
     if (!isRegistered) {
-      navigate('/auth/signup');
+      navigate("/auth/signup");
     }
 
     if (countdown <= 0) {
-      navigate('/auth/signin');
+      navigate("/auth/signin");
       return;
     }
 
@@ -37,18 +38,29 @@ function ActivationDonePage() {
 
   return (
     <AuthLayout>
-      <img src="/assets/logo.png" alt="tickitz logo" className="w-60 mb-2 mx-auto" />
+      <img
+        src="/assets/logo.png"
+        alt="tickitz logo"
+        className="w-60 mb-2 mx-auto"
+      />
 
       <AuthCard>
-        <StepProgres step={3} />
+        <StepProgres step={3} steps={steps} />
 
         <div className="flex flex-col items-center text-center mt-8">
-          <img src="/assets/auth/signup/verified.svg" alt="Account Activated" className="w-32 h-32 mt-6 object-contain mb-6" />
+          <img
+            src="/assets/auth/signup/verified.svg"
+            alt="Account Activated"
+            className="w-32 h-32 mt-6 object-contain mb-6"
+          />
 
-          <h2 className="text-2xl font-semibold text-gray-800">Account Activated</h2>
+          <h2 className="text-2xl font-semibold text-gray-800">
+            Account Activated
+          </h2>
 
           <p className="text-gray-500 mt-3 max-w-sm">
-            Your account has been successfully activated. You can now log in and start booking your favorite movies.
+            Your account has been successfully activated. You can now log in and
+            start booking your favorite movies.
           </p>
 
           <Link
@@ -76,7 +88,8 @@ function ActivationDonePage() {
           </Link>
 
           <p className="text-sm text-gray-400 mt-4">
-            Redirecting to login in <span className="font-semibold">{countdown}</span> seconds...
+            Redirecting to login in{" "}
+            <span className="font-semibold">{countdown}</span> seconds...
           </p>
         </div>
       </AuthCard>
