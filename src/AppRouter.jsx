@@ -17,6 +17,7 @@ import OrderHistoryPage from "./pages/profile/OrderHistoryPage";
 import SeatBookingPage from "./pages/SeatBookingPage";
 import MoviePaymentPage from "./pages/MoviePaymentPage";
 import MovieTicketResult from "./pages/MovieTicketResult";
+import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 
 function AppRouter() {
   return (
@@ -28,8 +29,8 @@ function AppRouter() {
           <Route path="activation" element={<ActivationPage />} />
           <Route path="verified" element={<ActivationDonePage />} />
         </Route>
-
         <Route path="signin" element={<SigninPage />} />
+        <Route path="reset" element={<ResetPasswordPage />} />
       </Route>
       <Route path="/movies" element={<HomeMoviePage />} />
       <Route path="/movies/:slug" element={<MovieDetailPage />} />
