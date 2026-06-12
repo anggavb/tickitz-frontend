@@ -25,6 +25,7 @@ function AddShowtimePage() {
     "22:00",
   ]);
   const [selectedTimes, setSelectedTimes] = useState([]);
+  const [price, setPrice] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -77,6 +78,7 @@ function AddShowtimePage() {
         start_date: startDate,
         end_date: endDate,
         times: selectedTimes,
+        price,
       };
 
       const res = await fetch(`${API_BASE_URL}/admin/movies/${movieId}/showtimes`, {
@@ -136,6 +138,17 @@ function AddShowtimePage() {
               <label className="mb-2 block text-sm text-slate-500">End Date</label>
               <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full rounded-md border border-slate-200 px-4 py-3 outline-none focus:border-primary" />
             </div>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm text-slate-500">Price</label>
+            <input
+              type="number"
+              min="0"
+              value={price}
+              onChange={(e) => setPrice(Number(e.target.value))}
+              className="w-full rounded-md border border-slate-200 px-4 py-3 outline-none focus:border-primary"
+            />
           </div>
 
           <div>
