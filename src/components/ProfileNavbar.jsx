@@ -3,9 +3,13 @@ import { useState } from "react";
 import NavLinks from "./NavLinks";
 import NavbarProfile from "./NavbarImage";
 import { adminLinks, userLinks } from "../config/navLinks";
+import NavbarAuthButtons from "./NavbarAuthButtons";
+import { useSelector } from "react-redux";
 
 function ProfileNavbar({ role = "user" }) {
   const [isOpen, setIsOpen] = useState(false);
+
+  const { isAuthenticated } = useSelector((state) => state.auth);
 
   const links = role === "admin" ? adminLinks : userLinks;
 
@@ -19,8 +23,7 @@ function ProfileNavbar({ role = "user" }) {
         </div>
 
         <div className="flex items-center gap-4">
-          <NavbarProfile />
-
+          {isAuthenticated ? <NavbarProfile /> : <NavbarAuthButtons />}
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="flex flex-col gap-1.5 md:hidden"
