@@ -1,10 +1,47 @@
 import React from "react";
 
-// Fallback image in case the passed array doesn't have enough items
+const fallbackImages = [
+  "https://image.tmdb.org/t/p/original/qAZ0pzat24kLdO3o8ejmbLxyOac.jpg",
+  "https://upload.wikimedia.org/wikipedia/en/1/14/Tenet_movie_poster.jpg",
+  "https://image.tmdb.org/t/p/w500/k68nPLbIST6NP96JmTxmZijEvCA.jpg",
+  "https://image.tmdb.org/t/p/w500/rweIrveL43TaxUN0akQEaAXL6x0.jpg",
+];
 
-function HeroSection({ images = [] }) {
-  // Ensure we always have 4 image sources by filling gaps with the default image
-  const displayImages = [images[0], images[1], images[2], images[3]];
+const posterLayout = [
+  {
+    alt: "Movie poster 1",
+    className: "h-24 rounded-t-xl object-top md:h-40 md:rounded-t-2xl",
+  },
+  {
+    alt: "Movie poster 2",
+    className: "h-36 rounded-b-xl md:h-64 md:rounded-b-2xl",
+  },
+  {
+    alt: "Movie poster 3",
+    className: "h-36 rounded-t-xl md:h-64 md:rounded-t-2xl",
+  },
+  {
+    alt: "Movie poster 4",
+    className: "h-24 rounded-b-xl object-top md:h-40 md:rounded-b-2xl",
+  },
+];
+
+function HeroSection({ images = fallbackImages }) {
+  const displayImages = fallbackImages.map(
+    (fallbackImage, index) => images[index] || fallbackImage,
+  );
+
+  const firstColumn = displayImages.slice(0, 2);
+  const secondColumn = displayImages.slice(2, 4);
+
+  const renderPoster = (src, index) => (
+    <img
+      key={index}
+      src={src}
+      alt={posterLayout[index].alt}
+      className={`w-full object-cover ${posterLayout[index].className}`}
+    />
+  );
 
   return (
     <article className="mx-auto grid max-w-7xl items-center gap-8 px-5 py-8 text-center md:px-8 md:py-14 lg:grid-cols-[1.25fr_0.75fr] lg:text-left">
@@ -23,32 +60,12 @@ function HeroSection({ images = [] }) {
       </section>
 
       <section className="mx-auto grid w-full max-w-70 grid-cols-2 gap-2.5 md:max-w-105 md:gap-4 lg:max-w-none">
-        {/* Column 1: Short then Tall */}
         <div className="flex flex-col gap-2.5 md:gap-4">
-          <img
-            src={displayImages[0]}
-            alt="Movie poster 1"
-            className="h-24 w-full rounded-t-xl object-cover object-top md:h-40 md:rounded-t-2xl"
-          />
-          <img
-            src={displayImages[1]}
-            alt="Movie poster 2"
-            className="h-36 w-full rounded-b-xl object-cover md:h-64 md:rounded-b-2xl"
-          />
+          {firstColumn.map((src, index) => renderPoster(src, index))}
         </div>
 
-        {/* Column 2: Tall then Short */}
         <div className="flex flex-col gap-2.5 md:gap-4">
-          <img
-            src={displayImages[2]}
-            alt="Movie poster 3"
-            className="h-36 w-full rounded-t-xl object-cover md:h-64 md:rounded-t-2xl"
-          />
-          <img
-            src={displayImages[3]}
-            alt="Movie poster 4"
-            className="h-24 w-full rounded-b-xl object-cover object-top md:h-40 md:rounded-b-2xl"
-          />
+          {secondColumn.map((src, index) => renderPoster(src, index + 2))}
         </div>
       </section>
     </article>
