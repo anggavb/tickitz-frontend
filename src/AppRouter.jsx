@@ -8,6 +8,7 @@ import SignupPage from "./pages/auth/SignupPage";
 import ActivationPage from "./pages/auth/ActivationPage";
 import ActivationDonePage from "./pages/auth/ActivationDonePage";
 import SigninPage from "./pages/auth/SigninPage";
+import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import AddMoviePage from "./pages/admin/AddMoviePage";
 import ProfileLayout from "./layouts/ProfileLayout";
 import SettingPage from "./pages/profile/SettingPage";
@@ -30,6 +31,7 @@ function AppRouter() {
           <Route path="verified" element={<ActivationDonePage />} />
         </Route>
         <Route path="signin" element={<SigninPage />} />
+        <Route path="forgot-password" element={<ForgotPasswordPage />} />
         <Route path="reset/password" element={<ResetPasswordPage />} />
       </Route>
       <Route path="/movies" element={<HomeMoviePage />} />
