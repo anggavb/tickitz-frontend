@@ -1,8 +1,9 @@
 import React from "react";
+import { useNavigate } from "react-router";
 
 function MovieCard({ movie, showDate = false }) {
   const movieDate = movie.release_date || movie.date || movie.show_date;
-
+  const navigate = useNavigate();
   return (
     <div className="group">
       {/* Poster */}
@@ -18,7 +19,6 @@ function MovieCard({ movie, showDate = false }) {
             </div>
           </div>
         )}
-
         <img
           src={movie.poster}
           alt={movie.title}
@@ -28,11 +28,17 @@ function MovieCard({ movie, showDate = false }) {
         {/* Hover Overlay */}
         <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
           <div className="flex w-35 flex-col gap-3">
-            <button className="rounded border border-white py-2 text-sm text-white transition hover:bg-white hover:text-black">
+            <button
+              onClick={() => navigate(`/movies/${movie.Slug}`)}
+              className="rounded border border-white py-2 text-sm text-white transition hover:bg-white hover:text-black"
+            >
               Details
             </button>
 
-            <button className="rounded bg-primary py-2 text-sm text-white transition hover:bg-primary/80">
+            <button
+              onClick={() => navigate(`/movies/${movie.Slug}`)}
+              className="rounded bg-primary py-2 text-sm text-white transition hover:bg-primary/80"
+            >
               Buy Ticket
             </button>
           </div>
