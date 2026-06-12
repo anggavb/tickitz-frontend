@@ -10,6 +10,7 @@ import ActivationDonePage from "./pages/auth/ActivationDonePage";
 import SigninPage from "./pages/auth/SigninPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import AddMoviePage from "./pages/admin/AddMoviePage";
+import AddCinemaPage from "./pages/admin/AddCinemaPage";
 import ProfileLayout from "./layouts/ProfileLayout";
 import SettingPage from "./pages/profile/SettingPage";
 import AdminLayout from "./layouts/AdminLayout";
@@ -44,6 +45,7 @@ function AppRouter() {
         <Route path="dashboard" element={<AdminDashboardPage />} />
         <Route path="" element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="movies/add" element={<AddMoviePage />} />
+        <Route path="movies/:id/cinema/add" element={<AddCinemaPage />} />
         <Route path="movies/:id/edit" element={<AddMoviePage />} />
         <Route path="movies/:id/view" element={<AddMoviePage viewOnly />} />
       </Route>

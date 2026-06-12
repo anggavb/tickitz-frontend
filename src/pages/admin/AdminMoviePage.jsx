@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
+import {useSelector} from 'react-redux';
 
 import eyeIcon from '../../assets/images/eye.png';
 import editIcon from '../../assets/images/edit.png';
 import deleteIcon from '../../assets/images/delete.png';
 import calendarIcon from '../../assets/images/calendar.png';
 import arrowDownIcon from '../../assets/images/arrow-down.png';
+import cinema from '../../assets/images/cinema.png';
 
 import ProfileNavbar from '../../components/ProfileNavbar';
 import SweetAlert from '../../components/ui/SweetAlert';
@@ -15,6 +17,7 @@ const PAGE_LIMIT = 5;
 
 function AdminMoviePage() {
   const navigate = useNavigate();
+  const { token } = useSelector((state) => state.auth);
 
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,7 +43,11 @@ function AdminMoviePage() {
           query.set('month', selectedMonth);
         }
 
-        const response = await fetch(`${API_BASE_URL}/admin/movies?${query.toString()}`);
+        const response = await fetch(`${API_BASE_URL}/admin/movies?${query.toString()}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
         const result = await response.json();
 
         if (!response.ok) {
@@ -68,7 +75,7 @@ function AdminMoviePage() {
     };
 
     fetchMovies(page);
-  }, [page, selectedMonth]);
+  }, [page, selectedMonth, token]);
 
   const gotoPage = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages && pageNumber !== page) {
@@ -95,7 +102,11 @@ function AdminMoviePage() {
   useEffect(() => {
     const fetchReleaseMonths = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/admin/movies/months`);
+        const response = await fetch(`${API_BASE_URL}/admin/movies/months`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
         const result = await response.json();
 
         if (!response.ok) {
@@ -109,7 +120,7 @@ function AdminMoviePage() {
     };
 
     fetchReleaseMonths();
-  }, []);
+  }, [token]);
 
   const handleDeleteMovie = async (movieId, movieName) => {
     const confirmed = await SweetAlert.confirm({
@@ -127,6 +138,7 @@ function AdminMoviePage() {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
       });
 
@@ -253,6 +265,13 @@ function AdminMoviePage() {
 
                       <td className="py-4">
                         <div className="flex items-center justify-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => navigate(`/admin/movies/${movie.id}/cinema/add`)}
+                            className="hover:opacity-70 transition"
+                          >
+                            <img src={cinema} alt="Cinema" className="h-7 w-7" />
+                          </button>
                           <button
                             type="button"
                             onClick={() => navigate(`/admin/movies/${movie.id}/view`)}
