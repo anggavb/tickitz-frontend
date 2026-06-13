@@ -20,8 +20,11 @@ import SeatBookingPage from "./pages/SeatBookingPage";
 import MoviePaymentPage from "./pages/MoviePaymentPage";
 import MovieTicketResult from "./pages/MovieTicketResult";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
+import useAxiosAuthToken from "./hooks/useAxiosAuthToken";
 
 function AppRouter() {
+  useAxiosAuthToken();
+
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
