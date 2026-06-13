@@ -1,1 +1,0 @@
-state management logic for the application. It includes actions, reducers, and store configuration. The Redux store is used to manage the global state of the application, allowing components to access and update state in a predictable way. This folder is essential for maintaining a clean and organized codebase when using Redux for state management.
