@@ -1,5 +1,6 @@
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import authReducer from './slice/authSlice';
+import movieDetailReducer from './slice/movieDetailSlice';
 import movieReducer from './slice/movieSlice';
 import orderReducer from './slice/orderSlice';
 import profileReducer from './slice/profileSlice';
@@ -18,6 +19,7 @@ const authPersistConfig = {
 const rootReducer = combineReducers({
   auth: persistReducer(authPersistConfig, authReducer),
   movie: movieReducer,
+  movieDetail: movieDetailReducer,
   order: orderReducer,
   profile: profileReducer,
 });
