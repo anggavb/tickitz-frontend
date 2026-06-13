@@ -1,16 +1,62 @@
-# React + Vite
+# Tickitz Frontend
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue)](https://opensource.org/license/mit)
+<br>
+Project frontend untuk aplikasi Tickitz — antarmuka pengguna berbasis Vite + React.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Tech Stacks
+- [![React](https://img.shields.io/badge/React-v18.2.0-blue?logo=react&logoColor=white)](https://reactjs.org/)
+- [![Vite](https://img.shields.io/badge/Vite-v4.0.0-blueviolet?logo=vite&logoColor=white)](https://vitejs.dev/)
+- [![Recharts](https://img.shields.io/badge/Recharts-latest-orange)](https://recharts.org/)
 
-Currently, two official plugins are available:
+## Description & Features
+- Single Page Application untuk membeli tiket bioskop.
+- Fitur utama: daftar film, detail film, pemesanan kursi, pembayaran, halaman profil, dan dashboard admin (manajemen film).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Logo
+<p align="center">
+  <img src="./src/assets/logo.png" width="200" alt="Tickitz Logo" />
+</p>
 
-## React Compiler
+## How to Setup
+1. Pastikan Node.js (v16+) dan npm terpasang.
+2. Salin variabel environment jika diperlukan (lihat file `.env.example` jika tersedia).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Quickstart
+```bash
+# masuk ke folder frontend
+cd tickitz-frontend
 
-## Expanding the ESLint configuration
+# install dependencies
+npm install
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+# jalankan development server
+npm run dev
+
+# build untuk production
+npm run build
+```
+
+## Design Philosophy
+- Simple and component-driven: tiap UI dipisah menjadi komponen kecil dan dapat diuji.
+- Mobile-first responsivity dan fokus pada UX untuk proses booking cepat.
+
+## Preview
+
+### Home Page
+![Home](./src/assets/home.png)
+
+### Movie Detail
+![Movie Detail](./src/assets/movie-detail.png)
+
+### Admin Dashboard
+![Admin Dashboard](./src/assets/admin-dashboard.png)
+
+## How to Contribute
+- Fork repository, buat branch fitur, lalu buat pull request.
+- Ikuti konvensi commit dan code style yang ada.
+
+## License
+This project is licensed under the MIT License
+
+## Related Project
+[Backend](https://github.com/anggavb/tickitz-backend.git)

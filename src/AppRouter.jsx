@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router';
+import { Navigate, Route, Routes } from "react-router";
 
 import LandingPage from "./pages/LandingPage";
 import HomeMoviePage from "./pages/HomeMoviePage";
@@ -8,6 +8,7 @@ import SignupPage from "./pages/auth/SignupPage";
 import ActivationPage from "./pages/auth/ActivationPage";
 import ActivationDonePage from "./pages/auth/ActivationDonePage";
 import SigninPage from "./pages/auth/SigninPage";
+import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import AddMoviePage from "./pages/admin/AddMoviePage";
 import ProfileLayout from "./layouts/ProfileLayout";
 import SettingPage from "./pages/profile/SettingPage";
@@ -16,6 +17,8 @@ import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import OrderHistoryPage from "./pages/profile/OrderHistoryPage";
 import SeatBookingPage from "./pages/SeatBookingPage";
 import MoviePaymentPage from "./pages/MoviePaymentPage";
+import MovieTicketResult from "./pages/MovieTicketResult";
+import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 
 function AppRouter() {
   return (
@@ -27,13 +30,15 @@ function AppRouter() {
           <Route path="activation" element={<ActivationPage />} />
           <Route path="verified" element={<ActivationDonePage />} />
         </Route>
-
         <Route path="signin" element={<SigninPage />} />
+        <Route path="forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="reset/password" element={<ResetPasswordPage />} />
       </Route>
       <Route path="/movies" element={<HomeMoviePage />} />
       <Route path="/movies/:slug" element={<MovieDetailPage />} />
       <Route path="/movies/:slug/booking" element={<SeatBookingPage />} />
       <Route path="/movies/:slug/payment" element={<MoviePaymentPage />} />
+      <Route path="/movies/:slug/result" element={<MovieTicketResult />} />
 
       <Route path="/admin" element={<AdminLayout />}>
         <Route path="movies" element={<AdminMoviePage />} />
