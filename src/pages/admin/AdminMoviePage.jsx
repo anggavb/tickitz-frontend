@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import {useSelector} from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import eyeIcon from '../../assets/images/eye.png';
 import editIcon from '../../assets/images/edit.png';
@@ -29,53 +29,57 @@ function AdminMoviePage() {
   const [showMonthDropdown, setShowMonthDropdown] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  useEffect(() => {
-    const fetchMovies = async (pageNumber = 1) => {
-      setIsLoading(true);
-      setError(null);
+  const fetchMovies = useCallback(async (pageNumber = 1) => {
+    setIsLoading(true);
+    setError(null);
 
-      try {
-        const query = new URLSearchParams({
-          page: String(pageNumber),
-          limit: String(PAGE_LIMIT),
-        });
-        if (selectedMonth) {
-          query.set('month', selectedMonth);
-        }
-
-        const response = await fetch(`${API_BASE_URL}/admin/movies?${query.toString()}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-        const result = await response.json();
-
-        if (!response.ok) {
-          throw new Error(result.message || 'Failed to load movies');
-        }
-
-        setMovies(
-          result.data.map((movie) => ({
-            id: movie.id,
-            thumbnail: movie.image ? `${API_BASE_URL}${movie.image}` : '',
-            name: movie.name,
-            category: movie.categories?.join(', ') || '',
-            date: movie.release_date,
-            duration: `${movie.duration_in_minute} minute`,
-          })),
-        );
-
-        setPage(result.pagination?.page || pageNumber);
-        setTotalPages(result.pagination?.total_page || 1);
-      } catch (fetchError) {
-        setError(fetchError.message);
-      } finally {
-        setIsLoading(false);
+    try {
+      const query = new URLSearchParams({
+        page: String(pageNumber),
+        limit: String(PAGE_LIMIT),
+      });
+      if (selectedMonth) {
+        query.set('month', selectedMonth);
       }
+
+      const response = await fetch(`${API_BASE_URL}/admin/movies?${query.toString()}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to load movies');
+      }
+
+      setMovies(
+        result.data.map((movie) => ({
+          id: movie.id,
+          thumbnail: movie.image ? `${API_BASE_URL}${movie.image}` : '',
+          name: movie.name,
+          category: movie.categories?.join(', ') || '',
+          date: movie.release_date,
+          duration: `${movie.duration_in_minute} minute`,
+        })),
+      );
+
+      setPage(result.pagination?.page || pageNumber);
+      setTotalPages(result.pagination?.total_page || 1);
+    } catch (fetchError) {
+      setError(fetchError.message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedMonth, token]);
+
+  useEffect(() => {
+    const loadMovies = async () => {
+      await fetchMovies(page);
     };
 
-    fetchMovies(page);
-  }, [page, selectedMonth, token]);
+    loadMovies();
+  }, [fetchMovies, page]);
 
   const gotoPage = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages && pageNumber !== page) {
@@ -153,7 +157,8 @@ function AdminMoviePage() {
         text: 'Movie deleted successfully.',
       });
 
-      setPage(1);
+      // Refresh page content after delete
+      await fetchMovies(page);
     } catch (deleteError) {
       await SweetAlert.error({
         title: 'Delete Failed',
