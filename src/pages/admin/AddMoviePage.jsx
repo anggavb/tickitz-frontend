@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
+import {useSelector} from 'react-redux';
 import SweetAlert from "../../components/ui/SweetAlert";
 import Toast from "../../components/ui/Toast";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
 function AddMoviePage({ viewOnly = false }) {
+  const { token } = useSelector((state) => state.auth);
+
   const [image, setImage] = useState(null);
   const [name, setName] = useState("");
   const [releaseDate, setReleaseDate] = useState("");
@@ -65,7 +68,14 @@ function AddMoviePage({ viewOnly = false }) {
 
       setIsLoadingDetail(true);
       try {
-        const response = await fetch(`${API_BASE_URL}/admin/movies/${movieId}`);
+        const response = await fetch(
+          `${API_BASE_URL}/admin/movies/${movieId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
         const data = await response.json();
 
         if (!response.ok) {
@@ -93,7 +103,7 @@ function AddMoviePage({ viewOnly = false }) {
     };
 
     fetchMovieDetail();
-  }, [id, isEditMode, isViewMode]);
+  }, [id, isEditMode, isViewMode,token]);
 
   if ((isEditMode || isViewMode) && isLoadingDetail) {
     return (
@@ -199,6 +209,9 @@ function AddMoviePage({ viewOnly = false }) {
         {
           method: isEditMode ? "PATCH" : "POST",
           body: formData,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
       );
 
@@ -249,8 +262,8 @@ function AddMoviePage({ viewOnly = false }) {
             {isViewMode
               ? `View (${name || "Movie"})`
               : isEditMode
-              ? `Edit (${name || "Movie"})`
-              : "Add New Movie"}
+                ? `Edit (${name || "Movie"})`
+                : "Add New Movie"}
           </h1>
 
           <form className="space-y-6" onSubmit={handleSubmit}>
@@ -288,9 +301,7 @@ function AddMoviePage({ viewOnly = false }) {
 
               {existingImageUrl && !image && (
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-2 text-center">
-                  <p className="mb-2 text-sm text-slate-500">
-                    Current image
-                  </p>
+                  <p className="mb-2 text-sm text-slate-500">Current image</p>
                   <img
                     src={existingImageUrl}
                     alt="Current movie thumbnail"
@@ -474,7 +485,7 @@ function AddMoviePage({ viewOnly = false }) {
             {viewOnly ? (
               <button
                 type="button"
-                onClick={() => navigate('/admin/movies')}
+                onClick={() => navigate("/admin/movies")}
                 className="w-full rounded-md bg-slate-700 py-3 font-medium text-white shadow-md transition hover:opacity-90"
               >
                 Back to list
@@ -484,7 +495,7 @@ function AddMoviePage({ viewOnly = false }) {
                 type="submit"
                 className="w-full rounded-md bg-primary py-3 font-medium text-white shadow-md transition hover:opacity-90"
               >
-                {isEditMode ? 'Update Movie' : 'Save Movie'}
+                {isEditMode ? "Update Movie" : "Save Movie"}
               </button>
             )}
           </form>
