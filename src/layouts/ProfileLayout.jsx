@@ -1,11 +1,20 @@
-import React from 'react';
-import { Outlet, useLocation } from 'react-router';
+import React, { useEffect } from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router';
 import ProfileNavbar from '../components/ProfileNavbar';
 import ProfileHeader from '../components/profile/ProfileHeader';
 import SideProfile from '../components/profile/SideProfile';
 import { ProfileEditProvider } from '../context/ProfileEditContext.jsx';
+import { useSelector } from 'react-redux';
 
 function ProfileLayout() {
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/auth/signin');
+    }
+  }, [isAuthenticated, navigate]);
   const { pathname } = useLocation();
   const isHistory = pathname === '/profile/history';
 

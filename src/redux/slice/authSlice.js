@@ -95,6 +95,34 @@ export const signin = createAsyncThunk('auth/signin', async (payload, thunkAPI) 
   }
 });
 
+// UPDATE PASSWORD
+export const changePassword = createAsyncThunk('auth/changePassword', async (payload, thunkAPI) => {
+  try {
+    const token = thunkAPI.getState().auth.token;
+
+    const response = await fetch(`${env.baseAPI}/auth/password`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        new_password: payload.new_password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return thunkAPI.rejectWithValue(data?.message || 'Change password failed');
+    }
+
+    return data;
+  } catch (error) {
+    return thunkAPI.rejectWithValue(error.message);
+  }
+});
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -179,6 +207,24 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
       })
       .addCase(signin.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(changePassword.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(changePassword.fulfilled, (state) => {
+        state.loading = false;
+        state.success = true;
+        state.message = 'Password updated';
+
+        state.user = null;
+        state.token = null;
+        state.isAuthenticated = false;
+      })
+      .addCase(changePassword.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

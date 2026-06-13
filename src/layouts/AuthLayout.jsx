@@ -1,8 +1,17 @@
 import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router';
 
 const images = ['/assets/auth/backgrounds/daredevil.jpg', '/assets/auth/backgrounds/ironheart.jpg', '/assets/auth/backgrounds/marvel.png'];
 
 export default function AuthLayout({ children }) {
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/profile');
+    }
+  }, [isAuthenticated, navigate]);
   const [index, setIndex] = useState(0);
   const [fade, setFade] = useState(true);
 
