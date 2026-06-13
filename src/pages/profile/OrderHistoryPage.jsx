@@ -1,44 +1,21 @@
-import { useState } from 'react';
-// import { useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
-function OrderHistoryPage() {
-  // const { orderHistory } = useSelector((state) => state.auth);
-  const [copiedId, setCopiedId] = useState(null);
+import { getOrderHistory } from '../../redux/slice/orderSlice';
 
+function OrderHistoryPage() {
+  const dispatch = useDispatch();
+
+  const { dataHistory, loadingHistory } = useSelector((state) => state.order);
+  console.log(dataHistory);
+  const [copiedId, setCopiedId] = useState(null);
   const [openId, setOpenId] = useState(null);
 
-  const fallbackOrders = [
-    {
-      id: 1,
-      movieTitle: 'Spider-Man: Homecoming',
-      cinema: 'CineOne21',
-      date: 'Tuesday, 07 July 2020',
-      time: '04:30pm',
-      ticketStatus: 'active',
-      paymentStatus: 'unpaid',
-      total: 30,
-      vaNumber: '12321328913829724',
-      deadline: 'June 23, 2023',
-      tickets: [],
-    },
-    {
-      id: 2,
-      movieTitle: 'Avengers: End Game',
-      cinema: 'ebv.id',
-      date: 'Monday, 14 June 2020',
-      time: '02:00pm',
-      ticketStatus: 'used',
-      paymentStatus: 'paid',
-      total: 30,
-      tickets: [
-        { id: 1, seat: 'C4', category: 'PG-13' },
-        { id: 2, seat: 'C5', category: 'PG-13' },
-        { id: 3, seat: 'C6', category: 'PG-13' },
-      ],
-    },
-  ];
+  useEffect(() => {
+    dispatch(getOrderHistory());
+  }, [dispatch]);
 
-  const orders = fallbackOrders;
+  const orders = dataHistory?.data || [];
 
   const toggleDetail = (id) => {
     setOpenId(openId === id ? null : id);
@@ -53,6 +30,41 @@ function OrderHistoryPage() {
     }, 3000);
   };
 
+  if (loadingHistory) {
+    return (
+      <div className="text-center py-10">
+        <p>Loading order history...</p>
+      </div>
+    );
+  }
+
+  if (!orders.length) {
+    return (
+      <div className="bg-white rounded-2xl shadow-sm p-10 text-center">
+        <p className="text-gray-500">No order history found</p>
+      </div>
+    );
+  }
+
+  function formatDateTime(dateString) {
+    const date = new Date(dateString);
+
+    const datePart = date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    });
+
+    const timePart = date.toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false, // force 24-hour format
+    });
+
+    return `${datePart} - ${timePart}`;
+  }
+
   return (
     <div className="space-y-4 sm:space-y-5">
       {orders.map((order) => (
@@ -60,37 +72,34 @@ function OrderHistoryPage() {
           {/* HEADER */}
           <div className="flex justify-between items-start p-4 sm:p-5 border-b border-gray-300">
             <div>
-              <p className="text-[10px] sm:text-xs text-gray-400 mb-1">
-                {order.date} - {order.time}
-              </p>
-              <h2 className="text-sm sm:text-lg font-semibold">{order.movieTitle}</h2>
+              <p className="text-[10px] sm:text-xs text-gray-400 mb-1">{formatDateTime(order.order_date)}</p>
+
+              <h2 className="text-sm sm:text-lg font-semibold">{order.movie_name}</h2>
             </div>
 
-            <p className="font-bold text-xs sm:text-sm text-gray-700">{order.cinema}</p>
+            <p className="font-bold text-xs sm:text-sm text-gray-700">{order.cinema_name}</p>
           </div>
 
           {/* STATUS */}
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-0 justify-between items-stretch sm:items-center p-4 sm:p-5">
-            {/* STATUS BADGES */}
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
               <span
                 className={`w-full sm:w-auto text-center px-3 py-1 sm:px-5 sm:py-2 rounded-md text-[10px] sm:text-sm ${
-                  order.ticketStatus === 'active' ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-200 text-gray-500'
+                  order.ticket_status === 'active' ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-200 text-gray-500'
                 }`}
               >
-                {order.ticketStatus === 'active' ? 'Ticket active' : 'Ticket used'}
+                {order.ticket_status === 'active' ? 'Ticket Active' : order.ticket_status === 'used' ? 'Ticket Used' : 'No Ticket'}
               </span>
 
               <span
                 className={`w-full sm:w-auto text-center px-3 py-1 sm:px-5 sm:py-2 rounded-md text-[10px] sm:text-sm ${
-                  order.paymentStatus === 'paid' ? 'bg-primary/20 text-primary' : 'bg-red-200 text-red-500'
+                  order.payment_status === 'paid' ? 'bg-primary/20 text-primary' : 'bg-red-200 text-red-500'
                 }`}
               >
-                {order.paymentStatus === 'paid' ? 'Paid' : 'Not Paid'}
+                {order.payment_status === 'paid' ? 'Paid' : 'Not Paid'}
               </span>
             </div>
 
-            {/* BUTTON */}
             <button
               onClick={() => toggleDetail(order.id)}
               className="w-full sm:w-auto flex justify-center items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-400 hover:text-orange-500 mt-1 sm:mt-0"
@@ -104,23 +113,25 @@ function OrderHistoryPage() {
           {openId === order.id && (
             <div className="px-4 sm:px-5 pb-4 sm:pb-5">
               {/* UNPAID */}
-              {order.paymentStatus === 'unpaid' && (
+              {order.payment_status !== 'paid' && (
                 <div className="pt-4 sm:pt-5">
-                  <h3 className="text-xs sm:text-sm font-semibold mb-3 sm:mb-4">Ticket Information</h3>
+                  <h3 className="text-sm font-semibold mb-4">Ticket Information</h3>
 
-                  <div className="space-y-3 sm:space-y-4 text-xs sm:text-sm">
+                  {/* CARD */}
+                  <div className="space-y-4">
+                    {/* VA ROW */}
                     <div className="flex justify-between items-center">
-                      <p className="text-gray-400">No. Rekening Virtual :</p>
+                      <p className="text-gray-400 text-xs sm:text-sm">No. Rekening Virtual :</p>
 
-                      <div className="flex items-center gap-2 sm:gap-3">
-                        <span className="font-semibold text-xs sm:text-sm">{order.vaNumber}</span>
+                      <div className="flex items-center gap-3">
+                        <p className="font-semibold text-xs sm:text-sm text-gray-800">{order.payment_reference}</p>
 
                         <button
-                          onClick={() => handleCopy(order.vaNumber, order.id)}
-                          className={`px-2 py-1 sm:px-3 sm:py-1 rounded text-[10px] sm:text-sm border transition ${
+                          onClick={() => handleCopy(order.payment_reference, order.id)}
+                          className={`px-3 py-1 rounded border text-xs transition ${
                             copiedId === order.id
                               ? 'bg-gray-200 text-gray-500 border-gray-300'
-                              : 'border-primary text-primary hover:bg-orange-500 hover:text-white hover:border-orange-500'
+                              : 'border-primary text-primary hover:bg-primary hover:text-white'
                           }`}
                         >
                           {copiedId === order.id ? 'Copied' : 'Copy'}
@@ -128,77 +139,72 @@ function OrderHistoryPage() {
                       </div>
                     </div>
 
-                    <div className="flex justify-between">
-                      <p className="text-gray-400">Total Payment :</p>
-                      <p className="text-primary font-semibold">Rp. {order.total}</p>
+                    {/* TOTAL ROW */}
+                    <div className="flex justify-between items-center">
+                      <p className="text-gray-400 text-xs sm:text-sm">Total Payment :</p>
+
+                      <p className="text-primary font-bold text-sm sm:text-base">Rp. {order.total_payment?.toLocaleString('id-ID')}</p>
                     </div>
 
-                    <p className="text-gray-400 text-[10px] sm:text-xs">
-                      Pay this payment bill before it is due, on <span className="text-red-500">{order.deadline}</span>
+                    {/* DEADLINE INFO */}
+                    <p className="text-gray-400 text-xs sm:text-sm leading-relaxed">
+                      Pay this payment bill before it is due, on <span className="text-red-500 font-medium">{formatDateTime(order.expired_at)}</span>.
+                      If the bill has not been paid by the specified time, it will be forfeited
                     </p>
 
-                    <button className="mt-2 sm:mt-3 bg-primary text-white px-3 py-1.5 sm:px-5 sm:py-2 rounded text-xs sm:text-sm hover:bg-orange-500">
-                      Cek Pembayaran
-                    </button>
+                    {/* BUTTON */}
+                    <button className="bg-primary text-white px-5 py-2 rounded text-sm hover:bg-orange-500 transition">Cek Pembayaran</button>
                   </div>
                 </div>
               )}
 
               {/* PAID */}
-              {order.paymentStatus === 'paid' && (
+              {order.payment_status === 'paid' && (
                 <div className="pt-4 sm:pt-5">
                   <h3 className="text-xs sm:text-sm font-semibold mb-3 sm:mb-4">Ticket Information</h3>
 
                   <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
-                    {/* QR */}
                     <div className="w-24 h-24 sm:w-28 sm:h-28 bg-gray-300 flex items-center justify-center text-[10px]">QR CODE</div>
 
-                    {/* RIGHT */}
                     <div className="flex-1">
-                      {order.tickets?.length > 0 ? (
-                        <>
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-xs sm:text-sm mb-3 sm:mb-4">
-                            <div>
-                              <p className="text-gray-400">Category</p>
-                              <p>{order.tickets[0].category}</p>
-                            </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-xs sm:text-sm mb-3 sm:mb-4">
+                        <div>
+                          <p className="text-gray-400">Category</p>
+                          <p>{order.movie_category || '-'}</p>
+                        </div>
 
-                            <div>
-                              <p className="text-gray-400">Time</p>
-                              <p>{order.time}</p>
-                            </div>
+                        <div>
+                          <p className="text-gray-400">Time</p>
+                          <p>{order.show_time}</p>
+                        </div>
 
-                            <div>
-                              <p className="text-gray-400">Seats</p>
-                              <p>{order.tickets.map((t) => t.seat).join(', ')}</p>
-                            </div>
+                        <div>
+                          <p className="text-gray-400">Seats</p>
+                          <p>{order.seats || '-'}</p>
+                        </div>
 
-                            <div>
-                              <p className="text-gray-400">Total</p>
-                              <p className="font-semibold">Rp. {order.total}</p>
-                            </div>
-                          </div>
+                        <div>
+                          <p className="text-gray-400">Total</p>
+                          <p className="font-semibold">Rp. {order.total_payment?.toLocaleString('id-ID')}</p>
+                        </div>
+                      </div>
 
-                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 text-xs sm:text-sm">
-                            <div>
-                              <p className="text-gray-400">Movie</p>
-                              <p>{order.movieTitle}</p>
-                            </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 text-xs sm:text-sm">
+                        <div>
+                          <p className="text-gray-400">Movie</p>
+                          <p>{order.movie_name}</p>
+                        </div>
 
-                            <div>
-                              <p className="text-gray-400">Date</p>
-                              <p>{order.date}</p>
-                            </div>
+                        <div>
+                          <p className="text-gray-400">Date</p>
+                          <p>{new Date(order.show_date).toLocaleDateString('id-ID')}</p>
+                        </div>
 
-                            <div>
-                              <p className="text-gray-400">Count</p>
-                              <p>{order.tickets.length} pcs</p>
-                            </div>
-                          </div>
-                        </>
-                      ) : (
-                        <p className="text-gray-400 text-xs">No ticket data available</p>
-                      )}
+                        <div>
+                          <p className="text-gray-400">Count</p>
+                          <p>{order.seat_count} pcs</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

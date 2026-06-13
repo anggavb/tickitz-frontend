@@ -1,11 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import ProfileNavbar from '../components/ProfileNavbar';
-import { Outlet } from 'react-router';
+import { Outlet, useNavigate } from 'react-router';
+import { useSelector } from 'react-redux';
 
 function AdminLayout() {
-  // nanti disini pengecekkan role
-  // const {user} = useSelector(state => state.auth)
-  // if user.role !== 'admin' navigate to user profile
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user.role !== 'admin' && !isAuthenticated) {
+      navigate('/auth/siginin');
+    }
+  }, [isAuthenticated, navigate, user]);
   return (
     <>
       <ProfileNavbar role="admin" />

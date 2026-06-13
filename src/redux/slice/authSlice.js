@@ -95,28 +95,26 @@ export const signin = createAsyncThunk('auth/signin', async (payload, thunkAPI) 
   }
 });
 
-// LOGOUT
-export const logoutUser = createAsyncThunk('auth/logoutUser', async (_, thunkAPI) => {
+// UPDATE PASSWORD
+export const changePassword = createAsyncThunk('auth/changePassword', async (payload, thunkAPI) => {
   try {
-    const state = thunkAPI.getState();
-    const token = state.auth.token;
+    const token = thunkAPI.getState().auth.token;
 
-    if (!token) {
-      return thunkAPI.rejectWithValue('No token found');
-    }
-
-    const response = await fetch(`${env.baseAPI}/auth/logout`, {
-      method: 'DELETE',
+    const response = await fetch(`${env.baseAPI}/auth/password`, {
+      method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
+      body: JSON.stringify({
+        new_password: payload.new_password,
+      }),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      return thunkAPI.rejectWithValue(data?.message || 'Logout failed');
+      return thunkAPI.rejectWithValue(data?.message || 'Change password failed');
     }
 
     return data;
@@ -212,21 +210,21 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-
-      .addCase(logoutUser.pending, (state) => {
+      .addCase(changePassword.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.success = false;
       })
-      .addCase(logoutUser.fulfilled, (state) => {
+      .addCase(changePassword.fulfilled, (state) => {
         state.loading = false;
+        state.success = true;
+        state.message = 'Password updated';
+
         state.user = null;
         state.token = null;
-        state.success = true;
-        state.error = null;
         state.isAuthenticated = false;
-        state.message = 'Logout success';
       })
-      .addCase(logoutUser.rejected, (state, action) => {
+      .addCase(changePassword.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
