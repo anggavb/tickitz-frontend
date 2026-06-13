@@ -1,23 +1,73 @@
-import locationArrowIcon from '../assets/images/location-arrow.png';
-import searchIcon from '../assets/images/search1.png';
-import profileImage from '../assets/images/profile.png';
+import { useState, useRef, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router";
+import searchIcon from "../assets/images/search1.png";
+import profileImage from "../assets/images/profile.png";
+import { logoutUser } from "../redux/slice/authSlice";
+import logoutIcon from "../assets/images/logout.png";
 
-function NavbarImage({ location = 'Jakarta' }) {
+function NavbarImage() {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { loading } = useSelector((state) => state.auth);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await dispatch(logoutUser()).unwrap();
+      setIsDropdownOpen(false);
+      navigate("/auth/signin");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+
   return (
     <div className="flex items-center gap-3 md:gap-5">
-      <div className="hidden items-center gap-2 text-sm text-slate-600 md:flex">
-        <span>{location}</span>
-
-        <img src={locationArrowIcon} alt="Location Dropdown" className="h-3 w-3" />
-      </div>
-
       <button type="button">
         <img src={searchIcon} alt="Search" className="h-5 w-5" />
       </button>
 
-      <button type="button">
-        <img src={profileImage} alt="Profile" className="h-8 w-8 rounded-full object-cover md:h-10 md:w-10" />
-      </button>
+      <div className="relative" ref={dropdownRef}>
+        <button
+          type="button"
+          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          className="hover:opacity-80 transition-opacity"
+        >
+          <img
+            src={profileImage}
+            alt="Profile"
+            className="h-8 w-8 rounded-full object-cover md:h-10 md:w-10"
+          />
+        </button>
+
+        {isDropdownOpen && (
+          <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50">
+            <button
+              onClick={handleLogout}
+              disabled={loading}
+              className="flex items-center gap-2 w-full px-4 py-3 text-left text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+            >
+              <img src={logoutIcon} alt="Logout" className="w-4 h-4" />
+
+              {loading ? "Logging out..." : "Logout"}
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

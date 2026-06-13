@@ -95,6 +95,36 @@ export const signin = createAsyncThunk('auth/signin', async (payload, thunkAPI) 
   }
 });
 
+// LOGOUT
+export const logoutUser = createAsyncThunk('auth/logoutUser', async (_, thunkAPI) => {
+  try {
+    const state = thunkAPI.getState();
+    const token = state.auth.token;
+
+    if (!token) {
+      return thunkAPI.rejectWithValue('No token found');
+    }
+
+    const response = await fetch(`${env.baseAPI}/auth/logout`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return thunkAPI.rejectWithValue(data?.message || 'Logout failed');
+    }
+
+    return data;
+  } catch (error) {
+    return thunkAPI.rejectWithValue(error.message);
+  }
+});
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -179,6 +209,24 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
       })
       .addCase(signin.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      .addCase(logoutUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.loading = false;
+        state.user = null;
+        state.token = null;
+        state.success = true;
+        state.error = null;
+        state.isAuthenticated = false;
+        state.message = 'Logout success';
+      })
+      .addCase(logoutUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
