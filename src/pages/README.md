@@ -1,1 +1,0 @@
-all pages are in this directory. You can create subdirectories if you want to organize your pages better. Each page should have an `index.jsx` file that exports a React component. For example, if you want to create a page for the home route, you can create a `home` directory and add an `index.jsx` file inside it with the following content:
