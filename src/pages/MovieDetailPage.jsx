@@ -104,20 +104,17 @@ function MovieDetailContent({ slug, auth }) {
 
     try {
       const order = await dispatch(createMovieDetailOrder()).unwrap();
+      const orderId = order?.id;
 
-      navigate(`/movies/${slug}/booking`, {
-        state: {
-          order,
-          orderId: order?.id,
-          movie,
-          movieCinemaId: schedule.selectedMovieCinemaId,
-          selectedDate: schedule.selectedDate,
-          selectedTime: schedule.selectedTimeLabel,
-          selectedLocation: schedule.selectedLocation,
-          selectedCinema: schedule.selectedCinema,
-          price: schedule.selectedPrice,
-        },
-      });
+      if (!orderId) {
+        await SweetAlert.error({
+          title: "Failed to create order",
+          text: "Order ID was not returned by the server.",
+        });
+        return;
+      }
+
+      navigate(`/orders/${orderId}/booking`);
     } catch (err) {
       if (err?.status === 401) {
         await redirectToSignin();

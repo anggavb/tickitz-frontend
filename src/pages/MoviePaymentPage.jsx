@@ -1,75 +1,39 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import HomeLayout from "../layouts/HomeLayout";
+import { useDispatch, useSelector } from "react-redux";
+import { FourSquare } from "react-loading-indicators";
+import { useNavigate, useParams } from "react-router";
 import StepProgres from "../components/auth/signup/StepProgres";
-import ConfirmationModal from "../components/ConfirmationModal";
+import HomeLayout from "../layouts/HomeLayout";
+import {
+  fetchPaymentPage,
+  resetSeatBookingState,
+  selectPaymentView,
+  setSelectedPaymentMethod,
+  submitOrderPayment,
+} from "../redux/slice/seatBookingSlice";
 
-const paymentMethods = [
-  {
-    id: "gpay",
-    label: "G Pay",
-    logoUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/f/f2/Google_Pay_Logo.svg",
-  },
-  {
-    id: "visa",
-    label: "VISA",
-    logoUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/5/5c/Visa_Inc._logo_(2021%E2%80%93present).svg",
-  },
-  {
-    id: "gopay",
-    label: "GoPay",
-    logoUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/8/86/Gopay_logo.svg",
-  },
-  {
-    id: "paypal",
-    label: "PayPal",
-    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg",
-  },
-  {
-    id: "dana",
-    label: "DANA",
-    logoUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/7/72/Logo_dana_blue.svg",
-  },
-  {
-    id: "bca",
-    label: "BCA",
-    logoUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/5/5c/Bank_Central_Asia.svg",
-  },
-  {
-    id: "bri",
-    label: "Bank BRI",
-    logoUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/f/f5/BANK_BRI_logo_%28vertical%29.svg",
-  },
-  {
-    id: "ovo",
-    label: "OVO",
-    logoUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/e/eb/Logo_ovo_purple.svg",
-  },
-];
-
-const paymentInfo = [
-  { label: "DATE & TIME", value: "Tuesday, 07 July 2026 at 02:00pm" },
-  { label: "MOVIE TITLE", value: "Echoes of Jakarta" },
-  { label: "CINEMA NAME", value: "CineOne21 Cinema" },
-  { label: "NUMBER OF TICKETS", value: "3 pieces" },
-];
-
-const totalPayment = 75000;
-const virtualAccount = "12321328913829724";
-const dueDate = "June 23, 2023";
+const steps = ["Dates And Time", "Seat", "Payment"];
 
 function MoviePaymentPage() {
-  const [selectedPayment, setSelectedPayment] = useState("");
+  const { orderId } = useParams();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const payment = useSelector(selectPaymentView);
   const [paymentError, setPaymentError] = useState("");
-  const [isModalOpen, setModalOpen] = useState(false);
-  const [paymentPayload, setPaymentPayload] = useState(null);
+  const {
+    loadingOrder,
+    loadingPaymentMethods,
+    submittingPayment,
+    errorOrder,
+    errorPaymentMethods,
+    errorPayment,
+    paymentInfoRows,
+    paymentMethods,
+    selectedPaymentMethod,
+    formattedTotalPayment,
+    order,
+  } = payment;
 
   const {
     register,
@@ -83,39 +47,90 @@ function MoviePaymentPage() {
     },
   });
 
-  const steps = ["Dates And Time", "Seat", "Payment"];
+  useEffect(() => {
+    if (!orderId) return undefined;
 
-  const onSubmit = (data) => {
-    if (!selectedPayment) {
+    const promise = dispatch(fetchPaymentPage(orderId));
+
+    return () => {
+      promise.abort();
+      dispatch(resetSeatBookingState());
+    };
+  }, [dispatch, orderId]);
+
+  useEffect(() => {
+    if (loadingOrder || loadingPaymentMethods || !order?.status) return;
+    if (order.status === "paid") {
+      navigate(`/orders/${orderId}/result`, { replace: true });
+      return;
+    }
+    if (order.status === "pending" || (order.seats ?? []).length === 0) {
+      navigate(`/orders/${orderId}/booking`, { replace: true });
+    }
+  }, [
+    loadingOrder,
+    loadingPaymentMethods,
+    navigate,
+    order?.seats,
+    order?.status,
+    orderId,
+  ]);
+
+  const onSubmit = async (data) => {
+    if (!selectedPaymentMethod) {
       setPaymentError("Please choose one payment method before submitting.");
       return;
     }
 
     setPaymentError("");
 
-    const normalizedPhone = data.phone.replace(/^0+/, "");
-
-    const payload = {
-      fullName: data.fullName,
-      email: data.email,
-      phone: `+62${normalizedPhone}`,
-      paymentMethod: selectedPayment,
-      totalPayment,
-      virtualAccount,
-      dueDate,
-    };
-
-    console.log("Payment submitted:", payload);
-
-    setPaymentPayload(payload);
-    setModalOpen(true);
+    try {
+      await dispatch(submitOrderPayment({ orderId, formData: data })).unwrap();
+      navigate(`/orders/${orderId}/result`);
+    } catch {
+      // The slice stores the payment error for rendering.
+    }
   };
 
-  const handleConfirm = () => {
-    console.log("Checking payment:", paymentPayload);
-    alert("Checking payment...");
-    setModalOpen(false);
-  };
+  if (loadingOrder || loadingPaymentMethods) {
+    return (
+      <HomeLayout>
+        <section className="flex min-h-screen items-center justify-center bg-white px-5">
+          <p className="text-sm font-medium text-neutral-500">
+            Loading payment data...
+          </p>
+        </section>
+      </HomeLayout>
+    );
+  }
+
+  if (submittingPayment) {
+    return (
+      <HomeLayout>
+        <section className="flex min-h-screen flex-col items-center justify-center gap-5 bg-white px-5">
+          <FourSquare color={["#bb2d00", "#ee3900", "#ff5722", "#ff7e55"]} />
+          <p className="text-sm font-medium text-neutral-500">
+            Processing payment...
+          </p>
+        </section>
+      </HomeLayout>
+    );
+  }
+
+  if (errorOrder) {
+    return (
+      <HomeLayout>
+        <section className="flex min-h-screen items-center justify-center bg-white px-5">
+          <div className="rounded-lg border border-red-200 bg-red-50 px-6 py-5 text-center">
+            <h1 className="text-base font-semibold text-red-600">
+              Failed to load payment
+            </h1>
+            <p className="mt-2 text-sm text-red-500">{errorOrder}</p>
+          </div>
+        </section>
+      </HomeLayout>
+    );
+  }
 
   return (
     <HomeLayout>
@@ -134,7 +149,7 @@ function MoviePaymentPage() {
             </h2>
 
             <div className="divide-y divide-gray-100">
-              {paymentInfo.map(({ label, value }) => (
+              {paymentInfoRows.map(({ label, value }) => (
                 <div key={label} className="py-4">
                   <p className="mb-1 text-xs font-semibold tracking-widest text-primary">
                     {label}
@@ -148,7 +163,7 @@ function MoviePaymentPage() {
                   TOTAL PAYMENT
                 </p>
                 <p className="text-sm font-bold text-gray-900">
-                  Rp {totalPayment.toLocaleString("id-ID")}
+                  {formattedTotalPayment}
                 </p>
               </div>
             </div>
@@ -171,7 +186,7 @@ function MoviePaymentPage() {
                 <input
                   id="fullName"
                   type="text"
-                  placeholder="Jonas El Rodriguez"
+                  placeholder="Full name"
                   className={`w-full rounded-lg border px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-orange-100 ${
                     errors.fullName ? "border-red-500" : "border-gray-300"
                   }`}
@@ -202,7 +217,7 @@ function MoviePaymentPage() {
                 <input
                   id="email"
                   type="email"
-                  placeholder="jonasrodri123@gmail.com"
+                  placeholder="email@example.com"
                   className={`w-full rounded-lg border px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-orange-100 ${
                     errors.email ? "border-red-500" : "border-gray-300"
                   }`}
@@ -268,54 +283,57 @@ function MoviePaymentPage() {
               Payment Method
             </h2>
 
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {paymentMethods.map((method) => (
-                <button
-                  key={method.id}
-                  type="button"
-                  onClick={() => {
-                    setSelectedPayment(method.id);
-                    setPaymentError("");
-                  }}
-                  aria-label={method.label}
-                  className={`flex h-14 items-center justify-center rounded-lg border bg-white px-3 transition ${
-                    selectedPayment === method.id
-                      ? "border-primary ring-2 ring-orange-100"
-                      : "border-gray-200 hover:border-primary"
-                  }`}
-                >
-                  <img
-                    src={method.logoUrl}
-                    alt={method.label}
-                    className="max-h-6 max-w-20 object-contain"
-                  />
-                </button>
-              ))}
-            </div>
+            {errorPaymentMethods ? (
+              <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-500">
+                {errorPaymentMethods}
+              </p>
+            ) : (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {paymentMethods.map((method) => (
+                  <button
+                    key={method.id}
+                    type="button"
+                    onClick={() => {
+                      dispatch(setSelectedPaymentMethod(method.id));
+                      setPaymentError("");
+                    }}
+                    aria-label={method.label}
+                    className={`flex h-14 items-center justify-center rounded-lg border bg-white px-3 text-sm font-semibold text-gray-700 transition ${
+                      selectedPaymentMethod === method.id
+                        ? "border-primary ring-2 ring-orange-100"
+                        : "border-gray-200 hover:border-primary"
+                    }`}
+                  >
+                    {method.logoUrl ? (
+                      <img
+                        src={method.logoUrl}
+                        alt={method.label}
+                        className="max-h-6 max-w-20 object-contain"
+                      />
+                    ) : (
+                      method.label
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
 
-            {paymentError && (
-              <p className="mt-2 text-xs text-red-500">{paymentError}</p>
+            {(paymentError || errorPayment) && (
+              <p className="mt-2 text-xs text-red-500">
+                {paymentError || errorPayment}
+              </p>
             )}
           </section>
 
           <button
             type="submit"
-            className="w-full rounded-xl bg-primary py-4 text-sm font-semibold text-white transition hover:bg-primary/90 active:scale-[0.99]"
+            disabled={submittingPayment || paymentMethods.length === 0}
+            className="w-full rounded-xl bg-primary py-4 text-sm font-semibold text-white transition hover:bg-primary/90 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Pay your order
+            {submittingPayment ? "Submitting payment..." : "Pay your order"}
           </button>
         </form>
 
-        {paymentPayload && (
-          <ConfirmationModal
-            isOpen={isModalOpen}
-            onClose={() => setModalOpen(false)}
-            onConfirm={handleConfirm}
-            virtualAccount={paymentPayload.virtualAccount}
-            totalPayment={paymentPayload.totalPayment}
-            dueDate={paymentPayload.dueDate}
-          />
-        )}
       </div>
     </HomeLayout>
   );
