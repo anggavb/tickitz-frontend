@@ -14,12 +14,12 @@ export default function AdminDashboardPage() {
 
   const [chartFilters, setChartFilters] = useState({
     movieName: "",
-    period: "weekly",
+    period: "daily",
   });
 
   const [chartFiltersDraft, setChartFiltersDraft] = useState({
     movieName: "",
-    period: "weekly",
+    period: "daily",
   });
 
   const [ticketFilters, setTicketFilters] = useState({
@@ -211,7 +211,7 @@ export default function AdminDashboardPage() {
   };
 
   const chartSubtitle = `${chartFilters.movieName || "All Movies"}, ${formatPeriodLabel(
-    chartFilters.period || "weekly",
+    chartFilters.period || "daily",
   )}`;
 
   const ticketSubtitle = [
