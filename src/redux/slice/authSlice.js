@@ -281,6 +281,7 @@ const authSlice = createSlice({
         state.user = {
           id: action.payload.data?.id,
           photo: action.payload.data?.photo,
+          role: action.payload.data?.role,
         };
 
         state.token = action.payload.data?.token;
