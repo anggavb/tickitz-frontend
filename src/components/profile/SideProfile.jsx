@@ -1,20 +1,14 @@
-import React, { useEffect } from "react";
-import { FiCamera } from "react-icons/fi";
-import profileImage from "../../assets/images/profile.png";
-import { useProfileEdit } from "../../context/profileEditContext";
-import { useDispatch, useSelector } from "react-redux";
-import { getProfile } from "../../redux/slice/profileSlice";
+import React, { useEffect } from 'react';
+import { FiCamera } from 'react-icons/fi';
+import profileImage from '../../assets/images/profile.png';
+import { useProfileEdit } from '../../context/profileEditContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { getProfile } from '../../redux/slice/profileSlice';
 
 function SideProfile() {
   const { dataProfile: user } = useSelector((state) => state.profile);
 
-  const {
-    setShowEditModal,
-    isEditing,
-    setSelectedPhoto,
-    previewPhoto,
-    setPreviewPhoto,
-  } = useProfileEdit();
+  const { setShowEditModal, isEditing, setSelectedPhoto, previewPhoto, setPreviewPhoto } = useProfileEdit();
 
   const dispatch = useDispatch();
 
@@ -22,19 +16,17 @@ function SideProfile() {
     dispatch(getProfile());
   }, [dispatch]);
 
-  const name = user
-    ? `${user.first_name || ""} ${user.last_name || ""}`.trim()
-    : "Jonas El Rodriguez";
+  const name = user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : '';
 
-  const loyalty_tier = user?.loyalty_tier || "Moviegoers";
+  const loyalty_tier = user?.loyalty_tier || 'Moviegoers';
   const points = user?.point ?? 320;
 
   const targetPoints = user?.next_point ?? 10000;
-  const targetTier = user?.next_tier || "Master";
+  const targetTier = user?.next_tier || 'Master';
   const progress = Math.min((points / targetPoints) * 100, 100);
 
   const handleChangePhoto = () => {
-    document.getElementById("profile-upload")?.click();
+    document.getElementById('profile-upload')?.click();
   };
 
   const handleFileChange = (e) => {
@@ -51,13 +43,8 @@ function SideProfile() {
       <div className="flex justify-between items-center">
         <p className="font-semibold text-slate-700 text-sm">INFO</p>
 
-        <button
-          className="p-2 rounded-full hover:bg-slate-100 transition"
-          aria-label="More options"
-        >
-          <span className="text-2xl leading-none font-bold text-slate-600">
-            ⋯
-          </span>
+        <button className="p-2 rounded-full hover:bg-slate-100 transition" aria-label="More options">
+          <span className="text-2xl leading-none font-bold text-slate-600">⋯</span>
         </button>
       </div>
 
@@ -84,19 +71,11 @@ function SideProfile() {
               "
             >
               <FiCamera className="text-white text-2xl mb-1" />
-              <span className="text-white text-xs font-medium">
-                Change Photo
-              </span>
+              <span className="text-white text-xs font-medium">Change Photo</span>
             </div>
           )}
 
-          <input
-            id="profile-upload"
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleFileChange}
-          />
+          <input id="profile-upload" type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
         </div>
 
         <h2 className="mt-4 text-lg font-semibold text-slate-800">{name}</h2>
@@ -105,9 +84,7 @@ function SideProfile() {
       </div>
 
       <div className="mt-6">
-        <p className="text-sm font-medium text-slate-600 mb-2">
-          Loyalty Points
-        </p>
+        <p className="text-sm font-medium text-slate-600 mb-2">Loyalty Points</p>
 
         <div className="bg-gradient-to-r from-primary to-indigo-500 text-white rounded-xl p-4 relative overflow-hidden">
           <div className="flex justify-between items-start">
@@ -129,10 +106,7 @@ function SideProfile() {
           </p>
 
           <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-primary rounded-full transition-all"
-              style={{ width: `${progress}%` }}
-            />
+            <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${progress}%` }} />
           </div>
         </div>
       </div>

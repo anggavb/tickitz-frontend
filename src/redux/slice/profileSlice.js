@@ -1,5 +1,4 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import env from '../../utils/env';
 import apiClient from '../../utils/axios';
 
 const initialState = {
@@ -13,40 +12,22 @@ const initialState = {
 
 export const getProfile = createAsyncThunk('profile/get', async (_, thunkAPI) => {
   try {
-    const state = thunkAPI.getState();
-
-    const token = state.auth.token;
-
-    const response = await apiClient.get(`/profile`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    console.log(response);
-    return await response.json();
+    const response = await apiClient.get('/profile');
+    return response.data;
   } catch (error) {
-    return thunkAPI.rejectWithValue(error);
+    return thunkAPI.rejectWithValue(error.response?.data);
   }
 });
-
 export const updateProfile = createAsyncThunk('profile/update', async (payload, thunkAPI) => {
   try {
-    const state = thunkAPI.getState();
-
-    const token = state.auth.token;
-
-    const response = await fetch(`${env.baseAPI}/profile/update`, {
-      method: 'PATCH',
+    const response = await apiClient.patch('/profile/update', payload, {
       headers: {
-        Authorization: `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data',
       },
-      body: payload,
     });
-    console.log(response);
-    return await response.json();
+    return response.data;
   } catch (error) {
-    return thunkAPI.rejectWithValue(error);
+    return thunkAPI.rejectWithValue(error.response?.data || error.message);
   }
 });
 
