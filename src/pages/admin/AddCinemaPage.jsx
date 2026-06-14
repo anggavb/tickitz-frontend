@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useSelector } from "react-redux";
 import SweetAlert from "../../components/ui/SweetAlert";
+import env from "@/utils/env";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "";
+const API_BASE_URL = env.baseAPI;
 
 function AddShowtimePage() {
   const { id: movieId } = useParams();

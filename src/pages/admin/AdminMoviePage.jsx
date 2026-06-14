@@ -8,11 +8,12 @@ import deleteIcon from '../../assets/images/delete.png';
 import calendarIcon from '../../assets/images/calendar.png';
 import arrowDownIcon from '../../assets/images/arrow-down.png';
 import cinema from '../../assets/images/cinema.png';
+import env from "@/utils/env";
 
 import ProfileNavbar from '../../components/ProfileNavbar';
 import SweetAlert from '../../components/ui/SweetAlert';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL = env.baseAPI;
 const PAGE_LIMIT = 5;
 
 function AdminMoviePage() {

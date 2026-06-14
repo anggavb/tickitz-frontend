@@ -3,8 +3,9 @@ import { useNavigate, useParams } from "react-router";
 import { useSelector } from "react-redux";
 import SweetAlert from "../../components/ui/SweetAlert";
 import Toast from "../../components/ui/Toast";
+import env from "@/utils/env";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "";
+const API_BASE_URL = env.baseAPI;
 
 function AddMoviePage({ viewOnly = false }) {
   const { token } = useSelector((state) => state.auth);
