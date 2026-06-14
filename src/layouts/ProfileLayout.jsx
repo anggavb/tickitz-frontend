@@ -7,14 +7,14 @@ import { ProfileEditProvider } from '../context/ProfileEditContext.jsx';
 import { useSelector } from 'react-redux';
 
 function ProfileLayout() {
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/auth/signin');
+    if (user.role !== 'user' && !isAuthenticated) {
+      navigate('/auth/siginin');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, user]);
   const { pathname } = useLocation();
   const isHistory = pathname === '/profile/history';
 
