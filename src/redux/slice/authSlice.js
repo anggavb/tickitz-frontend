@@ -99,26 +99,11 @@ export const signin = createAsyncThunk('auth/signin', async (payload, thunkAPI) 
 // UPDATE PASSWORD
 export const changePassword = createAsyncThunk('auth/changePassword', async (payload, thunkAPI) => {
   try {
-    const token = thunkAPI.getState().auth.token;
-
-    const response = await fetch(`${env.baseAPI}/auth/password`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        new_password: payload.new_password,
-      }),
+    const response = await apiClient.patch(`/auth/password`, {
+      new_password: payload.new_password,
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      return thunkAPI.rejectWithValue(data?.message || 'Change password failed');
-    }
-
-    return data;
+    return response.data;
   } catch (error) {
     return thunkAPI.rejectWithValue(error.message);
   }
@@ -127,13 +112,7 @@ export const changePassword = createAsyncThunk('auth/changePassword', async (pay
 // LOGOUT
 export const logoutUser = createAsyncThunk('auth/logoutUser', async (_, thunkAPI) => {
   try {
-    const token = thunkAPI.getState().auth.token;
-
-    const response = await apiClient.delete('/auth/logout', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await apiClient.delete('/auth/logout');
 
     return response.data;
   } catch (error) {

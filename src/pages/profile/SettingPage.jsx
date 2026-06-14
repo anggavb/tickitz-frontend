@@ -3,13 +3,15 @@ import { useForm } from 'react-hook-form';
 import { useProfileEdit } from '../../context/profileEditContext';
 import { useDispatch, useSelector } from 'react-redux';
 import { getProfile, updateProfile } from '../../redux/slice/profileSlice';
-import { changePassword } from '../../redux/slice/authSlice';
+import { changePassword, logout } from '../../redux/slice/authSlice';
 import { FourSquare } from 'react-loading-indicators';
+import { useNavigate } from 'react-router';
 
 function SettingPage() {
   const { showEditModal, setShowEditModal, isEditing, setIsEditing, selectedPhoto, setSelectedPhoto, setPreviewPhoto } = useProfileEdit();
   const [isPasswordEditing, setIsPasswordEditing] = useState(false);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const { dataProfile: user, loadingProfile } = useSelector((state) => state.profile);
 
@@ -285,6 +287,11 @@ function SettingPage() {
                       new_password: password,
                     }),
                   ).unwrap();
+                  console.log('before logout');
+                  dispatch(logout());
+                  console.log('after logout');
+
+                  navigate('/auth/signin');
 
                   setIsPasswordEditing(false);
                 }}
