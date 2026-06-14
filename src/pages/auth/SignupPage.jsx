@@ -9,6 +9,7 @@ import { useDispatch } from "react-redux";
 import { resetAuthState, signup } from "../../redux/slice/authSlice";
 import Toast from "../../components/ui/Toast";
 import { FourSquare } from "react-loading-indicators";
+import logo from "@/assets/logo.png";
 
 function SignupPage() {
   const dispatch = useDispatch();
@@ -79,9 +80,10 @@ function SignupPage() {
       )}
 
       <img
-        src="/assets/logo.png"
+        src={logo}
         alt="tickitz logo"
-        className="w-60 mb-2 mx-auto"
+        onClick={() => navigate("/")}
+        className="w-60 mb-2 mx-auto hover:cursor-pointer"
       />
 
       <AuthCard>

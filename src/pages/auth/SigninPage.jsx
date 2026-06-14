@@ -9,6 +9,7 @@ import Toast from "../../components/ui/Toast";
 import { useDispatch, useSelector } from "react-redux";
 import { signin } from "../../redux/slice/authSlice";
 import { FourSquare } from "react-loading-indicators";
+import logo from "@/assets/logo.png";
 
 function SigninPage() {
   const navigate = useNavigate();
@@ -67,6 +68,13 @@ function SigninPage() {
           onClose={() => setToast({ ...toast, show: false })}
         />
       )}
+
+      <img
+        src={logo}
+        alt="tickitz logo"
+        onClick={() => navigate("/")}
+        className="w-60 mb-2 mx-auto hover:cursor-pointer"
+      />
 
       <AuthCard className="max-w-md mx-auto">
         <div className="mb-8">
