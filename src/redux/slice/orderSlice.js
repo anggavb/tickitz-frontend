@@ -11,8 +11,11 @@ const initialState = {
 
 export const getOrderHistory = createAsyncThunk('order/history', async (_, thunkAPI) => {
   try {
-    const token = localStorage.getItem('token');
+    const state = thunkAPI.getState();
 
+    const token = state.auth.token;
+
+    console.log(token);
     const response = await fetch(`${env.baseAPI}/orders/history`, {
       headers: {
         Authorization: `Bearer ${token}`,

@@ -1,47 +1,67 @@
-import React from "react";
-import { useNavigate } from "react-router";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useParams } from "react-router";
 import HomeLayout from "../layouts/HomeLayout";
+import {
+  fetchTicketResult,
+  resetSeatBookingState,
+  selectTicketResultView,
+} from "../redux/slice/seatBookingSlice";
+import { getOrderQr } from "../utils/api/seatBookingApi";
 
 function MovieTicketResult() {
+  const { orderId } = useParams();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [qrImageUrl, setQrImageUrl] = useState("");
+  const ticket = useSelector(selectTicketResultView);
+  const {
+    loadingOrder,
+    errorOrder,
+    title,
+    date,
+    time,
+    seats,
+    count,
+    formattedTotal,
+    heroImage,
+    order,
+  } = ticket;
 
-  const ticketData = {
-    movie: {
-      title: "Echoes of Jakarta",
-      image_poster:
-        "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1400&q=80",
-    },
-    selectedDate: "07 Jul",
-    selectedTime: "2:00 PM",
-    selectedSeats: ["C4", "C5", "C6"],
-    count: 3,
-    totalPayment: 75000,
-  };
+  useEffect(() => {
+    if (!orderId) return undefined;
 
-  const movie = ticketData.movie;
+    const controller = new AbortController();
+    const promise = dispatch(fetchTicketResult(orderId));
+    let objectUrl = "";
 
-  const title = movie.title || movie.name;
-  const date = ticketData.selectedDate;
-  const time = ticketData.selectedTime;
-  const seats = ticketData.selectedSeats;
-  const count = ticketData.count;
-  const total = ticketData.totalPayment;
+    getOrderQr(orderId, { signal: controller.signal })
+      .then((response) => {
+        objectUrl = URL.createObjectURL(response.data);
+        setQrImageUrl(objectUrl);
+      })
+      .catch(() => {
+        setQrImageUrl("");
+      });
 
-  const qrImage = "/qr-ticket.jpeg";
+    return () => {
+      controller.abort();
+      promise.abort();
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      dispatch(resetSeatBookingState());
+    };
+  }, [dispatch, orderId]);
 
-  const heroImage =
-    movie.background_image ||
-    movie.image_background ||
-    movie.image_poster ||
-    movie.image;
-
-  const formatCurrency = (value) => {
-    if (typeof value === "number") {
-      return `Rp ${value.toLocaleString("id-ID")}`;
+  useEffect(() => {
+    if (loadingOrder || !order?.status) return;
+    if (order.status === "waiting") {
+      navigate(`/orders/${orderId}/payment`, { replace: true });
+      return;
     }
-
-    return value;
-  };
+    if (order.status === "pending") {
+      navigate(`/orders/${orderId}/booking`, { replace: true });
+    }
+  }, [loadingOrder, navigate, order?.status, orderId]);
 
   const handleDownload = () => {
     window.print();
@@ -51,14 +71,39 @@ function MovieTicketResult() {
     navigate("/");
   };
 
+  if (loadingOrder) {
+    return (
+      <HomeLayout>
+        <section className="flex min-h-screen items-center justify-center bg-white px-5">
+          <p className="text-sm font-medium text-neutral-500">
+            Loading ticket...
+          </p>
+        </section>
+      </HomeLayout>
+    );
+  }
+
+  if (errorOrder) {
+    return (
+      <HomeLayout>
+        <section className="flex min-h-screen items-center justify-center bg-white px-5">
+          <div className="rounded-lg border border-red-200 bg-red-50 px-6 py-5 text-center">
+            <h1 className="text-base font-semibold text-red-600">
+              Failed to load ticket
+            </h1>
+            <p className="mt-2 text-sm text-red-500">{errorOrder}</p>
+          </div>
+        </section>
+      </HomeLayout>
+    );
+  }
+
   return (
     <HomeLayout>
       <main className="grid min-h-[calc(100vh-86px)] grid-cols-1 print:block lg:grid-cols-[1.15fr_0.85fr]">
         <section
-          className="relative flex min-h-130 items-center bg-cover bg-center px-6 py-14 text-white print:hidden md:px-16 lg:min-h-[calc(100vh-86px)]"
-          style={{
-            backgroundImage: `url(${heroImage})`,
-          }}
+          className="relative flex min-h-130 items-center bg-neutral-900 bg-cover bg-center px-6 py-14 text-white print:hidden md:px-16 lg:min-h-[calc(100vh-86px)]"
+          style={heroImage ? { backgroundImage: `url(${heroImage})` } : undefined}
         >
           <div className="absolute inset-0 bg-black/75" />
 
@@ -68,12 +113,11 @@ function MovieTicketResult() {
             </h2>
 
             <h1 className="mb-6 text-4xl font-semibold leading-tight md:text-6xl">
-              Thankyou For Purchasing
+              Thank you For Purchasing
             </h1>
 
             <p className="mb-10 max-w-2xl text-lg leading-relaxed text-white/70 md:text-2xl">
-              Lorem ipsum dolor sit amet consectetur. Quam pretium pretium
-              tempor integer sed magna et.
+              Your ticket is ready. Download it before arriving at the cinema.
             </p>
 
             <button
@@ -91,11 +135,17 @@ function MovieTicketResult() {
           <div className="w-full max-w-md print:max-w-none">
             <div className="relative mx-auto rounded-xl bg-white px-8 pb-8 pt-12 shadow-sm print:w-105 print:max-w-full print:shadow-none">
               <div className="flex justify-center">
-                <img
-                  src={qrImage}
-                  alt="Ticket QR Code"
-                  className="h-40 w-40 object-contain md:h-44 md:w-44"
-                />
+                {qrImageUrl ? (
+                  <img
+                    src={qrImageUrl}
+                    alt="Ticket QR Code"
+                    className="h-40 w-40 object-contain md:h-44 md:w-44"
+                  />
+                ) : (
+                  <div className="flex h-40 w-40 items-center justify-center rounded bg-neutral-100 text-xs font-semibold text-neutral-400 md:h-44 md:w-44">
+                    QR unavailable
+                  </div>
+                )}
               </div>
 
               <div className="relative my-10 border-t border-dashed border-gray-300">
@@ -113,41 +163,16 @@ function MovieTicketResult() {
                   </p>
                 </div>
 
-                <div>
-                  <p className="mb-2 text-xs font-medium tracking-wide text-gray-400">
-                    Date
-                  </p>
-                  <p className="font-semibold text-gray-900">{date}</p>
-                </div>
-
-                <div>
-                  <p className="mb-2 text-xs font-medium tracking-wide text-gray-400">
-                    Time
-                  </p>
-                  <p className="font-semibold text-gray-900">{time}</p>
-                </div>
-
-                <div>
-                  <p className="mb-2 text-xs font-medium tracking-wide text-gray-400">
-                    Count
-                  </p>
-                  <p className="font-semibold text-gray-900">{count} pcs</p>
-                </div>
-
-                <div>
-                  <p className="mb-2 text-xs font-medium tracking-wide text-gray-400">
-                    Seats
-                  </p>
-                  <p className="font-semibold text-gray-900">
-                    {seats.join(", ")}
-                  </p>
-                </div>
+                <TicketField label="Date" value={date} />
+                <TicketField label="Time" value={time} />
+                <TicketField label="Count" value={`${count} pcs`} />
+                <TicketField label="Seats" value={seats.join(", ") || "-"} />
               </div>
 
               <div className="mt-10 flex items-center justify-between rounded border border-gray-200 px-6 py-4">
                 <p className="text-lg font-medium text-gray-900">Total</p>
                 <p className="text-lg font-bold text-gray-900">
-                  {formatCurrency(total)}
+                  {formattedTotal}
                 </p>
               </div>
             </div>
@@ -186,6 +211,17 @@ function MovieTicketResult() {
         </section>
       </main>
     </HomeLayout>
+  );
+}
+
+function TicketField({ label, value }) {
+  return (
+    <div>
+      <p className="mb-2 text-xs font-medium tracking-wide text-gray-400">
+        {label}
+      </p>
+      <p className="font-semibold text-gray-900">{value}</p>
+    </div>
   );
 }
 

@@ -1,168 +1,105 @@
-import { useMemo, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router";
-import HomeLayout from "../layouts/HomeLayout";
+import { memo, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useParams } from "react-router";
 import StepProgres from "../components/auth/signup/StepProgres";
+import HomeLayout from "../layouts/HomeLayout";
+import {
+  fetchSeatBookingPage,
+  resetSeatBookingState,
+  saveSelectedSeats,
+  selectSeatBookingView,
+  toggleSeat,
+} from "../redux/slice/seatBookingSlice";
+import {
+  formatDate,
+  formatTimeToAmPm,
+} from "../utils/api/seatBookingMappers";
 
-const fallbackMovie = {
-  title: "Untitled Movie",
-  poster:
-    "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&w=600&q=80",
-  genres: [],
-};
-
-const dummyBookingState = {
-  movie: {
-    title: "Interstellar: 10th Anniversary Edition",
-    poster:
-      "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80",
-    genres: ["Sci-Fi", "Drama", "Adventure", "IMAX"],
-  },
-  selectedDate: "2026-06-12",
-  selectedTime: "19:45",
-  selectedLocation: "Grand Indonesia Mall",
-  selectedCinema: {
-    name: "CineOne21 Ultra IMAX Hall 1",
-  },
-};
-
-const seatRows = ["A", "B", "C", "D", "E", "F", "G"];
+const steps = ["Dates And Time", "Seat", "Payment"];
 const seatNumbers = Array.from({ length: 14 }, (_, index) => index + 1);
 
-const soldSeats = [
-  "A6",
-  "A12",
-  "B2",
-  "B3",
-  "C9",
-  "C12",
-  "D2",
-  "D9",
-  "D12",
-  "E5",
-  "F13",
-  "G3",
-];
-
-// F10 and F11 are merged. We'll identify the pair by the first seat code ("F10").
-const loveNestPairs = [{ first: "F10", second: "F11", label: "F10-F11" }];
-const allLoveNestSeats = loveNestPairs.flatMap((p) => [p.first, p.second]);
-
-function formatTimeToAmPm(time) {
-  if (!time) return "-";
-  const [hourValue, minute = "00"] = time.split(":");
-  const hour = Number(hourValue);
-  if (Number.isNaN(hour)) return time;
-  const period = hour >= 12 ? "PM" : "AM";
-  const hour12 = hour % 12 || 12;
-  return `${hour12}:${minute} ${period}`;
-}
-
-function formatDate(dateString) {
-  if (!dateString) return "-";
-  const date = new Date(dateString);
-  if (Number.isNaN(date.getTime())) return dateString;
-  return new Intl.DateTimeFormat("en-GB", {
-    weekday: "long",
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  }).format(date);
-}
-
 function SeatBookingPage() {
-  const { slug } = useParams();
+  const { orderId } = useParams();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { state: routerState } = useLocation();
+  const booking = useSelector(selectSeatBookingView);
+  const {
+    order,
+    seatGrid,
+    selectedSeatCodes,
+    selectedSeatText,
+    formattedTicketPrice,
+    formattedTotalPayment,
+    loadingOrder,
+    loadingSeats,
+    savingSeats,
+    errorOrder,
+    errorCheckout,
+    canCheckout,
+  } = booking;
 
-  // Uses router state if available, otherwise falls back to the local dummy data
-  const state = routerState ?? dummyBookingState;
+  useEffect(() => {
+    if (!orderId) return undefined;
 
-  const movie = state?.movie ?? fallbackMovie;
-  const selectedDate = state?.selectedDate ?? "";
-  const selectedTime = state?.selectedTime ?? "";
-  const selectedLocation = state?.selectedLocation ?? "";
-  const selectedCinema = state?.selectedCinema ?? null;
+    const promise = dispatch(fetchSeatBookingPage(orderId));
 
-  const [selectedSeats, setSelectedSeats] = useState([]);
+    return () => {
+      promise.abort();
+      dispatch(resetSeatBookingState());
+    };
+  }, [dispatch, orderId]);
 
-  const ticketPrice = 10;
-  const totalPayment = selectedSeats.length * ticketPrice;
-  const genres = Array.isArray(movie.genres) ? movie.genres : [];
-
-  const cinemaName =
-    selectedCinema?.name ??
-    selectedCinema?.cinema_name ??
-    selectedLocation ??
-    "Cinema";
-
-  const selectedSeatText =
-    selectedSeats.length > 0 ? selectedSeats.sort().join(", ") : "-";
-
-  const moviePoster =
-    movie.poster ?? movie.image_poster ?? movie.image ?? fallbackMovie.poster;
-
-  // Generate the seat structure mapping
-  const seatMap = useMemo(() => {
-    return seatRows.map((row) => {
-      const rowSeats = [];
-      let skipNext = false;
-
-      for (let i = 0; i < seatNumbers.length; i++) {
-        if (skipNext) {
-          skipNext = false;
-          continue;
-        }
-
-        const seatCode = `${row}${seatNumbers[i]}`;
-        const loveNestMatch = loveNestPairs.find((p) => p.first === seatCode);
-
-        if (loveNestMatch) {
-          rowSeats.push({
-            row,
-            number: seatNumbers[i],
-            code: loveNestMatch.label,
-            isSold: false,
-            isLoveNest: true,
-            isSelected: false,
-            isMerged: true, // Used to trigger CSS span-2
-          });
-          skipNext = true; // Skip rendering the second seat of the pair
-        } else {
-          rowSeats.push({
-            row,
-            number: seatNumbers[i],
-            code: seatCode,
-            isSold: soldSeats.includes(seatCode),
-            isLoveNest: allLoveNestSeats.includes(seatCode),
-            isSelected: selectedSeats.includes(seatCode),
-            isMerged: false,
-          });
-        }
-      }
-      return rowSeats;
-    });
-  }, [selectedSeats]);
-
-  const handleSeatClick = (seat) => {
-    if (seat.isSold || seat.isLoveNest) return; // Keep love nest strictly disabled
-
-    setSelectedSeats((currentSeats) => {
-      if (currentSeats.includes(seat.code)) {
-        return currentSeats.filter((seatCode) => seatCode !== seat.code);
-      }
-      return [...currentSeats, seat.code];
-    });
-  };
+  useEffect(() => {
+    if (loadingOrder || loadingSeats || !order?.status) return;
+    if (order.status === "waiting") navigate(`/orders/${orderId}/payment`, { replace: true });
+    if (order.status === "paid") navigate(`/orders/${orderId}/result`, { replace: true });
+  }, [loadingOrder, loadingSeats, navigate, order?.status, orderId]);
 
   const handleChangeMovie = () => {
-    navigate(`/movies/${slug}`);
+    navigate("/movies");
   };
 
-  const handleCheckout = () => {
-    if (selectedSeats.length === 0) return;
-    setSelectedSeats([]);
+  const handleCheckout = async () => {
+    if (!canCheckout) return;
+
+    try {
+      await dispatch(saveSelectedSeats(orderId)).unwrap();
+      navigate(`/orders/${orderId}/payment`);
+    } catch {
+      // The slice stores checkout errors and refreshes seat availability on 409.
+    }
   };
-  const steps = ["Dates And Time", "Seat", "Payment"];
+
+  if (loadingOrder || loadingSeats) {
+    return (
+      <HomeLayout>
+        <section className="flex min-h-screen items-center justify-center bg-white px-5">
+          <p className="text-sm font-medium text-neutral-500">
+            Loading seat booking...
+          </p>
+        </section>
+      </HomeLayout>
+    );
+  }
+
+  if (errorOrder) {
+    return (
+      <HomeLayout>
+        <section className="flex min-h-screen items-center justify-center bg-white px-5">
+          <div className="rounded-lg border border-red-200 bg-red-50 px-6 py-5 text-center">
+            <h1 className="text-base font-semibold text-red-600">
+              Failed to load booking
+            </h1>
+            <p className="mt-2 text-sm text-red-500">{errorOrder}</p>
+          </div>
+        </section>
+      </HomeLayout>
+    );
+  }
+
+  const genres = order?.movie?.genres ?? [];
+  const moviePoster = order?.movie?.poster;
+  const hasSeats = seatGrid.length > 0;
 
   return (
     <HomeLayout>
@@ -172,33 +109,40 @@ function SeatBookingPage() {
 
       <section className="mx-auto grid max-w-7xl gap-5 lg:grid-cols-[1fr_380px]">
         <section className="rounded-lg bg-white px-5 py-6 shadow-sm sm:px-6 lg:px-8">
-          {/* Header Movie Selection Card */}
           <div className="rounded border border-neutral-200 p-4">
             <div className="grid gap-4 sm:grid-cols-[210px_1fr_auto] sm:items-center">
-              <img
-                src={moviePoster}
-                alt={movie.title}
-                className="h-28 w-full rounded object-cover sm:w-52"
-              />
+              {moviePoster ? (
+                <img
+                  src={moviePoster}
+                  alt={order?.movie?.title ?? "Movie poster"}
+                  className="h-28 w-full rounded object-cover sm:w-52"
+                />
+              ) : (
+                <div className="flex h-28 w-full items-center justify-center rounded bg-neutral-100 text-xs font-semibold text-neutral-400 sm:w-52">
+                  No Poster
+                </div>
+              )}
 
               <div>
                 <h1 className="text-xl font-semibold text-neutral-900 sm:text-2xl">
-                  {movie.title}
+                  {order?.movie?.title ?? "-"}
                 </h1>
 
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {genres.map((genre) => (
-                    <span
-                      key={genre}
-                      className="rounded-full bg-neutral-100 px-4 py-1.5 text-sm font-medium text-neutral-400"
-                    >
-                      {genre}
-                    </span>
-                  ))}
-                </div>
+                {genres.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {genres.map((genre) => (
+                      <span
+                        key={genre}
+                        className="rounded-full bg-neutral-100 px-4 py-1.5 text-sm font-medium text-neutral-400"
+                      >
+                        {genre}
+                      </span>
+                    ))}
+                  </div>
+                )}
 
                 <p className="mt-4 text-sm text-neutral-700 sm:text-base">
-                  Regular - {formatTimeToAmPm(selectedTime)}
+                  Regular - {formatTimeToAmPm(order?.selectedTime)}
                 </p>
               </div>
 
@@ -216,90 +160,111 @@ function SeatBookingPage() {
             Choose Your Seat
           </h2>
 
-          {/* Completely Centered Seating Interface */}
-          <div className="mt-10 overflow-x-auto pb-4">
-            <div className="mx-auto flex min-w-160 flex-col items-center justify-center">
-              <p className="text-center text-sm font-medium text-neutral-500">
-                Screen
-              </p>
+          {errorCheckout && (
+            <p className="mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-500">
+              {errorCheckout}
+            </p>
+          )}
 
-              {/* Styled screen bar matched perfectly to center width */}
-              <div className="mt-4 h-1.5 w-115 rounded-full bg-neutral-300 shadow-inner" />
+          {hasSeats ? (
+            <div className="mt-10 overflow-x-auto pb-4">
+              <div className="mx-auto flex min-w-[760px] flex-col items-center justify-center">
+                <p className="text-center text-sm font-medium text-neutral-500">
+                  Screen
+                </p>
 
-              <div className="mt-10 grid gap-3">
-                {seatMap.map((rowSeats, rowIndex) => {
-                  const leftHalf = rowSeats.filter((s) => s.number <= 7);
-                  const rightHalf = rowSeats.filter((s) => s.number > 7);
+                <div className="mt-4 h-1.5 w-[620px] rounded-full bg-neutral-100 shadow-inner" />
 
-                  return (
+                <div className="mt-10 grid gap-3">
+                  {seatGrid.map((rowSeats) => (
                     <div
-                      key={seatRows[rowIndex]}
+                      key={rowSeats[0]?.row}
                       className="grid grid-cols-[24px_repeat(7,28px)_32px_repeat(7,28px)] items-center gap-2"
                     >
-                      {/* Row Identifier Letter */}
                       <span className="text-center text-sm font-bold text-neutral-400">
-                        {seatRows[rowIndex]}
+                        {rowSeats[0]?.row}
                       </span>
 
-                      {/* Left Column Blocks */}
-                      {leftHalf.map((seat) => (
+                      {rowSeats
+                        .filter((seat) => seat.number <= 7)
+                        .map((seat) => (
                         <SeatButton
                           key={seat.code}
-                          seat={seat}
-                          onClick={() => handleSeatClick(seat)}
+                          code={seat.code}
+                          label={seat.label}
+                          isSold={seat.isSold}
+                          isLoveNest={seat.isLoveNest}
+                          isSelected={seat.isSelected}
+                          isMerged={seat.isMerged}
+                          colSpan={seat.colSpan}
+                          onClick={() =>
+                            dispatch(toggleSeat(seat.seatCodes ?? [seat.code]))
+                          }
                         />
                       ))}
 
-                      {/* Central Aisle Gap */}
                       <span />
 
-                      {/* Right Column Blocks */}
-                      {rightHalf.map((seat) => (
+                      {rowSeats
+                        .filter((seat) => seat.number > 7)
+                        .map((seat) => (
                         <SeatButton
                           key={seat.code}
-                          seat={seat}
-                          onClick={() => handleSeatClick(seat)}
+                          code={seat.code}
+                          label={seat.label}
+                          isSold={seat.isSold}
+                          isLoveNest={seat.isLoveNest}
+                          isSelected={seat.isSelected}
+                          isMerged={seat.isMerged}
+                          colSpan={seat.colSpan}
+                          onClick={() =>
+                            dispatch(toggleSeat(seat.seatCodes ?? [seat.code]))
+                          }
                         />
                       ))}
                     </div>
-                  );
-                })}
-
-                {/* Horizontal Numeric Column Guide */}
-                <div className="mt-2 grid grid-cols-[24px_repeat(7,28px)_32px_repeat(7,28px)] items-center gap-2">
-                  <span />
-
-                  {seatNumbers.slice(0, 7).map((number) => (
-                    <span
-                      key={number}
-                      className="text-center text-xs font-semibold text-neutral-400"
-                    >
-                      {number}
-                    </span>
                   ))}
 
-                  <span />
+                  <div className="mt-8 grid grid-cols-[24px_repeat(7,28px)_32px_repeat(7,28px)] items-center gap-2">
+                    <span />
 
-                  {seatNumbers.slice(7).map((number) => (
-                    <span
-                      key={number}
-                      className="text-center text-xs font-semibold text-neutral-400"
-                    >
-                      {number}
-                    </span>
-                  ))}
+                    {seatNumbers.slice(0, 7).map((number) => (
+                      <span
+                        key={number}
+                        className="text-center text-xs font-semibold text-neutral-500"
+                      >
+                        {number}
+                      </span>
+                    ))}
+
+                    <span />
+
+                    {seatNumbers.slice(7).map((number) => (
+                      <span
+                        key={number}
+                        className="text-center text-xs font-semibold text-neutral-500"
+                      >
+                        {number}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="mt-10 rounded-lg border border-neutral-200 bg-neutral-50 px-5 py-8 text-center">
+              <p className="text-sm font-semibold text-neutral-700">
+                No seat layout available.
+              </p>
+            </div>
+          )}
 
-          {/* Seating Key Legend */}
           <section className="mt-10">
             <h3 className="text-xl font-semibold text-neutral-900">
               Seating key
             </h3>
 
-            <div className="mt-6 flex flex-wrap   gap-6 text-sm font-medium text-neutral-600">
+            <div className="mt-6 flex flex-wrap gap-6 text-sm font-medium text-neutral-600">
               <SeatLegend label="Available" className="bg-neutral-200" />
               <SeatLegend label="Selected" className="bg-primary" />
               <SeatLegend label="Love nest" className="bg-pink-400" />
@@ -308,7 +273,6 @@ function SeatBookingPage() {
           </section>
         </section>
 
-        {/* Sidebar Receipt Panel */}
         <aside className="space-y-5">
           <section className="rounded-lg bg-white shadow-sm">
             <div className="px-6 py-8 text-center">
@@ -317,17 +281,17 @@ function SeatBookingPage() {
               </p>
 
               <h2 className="mt-4 text-2xl font-semibold text-neutral-900">
-                {cinemaName}
+                {order?.cinemaName || "-"}
               </h2>
             </div>
 
             <div className="space-y-5 px-6 pb-8">
-              <SummaryRow label="Movie selected" value={movie.title} />
+              <SummaryRow label="Movie selected" value={order?.movie?.title ?? "-"} />
               <SummaryRow
-                label={formatDate(selectedDate)}
-                value={formatTimeToAmPm(selectedTime)}
+                label={formatDate(order?.selectedDate)}
+                value={formatTimeToAmPm(order?.selectedTime)}
               />
-              <SummaryRow label="One ticket price" value={`$${ticketPrice}`} />
+              <SummaryRow label="One ticket price" value={formattedTicketPrice} />
               <SummaryRow label="Seat choosed" value={selectedSeatText} />
             </div>
 
@@ -337,7 +301,7 @@ function SeatBookingPage() {
                   Total Payment
                 </p>
                 <p className="text-2xl font-bold text-primary">
-                  ${totalPayment}
+                  {formattedTotalPayment}
                 </p>
               </div>
             </div>
@@ -346,10 +310,10 @@ function SeatBookingPage() {
           <button
             type="button"
             onClick={handleCheckout}
-            disabled={selectedSeats.length === 0}
+            disabled={!canCheckout || selectedSeatCodes.length === 0}
             className="h-16 w-full rounded-lg bg-primary text-base font-semibold text-white shadow-lg shadow-primary/30 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Checkout now
+            {savingSeats ? "Saving seats..." : "Checkout now"}
           </button>
         </aside>
       </section>
@@ -357,33 +321,40 @@ function SeatBookingPage() {
   );
 }
 
-function SeatButton({ seat, onClick }) {
+const SeatButton = memo(function SeatButton({
+  code,
+  label,
+  isSold,
+  isLoveNest,
+  isSelected,
+  isMerged,
+  colSpan,
+  onClick,
+}) {
   let seatClass = "bg-neutral-200 hover:bg-primary/30";
-  let spanClass = "h-7 w-7";
+  const gridColumn = isMerged ? `span ${Math.max(colSpan, 2)}` : undefined;
+  const width = isMerged ? 28 * Math.max(colSpan, 2) + 8 * (colSpan - 1) : 28;
 
-  if (seat.isMerged) {
-    // Spans 2 grid tracks perfectly + bridges the internal 8px gap between grid items
-    spanClass = "h-7 w-[64px] col-span-2 rounded-md";
-  }
-
-  if (seat.isSold) {
+  if (isSold) {
     seatClass = "cursor-not-allowed bg-[#737798]";
-  } else if (seat.isSelected) {
+  } else if (isSelected) {
     seatClass = "bg-primary text-white";
-  } else if (seat.isLoveNest) {
-    seatClass = "cursor-not-allowed bg-pink-400";
+  } else if (isLoveNest) {
+    seatClass = "bg-pink-400 hover:bg-pink-500";
   }
 
   return (
     <button
       type="button"
       onClick={onClick}
-      disabled={seat.isSold || seat.isLoveNest}
-      aria-label={`Seat ${seat.code}`}
-      className={`rounded transition-all ${spanClass} ${seatClass}`}
+      disabled={isSold}
+      aria-label={`Seat ${label || code}`}
+      title={label || code}
+      style={{ width, gridColumn }}
+      className={`h-7 rounded transition-all ${seatClass}`}
     />
   );
-}
+});
 
 function SeatLegend({ label, className }) {
   return (

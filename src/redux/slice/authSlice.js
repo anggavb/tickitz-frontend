@@ -203,6 +203,56 @@ export const forgotpassword = createAsyncThunk(
   },
 );
 
+//FORGOT PASSWORD
+export const forgotPassword = createAsyncThunk('auth/forgot', async (payload, thunkAPI) => {
+  try {
+    const response = await fetch(`${env.baseAPI}/auth/password/forgot`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      // mengirim email
+      body: JSON.stringify({
+        email: payload.email,
+      }),
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      return thunkAPI.rejectWithValue(data?.message || 'failed to sent email');
+    }
+
+    return data;
+  } catch (error) {
+    return thunkAPI.rejectWithValue(error.message);
+  }
+});
+
+//RESET PASSWORD
+export const resetPassword = createAsyncThunk('auth/reset', async (payload, thunkAPI) => {
+  try {
+    // kirim 2 request, body (new_password)dan param berupa token
+    const response = await fetch(`${env.baseAPI}/auth/password/reset?token=${payload.token}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        new_password: payload.new_password,
+      }),
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      return thunkAPI.rejectWithValue(data?.message || 'failed to sent email');
+    }
+
+    return data;
+  } catch (error) {
+    return thunkAPI.rejectWithValue(error.message);
+  }
+});
+
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -281,6 +331,7 @@ const authSlice = createSlice({
         state.user = {
           id: action.payload.data?.id,
           photo: action.payload.data?.photo,
+          role: action.payload.data?.role,
         };
 
         state.token = action.payload.data?.token;

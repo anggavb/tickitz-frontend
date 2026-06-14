@@ -5,9 +5,9 @@ const ConfirmationModal = ({
   isOpen,
   onClose,
   onConfirm,
-  virtualAccount = "12321328913829724",
-  totalPayment = 75000,
-  dueDate = "June 23, 2023",
+  virtualAccount,
+  totalPayment,
+  dueDate,
   confirmText = "Check Payment",
   cancelText = "Pay Later",
 }) => {
@@ -36,7 +36,7 @@ const ConfirmationModal = ({
       return cleanValue;
     }
 
-    return "Rp 0";
+    return "-";
   };
 
   const handleCopy = async () => {
@@ -74,7 +74,7 @@ const ConfirmationModal = ({
             </div>
 
             <p className="break-all text-base font-bold tracking-wide text-gray-900 sm:text-right sm:text-lg">
-              {virtualAccount}
+              {virtualAccount || "-"}
             </p>
 
             <button
@@ -99,7 +99,7 @@ const ConfirmationModal = ({
 
           <p className="text-base leading-relaxed tracking-wide text-slate-400 sm:text-lg">
             Pay this payment bill before it is due,{" "}
-            <span className="text-primary">on {dueDate}</span>. If the bill has
+            <span className="text-primary">on {dueDate || "-"}</span>. If the bill has
             not been paid by the specified time, it will be forfeited.
           </p>
         </div>

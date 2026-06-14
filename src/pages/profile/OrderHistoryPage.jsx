@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { getOrderHistory } from '../../redux/slice/orderSlice';
+import { getOrderQr } from '../../utils/api/seatBookingApi';
 
 function OrderHistoryPage() {
   const dispatch = useDispatch();
@@ -10,6 +11,7 @@ function OrderHistoryPage() {
   console.log(dataHistory);
   const [copiedId, setCopiedId] = useState(null);
   const [openId, setOpenId] = useState(null);
+  const [qrImages, setQrImages] = useState({});
 
   useEffect(() => {
     dispatch(getOrderHistory());
@@ -17,10 +19,15 @@ function OrderHistoryPage() {
 
   const orders = dataHistory?.data || [];
 
-  const toggleDetail = (id) => {
-    setOpenId(openId === id ? null : id);
-  };
+  const toggleDetail = async (id) => {
+    const isOpening = openId !== id;
 
+    setOpenId(isOpening ? id : null);
+
+    if (isOpening) {
+      await loadQr(id);
+    }
+  };
   const handleCopy = (text, id) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
@@ -29,6 +36,13 @@ function OrderHistoryPage() {
       setCopiedId(null);
     }, 3000);
   };
+  useEffect(() => {
+    return () => {
+      Object.values(qrImages).forEach((url) => {
+        URL.revokeObjectURL(url);
+      });
+    };
+  }, [qrImages]);
 
   if (loadingHistory) {
     return (
@@ -46,6 +60,23 @@ function OrderHistoryPage() {
     );
   }
 
+  const loadQr = async (orderId) => {
+    try {
+      if (qrImages[orderId]) return;
+
+      const response = await getOrderQr(orderId);
+
+      const imageUrl = URL.createObjectURL(response.data);
+
+      setQrImages((prev) => ({
+        ...prev,
+        [orderId]: imageUrl,
+      }));
+    } catch (error) {
+      console.error('Failed to load QR', error);
+    }
+  };
+
   function formatDateTime(dateString) {
     const date = new Date(dateString);
 
@@ -59,7 +90,7 @@ function OrderHistoryPage() {
     const timePart = date.toLocaleTimeString('en-GB', {
       hour: '2-digit',
       minute: '2-digit',
-      hour12: false, // force 24-hour format
+      hour12: false,
     });
 
     return `${datePart} - ${timePart}`;
@@ -83,14 +114,6 @@ function OrderHistoryPage() {
           {/* STATUS */}
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-0 justify-between items-stretch sm:items-center p-4 sm:p-5">
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
-              <span
-                className={`w-full sm:w-auto text-center px-3 py-1 sm:px-5 sm:py-2 rounded-md text-[10px] sm:text-sm ${
-                  order.ticket_status === 'active' ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-200 text-gray-500'
-                }`}
-              >
-                {order.ticket_status === 'active' ? 'Ticket Active' : order.ticket_status === 'used' ? 'Ticket Used' : 'No Ticket'}
-              </span>
-
               <span
                 className={`w-full sm:w-auto text-center px-3 py-1 sm:px-5 sm:py-2 rounded-md text-[10px] sm:text-sm ${
                   order.payment_status === 'paid' ? 'bg-primary/20 text-primary' : 'bg-red-200 text-red-500'
@@ -164,15 +187,15 @@ function OrderHistoryPage() {
                   <h3 className="text-xs sm:text-sm font-semibold mb-3 sm:mb-4">Ticket Information</h3>
 
                   <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
-                    <div className="w-24 h-24 sm:w-28 sm:h-28 bg-gray-300 flex items-center justify-center text-[10px]">QR CODE</div>
-
+                    <div className="w-24 h-24 sm:w-28 sm:h-28">
+                      {qrImages[order.id] ? (
+                        <img src={qrImages[order.id]} alt="QR Code" className="w-full h-full object-contain" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">Loading...</div>
+                      )}
+                    </div>
                     <div className="flex-1">
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-xs sm:text-sm mb-3 sm:mb-4">
-                        <div>
-                          <p className="text-gray-400">Category</p>
-                          <p>{order.movie_category || '-'}</p>
-                        </div>
-
                         <div>
                           <p className="text-gray-400">Time</p>
                           <p>{order.show_time}</p>

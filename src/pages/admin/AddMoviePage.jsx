@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import {useSelector} from 'react-redux';
+import { useSelector } from "react-redux";
 import SweetAlert from "../../components/ui/SweetAlert";
 import Toast from "../../components/ui/Toast";
 
@@ -34,22 +34,27 @@ function AddMoviePage({ viewOnly = false }) {
   useEffect(() => {
     const fetchSuggestions = async () => {
       try {
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
         const [categoriesResponse, castsResponse] = await Promise.all([
-          fetch(`${API_BASE_URL}/admin/categories`),
-          fetch(`${API_BASE_URL}/admin/casts`),
+          fetch(`${API_BASE_URL}/admin/categories`, { headers }),
+          fetch(`${API_BASE_URL}/admin/casts`, { headers }),
         ]);
 
         if (categoriesResponse.ok) {
           const categoriesData = await categoriesResponse.json();
-          if (categoriesData?.success && Array.isArray(categoriesData.data)) {
+          if (Array.isArray(categoriesData.data)) {
             setAvailableCategories(categoriesData.data);
+          } else if (Array.isArray(categoriesData)) {
+            setAvailableCategories(categoriesData);
           }
         }
 
         if (castsResponse.ok) {
           const castsData = await castsResponse.json();
-          if (castsData?.success && Array.isArray(castsData.data)) {
+          if (Array.isArray(castsData.data)) {
             setAvailableCasts(castsData.data);
+          } else if (Array.isArray(castsData)) {
+            setAvailableCasts(castsData);
           }
         }
       } catch (error) {
@@ -58,7 +63,7 @@ function AddMoviePage({ viewOnly = false }) {
     };
 
     fetchSuggestions();
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     const fetchMovieDetail = async () => {
@@ -103,7 +108,7 @@ function AddMoviePage({ viewOnly = false }) {
     };
 
     fetchMovieDetail();
-  }, [id, isEditMode, isViewMode,token]);
+  }, [id, isEditMode, isViewMode, token]);
 
   if ((isEditMode || isViewMode) && isLoadingDetail) {
     return (
@@ -136,6 +141,14 @@ function AddMoviePage({ viewOnly = false }) {
     if (casts.some((item) => item.toLowerCase() === trimmed.toLowerCase()))
       return;
     setCasts((prev) => [...prev, trimmed]);
+  };
+
+  const removeCategory = (value) => {
+    setCategories((prev) => prev.filter((item) => item !== value));
+  };
+
+  const removeCast = (value) => {
+    setCasts((prev) => prev.filter((item) => item !== value));
   };
 
   const handleCategoryKeyDown = (event) => {
@@ -218,31 +231,15 @@ function AddMoviePage({ viewOnly = false }) {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        if (isEditMode) {
-          await SweetAlert.success({
-            title: "Success",
-            text: "Movie updated successfully.",
-          });
+        await SweetAlert.success({
+          title: "Success",
+          text: isEditMode
+            ? "Movie updated successfully."
+            : "Movie created successfully.",
+        });
 
-          navigate("/admin/movies");
-          return;
-        }
-
-        setToastType("success");
-        setToastMessage("Movie saved successfully.");
-
-        setName("");
-        setReleaseDate("");
-        setDurationHour("");
-        setDurationMinute("");
-        setDirectorName("");
-        setSynopsis("");
-        setCategoryInput("");
-        setCategories([]);
-        setCastInput("");
-        setCasts([]);
-        setImage(null);
-        setExistingImageUrl("");
+        navigate("/admin/movies");
+        return;
       } else {
         setToastType("error");
         setToastMessage(data.message || "Failed to save movie.");
@@ -357,12 +354,21 @@ function AddMoviePage({ viewOnly = false }) {
 
               <div className="mt-3 flex flex-wrap gap-2">
                 {categories.map((category) => (
-                  <span
+                  <div
                     key={category}
-                    className="rounded-full border border-slate-300 bg-slate-100 px-3 py-1 text-sm text-slate-700"
+                    className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-slate-100 px-3 py-1 text-sm text-slate-700"
                   >
-                    {category}
-                  </span>
+                    <span>{category}</span>
+                    {!viewOnly && (
+                      <button
+                        type="button"
+                        onClick={() => removeCategory(category)}
+                        className="text-slate-400 hover:text-slate-600"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>
@@ -378,7 +384,8 @@ function AddMoviePage({ viewOnly = false }) {
                   type="date"
                   value={releaseDate}
                   onChange={(event) => setReleaseDate(event.target.value)}
-                  className="w-full rounded-md border border-slate-200 px-4 py-3 outline-none focus:border-primary"
+                  disabled={viewOnly}
+                  className="w-full rounded-md border border-slate-200 bg-white px-4 py-3 outline-none focus:border-primary disabled:cursor-not-allowed disabled:bg-slate-100"
                 />
               </div>
 
@@ -455,12 +462,21 @@ function AddMoviePage({ viewOnly = false }) {
 
               <div className="mt-3 flex flex-wrap gap-2">
                 {casts.map((cast) => (
-                  <span
+                  <div
                     key={cast}
-                    className="rounded-full border border-slate-300 bg-slate-100 px-3 py-1 text-sm text-slate-700"
+                    className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-slate-100 px-3 py-1 text-sm text-slate-700"
                   >
-                    {cast}
-                  </span>
+                    <span>{cast}</span>
+                    {!viewOnly && (
+                      <button
+                        type="button"
+                        onClick={() => removeCast(cast)}
+                        className="text-slate-400 hover:text-slate-600"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>

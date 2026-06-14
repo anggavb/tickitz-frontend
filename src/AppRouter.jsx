@@ -40,9 +40,9 @@ function AppRouter() {
       </Route>
       <Route path="/movies" element={<HomeMoviePage />} />
       <Route path="/movies/:slug" element={<MovieDetailPage />} />
-      <Route path="/movies/:slug/booking" element={<SeatBookingPage />} />
-      <Route path="/movies/:slug/payment" element={<MoviePaymentPage />} />
-      <Route path="/movies/:slug/result" element={<MovieTicketResult />} />
+      <Route path="/orders/:orderId/booking" element={<SeatBookingPage />} />
+      <Route path="/orders/:orderId/payment" element={<MoviePaymentPage />} />
+      <Route path="/orders/:orderId/result" element={<MovieTicketResult />} />
 
       <Route path="/admin" element={<AdminLayout />}>
         <Route path="movies" element={<AdminMoviePage />} />

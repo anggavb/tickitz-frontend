@@ -1,54 +1,132 @@
-import { useSelector } from "react-redux";
-import { useParams } from "react-router";
-import CinemaList from "../components/movie-detail/CinemaList";
-import MovieDetailFilterBar from "../components/movie-detail/MovieDetailFilterBar";
-import MovieDetailHero from "../components/movie-detail/MovieDetailHero";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useParams } from "react-router";
+import CinemaList from "@/components/movie-detail/CinemaList";
+import MovieDetailFilterBar from "@/components/movie-detail/MovieDetailFilterBar";
+import MovieDetailHero from "@/components/movie-detail/MovieDetailHero";
 import {
   MovieDetailErrorState,
   MovieDetailLoadingState,
-} from "../components/movie-detail/MovieDetailStates";
-import SelectedSchedulePicker from "../components/movie-detail/SelectedSchedulePicker";
-import HomeLayout from "../layouts/HomeLayout";
-import useMovieBooking from "../hooks/useMovieBooking";
-import useMovieDetailData from "../hooks/useMovieDetailData";
-import useMovieScheduleSelection from "../hooks/useMovieScheduleSelection";
-import { formatPrice } from "../utils/api/movieDetailMappers";
+} from "@/components/movie-detail/MovieDetailStates";
+import SelectedSchedulePicker from "@/components/movie-detail/SelectedSchedulePicker";
+import SweetAlert from "@/components/ui/SweetAlert";
+import HomeLayout from "@/layouts/HomeLayout";
+import {
+  createMovieDetailOrder,
+  fetchFilteredMovieSchedules,
+  fetchMovieDetailPage,
+  resetMovieDetailState,
+  selectCinema,
+  selectMovieDetailScheduleState,
+  selectShowtime,
+  setCurrentPage,
+  setFilterDate,
+  setFilterLocation,
+  setFilterTime,
+  updateCurrentDateTime,
+} from "@/redux/slice/movieDetailSlice";
+import {
+  formatPrice,
+  isPastDateValue,
+  isPastTimeForDate,
+} from "@/utils/api/movieDetailMappers";
 
 function MovieDetailContent({ slug, auth }) {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const schedule = useSelector(selectMovieDetailScheduleState);
   const {
     movie,
-    dateOptions,
     locationOptions,
     timeOptions,
     loading,
     error,
-    scheduleWarning,
-  } = useMovieDetailData(slug);
+    bookingLoading,
+  } = schedule;
 
-  const schedule = useMovieScheduleSelection({
-    slug,
-    dateOptions,
-    timeOptions,
-    initialScheduleError: scheduleWarning,
-  });
+  useEffect(() => {
+    if (!slug) return undefined;
 
-  const { bookingLoading, handleBookNow } = useMovieBooking({
-    slug,
-    movie,
-    auth,
-    selectedSchedule: {
-      canBook: schedule.canBook,
-      currentDateValue: schedule.currentDateValue,
-      currentTimeValue: schedule.currentTimeValue,
-      selectedCinema: schedule.selectedCinema,
-      selectedDate: schedule.selectedDate,
-      selectedLocation: schedule.selectedLocation,
-      selectedMovieCinemaId: schedule.selectedMovieCinemaId,
-      selectedPrice: schedule.selectedPrice,
-      selectedTime: schedule.selectedTime,
-      selectedTimeLabel: schedule.selectedTimeLabel,
-    },
-  });
+    const promise = dispatch(fetchMovieDetailPage(slug));
+
+    return () => {
+      promise.abort();
+      dispatch(resetMovieDetailState());
+    };
+  }, [dispatch, slug]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      dispatch(updateCurrentDateTime());
+    }, 30000);
+
+    return () => window.clearInterval(timer);
+  }, [dispatch]);
+
+  const redirectToSignin = async () => {
+    await SweetAlert.show({
+      icon: "info",
+      title: "Login required",
+      text: "Please sign in before booking this movie.",
+      confirmButtonText: "Sign in",
+    });
+
+    navigate("/auth/signin", {
+      state: {
+        from: `/movies/${slug}`,
+      },
+    });
+  };
+
+  const handleBookNow = async () => {
+    if (!schedule.canBook) return;
+
+    if (
+      isPastDateValue(schedule.selectedDate, schedule.currentDateValue) ||
+      isPastTimeForDate(
+        schedule.selectedTime,
+        schedule.selectedDate,
+        schedule.currentDateValue,
+        schedule.currentTimeValue,
+      )
+    ) {
+      await SweetAlert.error({
+        title: "Schedule unavailable",
+        text: "This schedule has already passed. Please choose another date or time.",
+      });
+      return;
+    }
+
+    if (!auth.isAuthenticated || !auth.token) {
+      await redirectToSignin();
+      return;
+    }
+
+    try {
+      const order = await dispatch(createMovieDetailOrder()).unwrap();
+      const orderId = order?.id;
+
+      if (!orderId) {
+        await SweetAlert.error({
+          title: "Failed to create order",
+          text: "Order ID was not returned by the server.",
+        });
+        return;
+      }
+
+      navigate(`/orders/${orderId}/booking`);
+    } catch (err) {
+      if (err?.status === 401) {
+        await redirectToSignin();
+        return;
+      }
+
+      await SweetAlert.error({
+        title: "Failed to create order",
+        text: err?.message || "Please try again later.",
+      });
+    }
+  };
 
   if (loading) return <MovieDetailLoadingState />;
   if (error) return <MovieDetailErrorState message={error} />;
@@ -69,10 +147,10 @@ function MovieDetailContent({ slug, auth }) {
           scheduleError={schedule.scheduleError}
           hasFiltered={schedule.hasFiltered}
           cinemaCount={schedule.cinemaList.length}
-          onDateChange={schedule.handleDateChange}
-          onTimeChange={schedule.setFilterTime}
-          onLocationChange={schedule.setFilterLocation}
-          onFilter={schedule.handleFilter}
+          onDateChange={(value) => dispatch(setFilterDate(value))}
+          onTimeChange={(value) => dispatch(setFilterTime(value))}
+          onLocationChange={(value) => dispatch(setFilterLocation(value))}
+          onFilter={() => dispatch(fetchFilteredMovieSchedules({ slug }))}
           isTimeOptionDisabled={schedule.isTimeOptionDisabled}
         />
 
@@ -90,9 +168,11 @@ function MovieDetailContent({ slug, auth }) {
           filterDate={schedule.filterDate}
           filterTime={schedule.filterTime}
           activeCinemaId={schedule.activeCinemaId}
-          onPageChange={schedule.setCurrentPage}
-          onSelectCinema={schedule.handleSelectCinema}
-          onSelectMobileTime={schedule.handleSelectMobileTime}
+          onPageChange={(page) => dispatch(setCurrentPage(page))}
+          onSelectCinema={(cinema) => dispatch(selectCinema(cinema))}
+          onSelectMobileTime={(cinema, showtime) =>
+            dispatch(selectShowtime({ cinema, showtime }))
+          }
         />
 
         {schedule.selectedCinema && (
@@ -100,7 +180,12 @@ function MovieDetailContent({ slug, auth }) {
             cinema={schedule.selectedCinema}
             selectedMovieCinemaId={schedule.selectedMovieCinemaId}
             onSelect={(showtime) =>
-              schedule.handleSelectMobileTime(schedule.selectedCinema, showtime)
+              dispatch(
+                selectShowtime({
+                  cinema: schedule.selectedCinema,
+                  showtime,
+                }),
+              )
             }
           />
         )}

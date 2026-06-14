@@ -1,22 +1,22 @@
-import React, { useEffect } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router';
-import ProfileNavbar from '../components/ProfileNavbar';
-import ProfileHeader from '../components/profile/ProfileHeader';
-import SideProfile from '../components/profile/SideProfile';
-import { ProfileEditProvider } from '../context/ProfileEditContext.jsx';
-import { useSelector } from 'react-redux';
+import React, { useEffect } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router";
+import ProfileNavbar from "../components/ProfileNavbar";
+import ProfileHeader from "../components/profile/ProfileHeader";
+import SideProfile from "../components/profile/SideProfile";
+import { ProfileEditProvider } from "../context/ProfileEditContext.jsx";
+import { useSelector } from "react-redux";
 
 function ProfileLayout() {
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/auth/signin');
+    if (user?.role !== "user" || !isAuthenticated) {
+      navigate("/auth/signin");
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, user]);
   const { pathname } = useLocation();
-  const isHistory = pathname === '/profile/history';
+  const isHistory = pathname === "/profile/history";
 
   return (
     <ProfileEditProvider>
@@ -28,7 +28,7 @@ function ProfileLayout() {
             className={`
               md:col-span-3
               order-2 md:order-1
-              ${isHistory ? 'hidden md:block' : ''}
+              ${isHistory ? "hidden md:block" : ""}
             `}
           >
             <SideProfile />
@@ -38,7 +38,7 @@ function ProfileLayout() {
             className={`
               space-y-6
               order-1 md:order-2
-              ${isHistory ? 'md:col-span-9' : 'md:col-span-9'}
+              ${isHistory ? "md:col-span-9" : "md:col-span-9"}
             `}
           >
             <ProfileHeader />
