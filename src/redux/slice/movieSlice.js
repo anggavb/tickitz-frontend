@@ -27,16 +27,23 @@ export const getUpcoming = createAsyncThunk('movie/upcoming', async (_, thunkAPI
   }
 });
 
-export const getMovie = createAsyncThunk('movie/home', async (_, thunkAPI) => {
+export const getMovie = createAsyncThunk('movie/getMovie', async (params = {}, thunkAPI) => {
   try {
-    const response = await fetch(`${env.baseAPI}/movies?limit=4&showToday=true`);
-    const data = await response.json();
+    const { page = 1, limit = 4, name = '', category = '' } = params;
 
-    if (!response.ok) {
-      return thunkAPI.rejectWithValue(data?.error || 'failed to get movies');
-    }
+    const query = new URLSearchParams({
+      page,
+      limit,
+    });
 
-    return data;
+    if (name) query.append('name', name);
+    if (category) query.append('category', category);
+
+    const response = await fetch(`${env.baseAPI}/movies?${query.toString()}`);
+
+    const result = await response.json();
+
+    return result;
   } catch (error) {
     return thunkAPI.rejectWithValue(error.message);
   }

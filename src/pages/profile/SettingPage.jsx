@@ -3,12 +3,15 @@ import { useForm } from 'react-hook-form';
 import { useProfileEdit } from '../../context/profileEditContext';
 import { useDispatch, useSelector } from 'react-redux';
 import { getProfile, updateProfile } from '../../redux/slice/profileSlice';
-import { changePassword } from '../../redux/slice/authSlice';
+import { changePassword, logout } from '../../redux/slice/authSlice';
+import { FourSquare } from 'react-loading-indicators';
+import { useNavigate } from 'react-router';
 
 function SettingPage() {
   const { showEditModal, setShowEditModal, isEditing, setIsEditing, selectedPhoto, setSelectedPhoto, setPreviewPhoto } = useProfileEdit();
   const [isPasswordEditing, setIsPasswordEditing] = useState(false);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const { dataProfile: user, loadingProfile } = useSelector((state) => state.profile);
 
@@ -48,6 +51,8 @@ function SettingPage() {
       confirmPassword: '',
     });
   }, [user, reset]);
+
+  console.log(user);
 
   const password = watch('password');
   const confirmPassword = watch('confirmPassword');
@@ -282,6 +287,11 @@ function SettingPage() {
                       new_password: password,
                     }),
                   ).unwrap();
+                  console.log('before logout');
+                  dispatch(logout());
+                  console.log('after logout');
+
+                  navigate('/auth/signin');
 
                   setIsPasswordEditing(false);
                 }}
@@ -297,7 +307,11 @@ function SettingPage() {
   );
 
   if (loadingProfile) {
-    return <div className="bg-white rounded-2xl p-6 shadow-sm">Loading profile...</div>;
+    return (
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center">
+        <FourSquare color={['#bb2d00', '#ee3900', '#ff5722', '#ff7e55']} />
+      </div>
+    );
   }
 
   return (
