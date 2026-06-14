@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router";
+import env from "@/utils/env";
 
 function MovieCard({ movie, showDate = false }) {
   const movieDate = movie.release_date || movie.date || movie.show_date;
@@ -20,7 +21,7 @@ function MovieCard({ movie, showDate = false }) {
           </div>
         )}
         <img
-          src={movie.poster}
+          src={env.baseAPI + movie.Image}
           alt={movie.title}
           className="h-95 w-full object-cover"
         />
