@@ -127,30 +127,17 @@ export const changePassword = createAsyncThunk('auth/changePassword', async (pay
 // LOGOUT
 export const logoutUser = createAsyncThunk('auth/logoutUser', async (_, thunkAPI) => {
   try {
-    const state = thunkAPI.getState();
-    const token = state.auth.token;
+    const token = thunkAPI.getState().auth.token;
 
-    if (!token) {
-      return thunkAPI.rejectWithValue('No token found');
-    }
-
-    const response = await apiClient.delete(`/auth/logout`, {
-      method: 'DELETE',
+    const response = await apiClient.delete('/auth/logout', {
       headers: {
-        'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      return thunkAPI.rejectWithValue(data?.message || 'Logout failed');
-    }
-
-    return data;
+    return response.data;
   } catch (error) {
-    return thunkAPI.rejectWithValue(error.message);
+    return thunkAPI.rejectWithValue(error.response?.data?.message || error.message);
   }
 });
 
