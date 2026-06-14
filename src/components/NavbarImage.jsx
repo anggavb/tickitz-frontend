@@ -1,11 +1,12 @@
-import { useState, useRef, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, Link } from 'react-router';
-import searchIcon from '../assets/images/search1.png';
-import profileImage from '../assets/images/profile.png';
-import { logoutUser } from '../redux/slice/authSlice';
-import logoutIcon from '../assets/images/logout.png';
-import SweetAlert from '@/components/ui/SweetAlert';
+import { useState, useRef, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, Link } from "react-router";
+import searchIcon from "../assets/images/search1.png";
+import profileImage from "../assets/images/profile.png";
+import { logoutUser } from "../redux/slice/authSlice";
+import logoutIcon from "../assets/images/logout.png";
+import SweetAlert from "@/components/ui/SweetAlert";
+import { getProfile } from "../redux/slice/profileSlice";
 import { FourSquare } from 'react-loading-indicators';
 
 function NavbarImage() {
@@ -14,8 +15,22 @@ function NavbarImage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user, loading } = useSelector((state) => state.auth);
+  const [imageUrl, setImageUrl] = useState("");
 
-  // Close dropdown when clicking outside
+  useEffect(() => {
+    async function getProfileImage() {
+      try {
+        const res = await dispatch(getProfile()).unwrap();
+        const photo = res?.data?.photo;
+        setImageUrl(photo ? photo : profileImage);
+      } catch (error) {
+        console.error("Failed to fetch image:", error);
+        setImageUrl(profileImage);
+      }
+    }
+
+    getProfileImage();
+  }, [dispatch]);
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
