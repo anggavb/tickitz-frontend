@@ -8,7 +8,7 @@ import Toast from "../../components/ui/Toast";
 import logo from "../../assets/logo.png";
 import { FourSquare } from "react-loading-indicators";
 import { useDispatch } from "react-redux";
-import { forgotpassword } from "../../redux/slice/authSlice";
+import { forgotPassword } from "../../redux/slice/authSlice";
 
 function ForgotPasswordPage() {
   const [toast, setToast] = useState({
@@ -28,7 +28,8 @@ function ForgotPasswordPage() {
   const onSubmit = async (data) => {
     try {
       setLoading(true);
-      await dispatch(forgotpassword(data)).unwrap();
+
+      await dispatch(forgotPassword(data)).unwrap();
       console.log(data);
 
       // TODO: Call forgot password API
