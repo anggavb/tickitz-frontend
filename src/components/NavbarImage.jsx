@@ -6,6 +6,7 @@ import profileImage from "../assets/images/profile.png";
 import { logoutUser } from "../redux/slice/authSlice";
 import logoutIcon from "../assets/images/logout.png";
 import SweetAlert from "@/components/ui/SweetAlert";
+import { getProfile } from "../redux/slice/profileSlice";
 
 function NavbarImage() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -13,8 +14,22 @@ function NavbarImage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user, loading } = useSelector((state) => state.auth);
+  const [imageUrl, setImageUrl] = useState("");
 
-  // Close dropdown when clicking outside
+  useEffect(() => {
+    async function getProfileImage() {
+      try {
+        const res = await dispatch(getProfile()).unwrap();
+        const photo = res?.data?.photo;
+        setImageUrl(photo ? photo : profileImage);
+      } catch (error) {
+        console.error("Failed to fetch image:", error);
+        setImageUrl(profileImage);
+      }
+    }
+
+    getProfileImage();
+  }, [dispatch]);
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -51,7 +66,7 @@ function NavbarImage() {
           className="hover:opacity-80 transition-opacity"
         >
           <img
-            src={profileImage}
+            src={imageUrl || profileImage}
             alt="Profile"
             className="h-8 w-8 rounded-full object-cover md:h-10 md:w-10"
           />
