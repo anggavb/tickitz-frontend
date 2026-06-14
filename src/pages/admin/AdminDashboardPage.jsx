@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import SalesChartCard from "../../components/SalesChartCard";
+import { useSelector } from "react-redux";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8081";
 
@@ -35,10 +36,18 @@ export default function AdminDashboardPage() {
   const [categories, setCategories] = useState([]);
   const [locations, setLocations] = useState([]);
 
+  const { token } = useSelector((state) => state.auth);
+
   const fetchMovies = useCallback(async () => {
     try {
       const response = await fetch(
         `${API_BASE_URL}/admin/movies?limit=100&page=1`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
       );
       const data = await response.json();
       if (data.success && data.data) {
@@ -51,7 +60,12 @@ export default function AdminDashboardPage() {
 
   const fetchCategories = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/categories`);
+      const response = await fetch(`${API_BASE_URL}/admin/categories`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const data = await response.json();
       if (data.success && data.data) {
         setCategories(data.data);
@@ -63,7 +77,12 @@ export default function AdminDashboardPage() {
 
   const fetchLocations = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/movies/locations`);
+      const response = await fetch(`${API_BASE_URL}/movies/locations`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const data = await response.json();
       if (data.success && data.data) {
         setLocations(data.data.map((l) => l.location));
@@ -192,7 +211,7 @@ export default function AdminDashboardPage() {
   };
 
   const chartSubtitle = `${chartFilters.movieName || "All Movies"}, ${formatPeriodLabel(
-    chartFilters.period || "weekly"
+    chartFilters.period || "weekly",
   )}`;
 
   const ticketSubtitle = [
