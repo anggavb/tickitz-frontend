@@ -57,7 +57,7 @@ export default function AdminDashboardPage() {
     } catch (error) {
       console.error("Failed to fetch movies:", error);
     }
-  }, []);
+  }, [token]);
 
   const fetchCategories = useCallback(async () => {
     try {
@@ -74,7 +74,7 @@ export default function AdminDashboardPage() {
     } catch (error) {
       console.error("Failed to fetch categories:", error);
     }
-  }, []);
+  }, [token]);
 
   const fetchLocations = useCallback(async () => {
     try {
@@ -91,7 +91,7 @@ export default function AdminDashboardPage() {
     } catch (error) {
       console.error("Failed to fetch locations:", error);
     }
-  }, []);
+  }, [token]);
 
   const fetchSalesChart = useCallback(async () => {
     setLoadingChart(true);

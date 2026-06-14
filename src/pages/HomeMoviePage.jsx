@@ -4,7 +4,7 @@ import background from "../assets/images/background.png";
 import searchIcon from "../assets/images/Search.png";
 import Newsletter from "../components/Newsletter";
 import sliderIndicator from "../assets/images/slider-indicator.png";
-import pagination from "../assets/images/pagination.png";
+import Pagination from "../components/Pagination";
 import HomeLayout from "../layouts/HomeLayout";
 import { useDispatch, useSelector } from "react-redux";
 import { getMovie } from "../redux/slice/movieSlice";
@@ -16,17 +16,19 @@ function HomeMoviePage() {
 
   const [selectedCategory, setSelectedCategory] = useState("");
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const debouncedSearch = useDebounce(search, 500);
 
   useEffect(() => {
     dispatch(
       getMovie({
+        page,
         limit: 12,
         name: debouncedSearch,
         category: selectedCategory,
       }),
     );
-  }, [dispatch, debouncedSearch, selectedCategory]);
+  }, [dispatch, debouncedSearch, selectedCategory, page]);
 
   const moviesData = dataMovies?.data;
 
@@ -69,7 +71,10 @@ function HomeMoviePage() {
                 type="text"
                 placeholder="Search movie"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
                 className="w-full outline-none"
               />{" "}
             </div>
@@ -83,11 +88,12 @@ function HomeMoviePage() {
               {categories?.map((category, idx) => (
                 <button
                   key={idx}
-                  onClick={() =>
+                  onClick={() => {
                     setSelectedCategory(
                       selectedCategory === category ? "" : category,
-                    )
-                  }
+                    );
+                    setPage(1);
+                  }}
                   className={`rounded-lg px-6 py-2 text-sm ${selectedCategory === category ? "bg-primary text-white" : "text-slate-600"}`}
                 >
                   {category}
@@ -104,10 +110,11 @@ function HomeMoviePage() {
           ))}
         </div>
         <div className="mt-12 flex justify-center">
-          <img
-            src={pagination}
-            alt="Pagination"
-            className="h-10 object-contain"
+          <Pagination
+            totalItems={dataMovies?.pagination?.total_data || 0}
+            itemsPerPage={12}
+            currentPage={page}
+            onPageChange={(newPage) => setPage(newPage)}
           />
         </div>
       </section>
