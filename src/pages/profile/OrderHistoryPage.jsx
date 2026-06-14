@@ -116,14 +116,6 @@ function OrderHistoryPage() {
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
               <span
                 className={`w-full sm:w-auto text-center px-3 py-1 sm:px-5 sm:py-2 rounded-md text-[10px] sm:text-sm ${
-                  order.ticket_status === 'active' ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-200 text-gray-500'
-                }`}
-              >
-                {order.ticket_status === 'active' ? 'Ticket Active' : order.ticket_status === 'used' ? 'Ticket Used' : 'No Ticket'}
-              </span>
-
-              <span
-                className={`w-full sm:w-auto text-center px-3 py-1 sm:px-5 sm:py-2 rounded-md text-[10px] sm:text-sm ${
                   order.payment_status === 'paid' ? 'bg-primary/20 text-primary' : 'bg-red-200 text-red-500'
                 }`}
               >
