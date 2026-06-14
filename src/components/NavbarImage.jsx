@@ -7,7 +7,8 @@ import { logoutUser } from "../redux/slice/authSlice";
 import logoutIcon from "../assets/images/logout.png";
 import SweetAlert from "@/components/ui/SweetAlert";
 import { getProfile } from "../redux/slice/profileSlice";
-import { FourSquare } from 'react-loading-indicators';
+import { FourSquare } from "react-loading-indicators";
+import env from "@/utils/env";
 
 function NavbarImage() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -22,7 +23,8 @@ function NavbarImage() {
       try {
         const res = await dispatch(getProfile()).unwrap();
         const photo = res?.data?.photo;
-        setImageUrl(photo ? photo : profileImage);
+        // console.log(res?.data?.photo);
+        setImageUrl(photo ? env.baseAPI + photo : profileImage);
       } catch (error) {
         console.error("Failed to fetch image:", error);
         setImageUrl(profileImage);
@@ -38,26 +40,26 @@ function NavbarImage() {
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleLogout = async () => {
     try {
       await dispatch(logoutUser()).unwrap();
       setIsDropdownOpen(false);
-      SweetAlert.success('Logged out successfully.');
-      navigate('/');
+      SweetAlert.success("Logged out successfully.");
+      navigate("/");
     } catch (error) {
-      console.error('Logout error:', error);
-      SweetAlert.error('Failed to logout. Please try again.');
+      console.error("Logout error:", error);
+      SweetAlert.error("Failed to logout. Please try again.");
     }
   };
 
   {
     loading && (
       <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center">
-        <FourSquare color={['#bb2d00', '#ee3900', '#ff5722', '#ff7e55']} />
+        <FourSquare color={["#bb2d00", "#ee3900", "#ff5722", "#ff7e55"]} />
       </div>
     );
   }
@@ -69,16 +71,38 @@ function NavbarImage() {
       </button>
 
       <div className="relative" ref={dropdownRef}>
-        <button type="button" onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="hover:opacity-80 transition-opacity">
-          <img src={profileImage} alt="Profile" className="h-8 w-8 rounded-full object-cover md:h-10 md:w-10" />
+        <button
+          type="button"
+          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          className="hover:opacity-80 transition-opacity"
+        >
+          <img
+            src={imageUrl}
+            alt="Profile"
+            className="h-8 w-8 rounded-full object-cover md:h-10 md:w-10"
+          />
         </button>
 
         {isDropdownOpen && (
           <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50">
-            <Link to="/profile" className={user?.role === 'user' ? 'block px-4 py-3 text-left text-gray-700 hover:bg-gray-100' : 'hidden'}>
+            <Link
+              to="/profile"
+              className={
+                user?.role === "user"
+                  ? "block px-4 py-3 text-left text-gray-700 hover:bg-gray-100"
+                  : "hidden"
+              }
+            >
               Profile
             </Link>
-            <Link to="/admin/dashboard" className={user?.role === 'admin' ? 'block px-4 py-3 text-left text-gray-700 hover:bg-gray-100' : 'hidden'}>
+            <Link
+              to="/admin/dashboard"
+              className={
+                user?.role === "admin"
+                  ? "block px-4 py-3 text-left text-gray-700 hover:bg-gray-100"
+                  : "hidden"
+              }
+            >
               Admin Dashboard
             </Link>
             <button

@@ -16,7 +16,12 @@ function ProfileNavbar({ role = "user" }) {
   return (
     <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white print:hidden">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
-        <img src={logo} alt="Tickitz" className="h-10 w-auto" />
+        <img
+          onClick={() => (window.location.href = "/")}
+          src={logo}
+          alt="Tickitz"
+          className="h-10 w-auto hover:cursor-pointer"
+        />
 
         <div className="hidden md:block">
           <NavLinks links={links} />
