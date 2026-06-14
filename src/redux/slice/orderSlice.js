@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import env from '../../utils/env';
+import apiClient from '../../utils/axios';
 
 const initialState = {
   success: false,
@@ -11,24 +11,14 @@ const initialState = {
 
 export const getOrderHistory = createAsyncThunk('order/history', async (_, thunkAPI) => {
   try {
-    const state = thunkAPI.getState();
+    // const state = thunkAPI.getState();
 
-    const token = state.auth.token;
+    // const token = state.auth.token;
 
-    console.log(token);
-    const response = await fetch(`${env.baseAPI}/orders/history`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    // console.log(token);
+    const response = await apiClient.get(`/orders/history`);
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      return thunkAPI.rejectWithValue(data?.error || 'failed to get order history');
-    }
-
-    return data;
+    return await response.json();
   } catch (error) {
     return thunkAPI.rejectWithValue(error.message);
   }
