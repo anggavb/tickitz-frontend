@@ -18,7 +18,8 @@ export const getOrderHistory = createAsyncThunk('order/history', async (_, thunk
     // console.log(token);
     const response = await apiClient.get(`/orders/history`);
 
-    return await response.json();
+    // return await response.json();
+    return response;
   } catch (error) {
     return thunkAPI.rejectWithValue(error.message);
   }
@@ -38,7 +39,7 @@ const orderSlice = createSlice({
       .addCase(getOrderHistory.fulfilled, (state, action) => {
         state.loadingHistory = false;
         state.success = true;
-        state.dataHistory = action.payload.data;
+        state.dataHistory = action.payload.data.data;
         state.message = action.payload.message;
       })
       .addCase(getOrderHistory.rejected, (state, action) => {
