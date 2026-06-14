@@ -41,12 +41,7 @@ const apiClient = axios.create({
 });
 
 function hasAuthorizationHeader(headers) {
-  return Boolean(
-    headers?.Authorization ||
-      headers?.authorization ||
-      headers?.get?.('Authorization') ||
-      headers?.get?.('authorization'),
-  );
+  return Boolean(headers?.Authorization || headers?.authorization || headers?.get?.('Authorization') || headers?.get?.('authorization'));
 }
 
 function setAuthorizationHeader(headers, token) {
@@ -62,12 +57,7 @@ function setAuthorizationHeader(headers, token) {
 }
 
 function getResponseMessage(error, fallbackMessage) {
-  return (
-    error.response?.data?.message ||
-    error.response?.data?.error ||
-    error.message ||
-    fallbackMessage
-  );
+  return error.response?.data?.message || error.response?.data?.error || error.message || fallbackMessage;
 }
 
 apiClient.interceptors.request.use(
@@ -88,6 +78,8 @@ apiClient.interceptors.response.use(
 
     if (status === 401) {
       authToken = null;
+
+      localStorage.removeItem('persist:auth');
 
       if (!isRedirectingToLogin && window.location.pathname !== '/auth/signin') {
         isRedirectingToLogin = true;

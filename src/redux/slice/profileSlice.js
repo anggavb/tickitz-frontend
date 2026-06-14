@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import env from '../../utils/env';
+import apiClient from '../../utils/axios';
 
 const initialState = {
   success: false,
@@ -16,7 +17,7 @@ export const getProfile = createAsyncThunk('profile/get', async (_, thunkAPI) =>
 
     const token = state.auth.token;
 
-    const response = await fetch(`${env.baseAPI}/profile`, {
+    const response = await apiClient.get(`/profile`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
