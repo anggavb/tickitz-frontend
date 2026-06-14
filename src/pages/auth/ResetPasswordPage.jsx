@@ -2,19 +2,27 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { FourSquare } from "react-loading-indicators";
-
+import { useNavigate, useSearchParams } from "react-router";
 import AuthLayout from "../../layouts/AuthLayout";
 import AuthCard from "../../components/auth/AuthCard";
 import Toast from "../../components/ui/Toast";
+import { useDispatch } from "react-redux";
+import { resetPassword } from "../../redux/slice/authSlice";
 
 function ResetPasswordPage() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [searchParams] = useSearchParams();
+
   const [toast, setToast] = useState({
     show: false,
     message: "",
     type: "error",
   });
+
+  const dispatch = useDispatch();
+  const token = searchParams.get("token") || "";
 
   const [loading, setLoading] = useState(false);
 
@@ -30,19 +38,31 @@ function ResetPasswordPage() {
   const onSubmit = async (data) => {
     clearErrors("confirmPassword");
 
+    if (!token) {
+      setError("password", {
+        type: "manual",
+        message: "Invalid or missing reset token.",
+      });
+      return;
+    }
+
     if (data.password !== data.confirmPassword) {
       setError("confirmPassword", {
         type: "manual",
         message: "Passwords do not match",
       });
-
       return;
     }
 
     setLoading(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await dispatch(
+        resetPassword({
+          token,
+          new_password: data.password,
+        }),
+      ).unwrap();
 
       setToast({
         show: true,
@@ -53,14 +73,15 @@ function ResetPasswordPage() {
       reset();
 
       setTimeout(() => {
-        // window.location.href = "/login";
+        navigate("/auth/signin");
       }, 2000);
     } catch (error) {
       console.error(error);
 
       setError("password", {
         type: "manual",
-        message: "Failed to reset password. Please try again.",
+        message:
+          error?.message || "Failed to reset password. Please try again.",
       });
     } finally {
       setLoading(false);
