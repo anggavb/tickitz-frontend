@@ -1,17 +1,18 @@
 import { useState, useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router";
+import { useNavigate, Link } from "react-router";
 import searchIcon from "../assets/images/search1.png";
 import profileImage from "../assets/images/profile.png";
 import { logoutUser } from "../redux/slice/authSlice";
 import logoutIcon from "../assets/images/logout.png";
+import SweetAlert from "@/components/ui/SweetAlert";
 
 function NavbarImage() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { loading } = useSelector((state) => state.auth);
+  const { user, loading } = useSelector((state) => state.auth);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -29,9 +30,11 @@ function NavbarImage() {
     try {
       await dispatch(logoutUser()).unwrap();
       setIsDropdownOpen(false);
-      navigate("/auth/signin");
+      SweetAlert.success("Logged out successfully.");
+      navigate("/");
     } catch (error) {
       console.error("Logout error:", error);
+      SweetAlert.error("Failed to logout. Please try again.");
     }
   };
 
@@ -56,6 +59,26 @@ function NavbarImage() {
 
         {isDropdownOpen && (
           <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50">
+            <Link
+              to="/profile"
+              className={
+                user?.role === "user"
+                  ? "block px-4 py-3 text-left text-gray-700 hover:bg-gray-100"
+                  : "hidden"
+              }
+            >
+              Profile
+            </Link>
+            <Link
+              to="/admin/dashboard"
+              className={
+                user?.role === "admin"
+                  ? "block px-4 py-3 text-left text-gray-700 hover:bg-gray-100"
+                  : "hidden"
+              }
+            >
+              Admin Dashboard
+            </Link>
             <button
               onClick={handleLogout}
               disabled={loading}
