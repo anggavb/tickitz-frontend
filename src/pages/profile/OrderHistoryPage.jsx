@@ -5,6 +5,7 @@ import { FiChevronDown, FiChevronUp } from "react-icons/fi";
 import { getOrderHistory } from "../../redux/slice/orderSlice";
 import { getOrderQr } from "../../utils/api/seatBookingApi";
 import { FourSquare } from "react-loading-indicators";
+import env from "@/utils/env";
 
 function OrderHistoryPage() {
   const dispatch = useDispatch();
@@ -114,9 +115,13 @@ function OrderHistoryPage() {
               </h2>
             </div>
 
-            <p className="font-bold text-xs sm:text-sm text-gray-700">
+            {/* <p className="font-bold text-xs sm:text-sm text-gray-700">
               {order.cinema_name}
-            </p>
+            </p> */}
+            <img
+              src={env.baseAPI + order.cinema_logo}
+              alt={order.cinema_name}
+            />
           </div>
 
           {/* STATUS */}
