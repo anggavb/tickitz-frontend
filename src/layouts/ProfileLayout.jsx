@@ -12,7 +12,7 @@ function ProfileLayout() {
 
   useEffect(() => {
     if (user.role !== 'user' && !isAuthenticated) {
-      navigate('/auth/siginin');
+      navigate('/auth/signin');
     }
   }, [isAuthenticated, navigate, user]);
   const { pathname } = useLocation();
