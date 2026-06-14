@@ -29,14 +29,14 @@ export const getUpcoming = createAsyncThunk('movie/upcoming', async (_, thunkAPI
 
 export const getMovie = createAsyncThunk('movie/getMovie', async (params = {}, thunkAPI) => {
   try {
-    const { page = 1, limit = 4, search = '', category = '' } = params;
+    const { page = 1, limit = 4, name = '', category = '' } = params;
 
     const query = new URLSearchParams({
       page,
       limit,
     });
 
-    if (search) query.append('search', search);
+    if (name) query.append('name', name);
     if (category) query.append('category', category);
 
     const response = await fetch(`${env.baseAPI}/movies?${query.toString()}`);

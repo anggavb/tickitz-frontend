@@ -8,24 +8,26 @@ import pagination from '../assets/images/pagination.png';
 import HomeLayout from '../layouts/HomeLayout';
 import { useDispatch, useSelector } from 'react-redux';
 import { getMovie } from '../redux/slice/movieSlice';
+import { useDebounce } from '../hooks/useDebounce';
 
 function HomeMoviePage() {
   const dispatch = useDispatch();
   const { dataMovies } = useSelector((state) => state.movie);
 
-  const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 500);
 
   useEffect(() => {
     dispatch(
       getMovie({
         limit: 12,
-        search,
+        name: debouncedSearch,
         category: selectedCategory,
       }),
     );
-  }, [dispatch, search, selectedCategory]);
-  console.log(dataMovies);
+  }, [dispatch, debouncedSearch, selectedCategory]);
+
   const moviesData = dataMovies?.data;
 
   const categories = ['Thriller', 'Horror', 'Romantic', 'Adventure', 'Sci-Fi'];
