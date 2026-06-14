@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
-import SalesChartCard from "../../components/SalesChartCard";
+import SalesChartCard from "@/components/SalesChartCard";
 import { useSelector } from "react-redux";
+import env from "@/utils/env";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8081";
+const API_BASE_URL = env.baseAPI;
 
 export default function AdminDashboardPage() {
   const [salesChartData, setSalesChartData] = useState([]);
