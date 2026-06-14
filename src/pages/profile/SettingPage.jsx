@@ -1,19 +1,29 @@
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useProfileEdit } from '../../context/profileEditContext';
-import { useDispatch, useSelector } from 'react-redux';
-import { getProfile, updateProfile } from '../../redux/slice/profileSlice';
-import { changePassword, logout } from '../../redux/slice/authSlice';
-import { FourSquare } from 'react-loading-indicators';
-import { useNavigate } from 'react-router';
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { useProfileEdit } from "../../context/profileEditContext";
+import { useDispatch, useSelector } from "react-redux";
+import { getProfile, updateProfile } from "../../redux/slice/profileSlice";
+import { changePassword, logout } from "../../redux/slice/authSlice";
+import { FourSquare } from "react-loading-indicators";
+import { useNavigate } from "react-router";
 
 function SettingPage() {
-  const { showEditModal, setShowEditModal, isEditing, setIsEditing, selectedPhoto, setSelectedPhoto, setPreviewPhoto } = useProfileEdit();
+  const {
+    showEditModal,
+    setShowEditModal,
+    isEditing,
+    setIsEditing,
+    selectedPhoto,
+    setSelectedPhoto,
+    setPreviewPhoto,
+  } = useProfileEdit();
   const [isPasswordEditing, setIsPasswordEditing] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { dataProfile: user, loadingProfile } = useSelector((state) => state.profile);
+  const { dataProfile: user, loadingProfile } = useSelector(
+    (state) => state.profile,
+  );
 
   useEffect(() => {
     if (!user) {
@@ -30,12 +40,12 @@ function SettingPage() {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: '',
-      password: '',
-      confirmPassword: '',
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      password: "",
+      confirmPassword: "",
     },
   });
 
@@ -43,34 +53,34 @@ function SettingPage() {
     if (!user) return;
 
     reset({
-      firstName: user.first_name ?? '',
-      lastName: user.last_name ?? '',
-      email: user.email ?? '',
-      phone: user.phone ?? '',
-      password: '',
-      confirmPassword: '',
+      firstName: user.first_name ?? "",
+      lastName: user.last_name ?? "",
+      email: user.email ?? "",
+      phone: user.phone ?? "",
+      password: "",
+      confirmPassword: "",
     });
   }, [user, reset]);
 
   console.log(user);
 
-  const password = watch('password');
-  const confirmPassword = watch('confirmPassword');
+  const password = watch("password");
+  const confirmPassword = watch("confirmPassword");
 
   useEffect(() => {
     if (confirmPassword) {
-      trigger('confirmPassword');
+      trigger("confirmPassword");
     }
   }, [password, confirmPassword, trigger]);
 
   const handleCancel = () => {
     reset({
-      firstName: user?.first_name ?? '',
-      lastName: user?.last_name ?? '',
-      email: user?.email ?? '',
-      phone: user?.phone ?? '',
-      password: '',
-      confirmPassword: '',
+      firstName: user?.first_name ?? "",
+      lastName: user?.last_name ?? "",
+      email: user?.email ?? "",
+      phone: user?.phone ?? "",
+      password: "",
+      confirmPassword: "",
     });
 
     setSelectedPhoto(null);
@@ -84,17 +94,17 @@ function SettingPage() {
     try {
       const formData = new FormData();
 
-      formData.append('first_name', data.firstName);
-      formData.append('last_name', data.lastName);
-      formData.append('email', data.email);
-      formData.append('phone', data.phone);
+      formData.append("first_name", data.firstName);
+      formData.append("last_name", data.lastName);
+      formData.append("email", data.email);
+      formData.append("phone", data.phone);
 
       if (data.password) {
-        formData.append('password', data.password);
+        formData.append("password", data.password);
       }
 
       if (selectedPhoto) {
-        formData.append('photo', selectedPhoto);
+        formData.append("photo", selectedPhoto);
       }
 
       await dispatch(updateProfile(formData)).unwrap();
@@ -108,14 +118,18 @@ function SettingPage() {
       setIsEditing(false);
       setShowEditModal(false);
     } catch (error) {
-      console.error('Update profile error:', error);
+      console.error("Update profile error:", error);
+    } finally {
+      window.location.reload();
     }
   };
 
   const renderFields = () => (
     <>
       <section className="bg-white rounded-2xl p-6 shadow-sm">
-        <h2 className="font-semibold text-slate-700 mb-6">Details Information</h2>
+        <h2 className="font-semibold text-slate-700 mb-6">
+          Details Information
+        </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -124,7 +138,7 @@ function SettingPage() {
             <input
               disabled={!isEditing}
               className="w-full border rounded-xl px-4 py-3 mt-2 disabled:bg-slate-50 disabled:text-slate-500"
-              {...register('firstName')}
+              {...register("firstName")}
             />
           </div>
 
@@ -134,7 +148,7 @@ function SettingPage() {
             <input
               disabled={!isEditing}
               className="w-full border rounded-xl px-4 py-3 mt-2 disabled:bg-slate-50 disabled:text-slate-500"
-              {...register('lastName')}
+              {...register("lastName")}
             />
           </div>
 
@@ -145,18 +159,22 @@ function SettingPage() {
               type="email"
               disabled={true}
               className={`w-full border rounded-xl px-4 py-3 mt-2 disabled:bg-slate-50 disabled:text-slate-500 ${
-                errors.email ? 'border-red-500' : ''
+                errors.email ? "border-red-500" : ""
               }`}
-              {...register('email', {
-                required: 'Email wajib diisi',
+              {...register("email", {
+                required: "Email wajib diisi",
                 pattern: {
                   value: /^\S+@\S+\.\S+$/,
-                  message: 'Format email tidak valid',
+                  message: "Format email tidak valid",
                 },
               })}
             />
 
-            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.email.message}
+              </p>
+            )}
           </div>
 
           <div>
@@ -171,7 +189,7 @@ function SettingPage() {
                 type="text"
                 disabled={!isEditing}
                 className="flex-1 ml-5 outline-none bg-transparent disabled:text-slate-500"
-                {...register('phone')}
+                {...register("phone")}
               />
             </div>
           </div>
@@ -195,7 +213,10 @@ function SettingPage() {
                 Cancel Edit
               </button>
 
-              <button type="submit" className="cursor-pointer bg-blue-600 mt-3 text-white px-8 py-3 rounded-xl hover:bg-blue-700 transition">
+              <button
+                type="submit"
+                className="cursor-pointer bg-blue-600 mt-3 text-white px-8 py-3 rounded-xl hover:bg-blue-700 transition"
+              >
                 Update Profile
               </button>
             </>
@@ -204,7 +225,9 @@ function SettingPage() {
       </section>
 
       <section className="bg-white rounded-2xl p-6 shadow-sm">
-        <h2 className="font-semibold text-slate-700 mb-6">Account and Privacy</h2>
+        <h2 className="font-semibold text-slate-700 mb-6">
+          Account and Privacy
+        </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -214,13 +237,18 @@ function SettingPage() {
               type="password"
               disabled={!isPasswordEditing}
               placeholder="Write your password"
-              className={`w-full border rounded-xl px-4 py-3 mt-2 disabled:bg-slate-50 ${errors.password ? 'border-red-500' : ''}`}
-              {...register('password', {
-                validate: (v) => !v || v.length >= 8 || 'Password minimal 8 karakter',
+              className={`w-full border rounded-xl px-4 py-3 mt-2 disabled:bg-slate-50 ${errors.password ? "border-red-500" : ""}`}
+              {...register("password", {
+                validate: (v) =>
+                  !v || v.length >= 8 || "Password minimal 8 karakter",
               })}
             />
 
-            {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
+            {errors.password && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.password.message}
+              </p>
+            )}
           </div>
 
           <div>
@@ -230,21 +258,26 @@ function SettingPage() {
               type="password"
               disabled={!isPasswordEditing}
               placeholder="Confirm your password"
-              className={`w-full border rounded-xl px-4 py-3 mt-2 disabled:bg-slate-50 ${errors.confirmPassword ? 'border-red-500' : ''}`}
-              {...register('confirmPassword', {
+              className={`w-full border rounded-xl px-4 py-3 mt-2 disabled:bg-slate-50 ${errors.confirmPassword ? "border-red-500" : ""}`}
+              {...register("confirmPassword", {
                 validate: (v) => {
-                  if (password && !v) return 'Confirm password must be filled';
+                  if (password && !v) return "Confirm password must be filled";
 
-                  if (!password && v) return 'Password must be filled';
+                  if (!password && v) return "Password must be filled";
 
-                  if (password && v && password !== v) return 'New password and confirm password not match';
+                  if (password && v && password !== v)
+                    return "New password and confirm password not match";
 
                   return true;
                 },
               })}
             />
 
-            {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword.message}</p>}
+            {errors.confirmPassword && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.confirmPassword.message}
+              </p>
+            )}
           </div>
         </div>
         <div className="flex gap-3">
@@ -263,8 +296,8 @@ function SettingPage() {
                 onClick={() => {
                   reset({
                     ...watch(),
-                    password: '',
-                    confirmPassword: '',
+                    password: "",
+                    confirmPassword: "",
                   });
 
                   setIsPasswordEditing(false);
@@ -277,7 +310,7 @@ function SettingPage() {
               <button
                 type="button"
                 onClick={async () => {
-                  const valid = await trigger(['password', 'confirmPassword']);
+                  const valid = await trigger(["password", "confirmPassword"]);
                   if (!valid) return;
 
                   if (!password) return;
@@ -287,11 +320,11 @@ function SettingPage() {
                       new_password: password,
                     }),
                   ).unwrap();
-                  console.log('before logout');
+                  console.log("before logout");
                   dispatch(logout());
-                  console.log('after logout');
+                  console.log("after logout");
 
-                  navigate('/auth/signin');
+                  navigate("/auth/signin");
 
                   setIsPasswordEditing(false);
                 }}
@@ -309,20 +342,26 @@ function SettingPage() {
   if (loadingProfile) {
     return (
       <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center">
-        <FourSquare color={['#bb2d00', '#ee3900', '#ff5722', '#ff7e55']} />
+        <FourSquare color={["#bb2d00", "#ee3900", "#ff5722", "#ff7e55"]} />
       </div>
     );
   }
 
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)} className="hidden md:flex flex-col space-y-6">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="hidden md:flex flex-col space-y-6"
+      >
         {renderFields(false)}
       </form>
 
       {showEditModal && (
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/80 px-4 py-6 overflow-y-auto md:hidden">
-          <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-lg space-y-6 pb-6">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="w-full max-w-lg space-y-6 pb-6"
+          >
             {renderFields(true)}
 
             <div className="flex gap-3">
