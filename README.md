@@ -1,7 +1,7 @@
 # Tickitz Frontend
 
 <p align="center">
-  <img src="./src/assets/images/logo.png" alt="Tickitz Logo" width="250"/>
+  <img src="./src/assets/logo.png" alt="Tickitz Logo" width="250"/>
 </p>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue)](https://opensource.org/license/mit)
@@ -61,7 +61,13 @@ npm install
 
 ### 3. Configure Environment Variables
 
-Create a `.env` file in the project root:
+Copy the `.env` file or create one in the project root:
+
+```bash
+cp .env.example .env
+```
+
+Then set the backend API URL:
 
 ```env
 VITE_API_URL=http://localhost:8081
@@ -97,12 +103,17 @@ npm run preview
 src/
 ├── assets/
 ├── components/
+├── config/
+├── context/
+├── data/
+├── hooks/
+├── layouts/
 ├── pages/
 ├── redux/
-├── services/
-├── routes/
+├── styles/
 ├── utils/
-└── App.jsx
+├── AppRouter.jsx
+└── main.jsx
 ```
 
 ## Preview
