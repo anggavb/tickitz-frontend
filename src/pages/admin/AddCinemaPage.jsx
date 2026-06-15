@@ -19,6 +19,7 @@ function AddShowtimePage() {
     // load from backend
   ]);
   const [showtimeHistory, setShowtimeHistory] = useState([]);
+  const [movieTitle, setMovieTitle] = useState("");
   const [selectedTimes, setSelectedTimes] = useState([]);
   const [price, setPrice] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -147,6 +148,26 @@ function AddShowtimePage() {
       }
     };
 
+    // fetch movie title for header (use admin endpoint to match AddMoviePage)
+    const fetchMovie = async () => {
+      if (!movieId) return;
+      try {
+        const res = await fetch(`${API_BASE_URL}/admin/movies/${movieId}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        const data = await res.json();
+        if (res.ok) {
+          const movie = data.data || data;
+          const title = movie.name || movie.title || movie.name_en || "";
+          setMovieTitle(title);
+        }
+      } catch (error) {
+        console.error("Failed to fetch movie", error);
+      }
+    };
+
+    fetchMovie();
+
     fetchShowtimes();
   }, [token, movieId]);
 
@@ -263,10 +284,10 @@ function AddShowtimePage() {
     <main className="min-h-screen bg-slate-100 p-4 md:p-8">
       <section className="mx-auto max-w-3xl bg-white p-6 md:p-8">
         <h1 className="mb-6 text-2xl font-semibold text-slate-800">
-          Add Showtimes
+          Add Showtimes{movieTitle ? ` (${movieTitle})` : ""}
         </h1>
         {showtimeHistory && showtimeHistory.length > 0 && (
-          <div className="mb-4 flex flex-wrap items-center gap-2">
+          <div className="mb-4 flex flex-col gap-2">
             {showtimeHistory.map((h) => {
               const label = h.startDate
                 ? `${h.cinemaName} • ${h.startDate}${h.endDate ? ` - ${h.endDate}` : ""}`
@@ -276,7 +297,7 @@ function AddShowtimePage() {
                   key={h.id}
                   type="button"
                   onClick={() => handleLoadHistory(h)}
-                  className="rounded-full bg-primary px-3 py-1 text-sm font-medium text-white transition hover:opacity-90"
+                  className="rounded-full bg-primary px-3 py-1 text-sm font-medium text-white transition hover:opacity-90 w-max"
                 >
                   {label}
                 </button>
@@ -340,20 +361,25 @@ function AddShowtimePage() {
           </div>
 
           <div>
-            <label className="mb-2 block text-sm text-slate-500">
-              Showtimes
-            </label>
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              {times.map((time) => (
-                <label key={time} className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={selectedTimes.includes(time)}
-                    onChange={() => toggleTime(time)}
-                  />
-                  <span className="text-sm text-slate-700">{time}</span>
-                </label>
-              ))}
+            <label className="mb-2 block text-sm text-slate-500">Showtimes</label>
+            <div className="flex flex-wrap items-center gap-2">
+              {times.map((time) => {
+                const selected = selectedTimes.includes(time);
+                return (
+                  <button
+                    key={time}
+                    type="button"
+                    onClick={() => toggleTime(time)}
+                    className={`rounded-full px-3 py-1 text-sm font-medium transition w-max ${
+                      selected
+                        ? "bg-primary text-white"
+                        : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    }`}
+                  >
+                    {time}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
