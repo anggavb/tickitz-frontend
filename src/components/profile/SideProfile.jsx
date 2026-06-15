@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { FiCamera } from "react-icons/fi";
-import profileImage from "../../assets/images/profile.png";
 import { useProfileEdit } from "../../context/profileEditContext";
 import { useDispatch, useSelector } from "react-redux";
 import { getProfile } from "../../redux/slice/profileSlice";
@@ -66,8 +65,8 @@ function SideProfile() {
         <div className="relative group">
           <img
             src={
-              previewPhoto ||
-              env.baseAPI + (user?.photo?.trim() || profileImage)
+              env.baseAPI +
+              (user?.photo?.trim() || "/assets/default-profile.png")
             }
             alt="Profile"
             className="h-36 w-36 md:h-44 md:w-44 rounded-full object-cover shadow-md"
