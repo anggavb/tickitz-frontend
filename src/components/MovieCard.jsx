@@ -48,14 +48,14 @@ function MovieCard({ movie, showDate = false }) {
 
       {/* Info */}
       <div className="mt-4">
-        <h3 className="text-2xl font-semibold text-slate-900">{movie.title}</h3>
+        <h3 className="text-2xl font-semibold text-slate-900">{movie.Name}</h3>
 
         {showDate && movieDate && (
           <p className="mt-2 text-sm font-medium text-primary">{movieDate}</p>
         )}
 
         <div className="mt-3 flex flex-wrap gap-2">
-          {movie.genre?.split(",").map((item) => (
+          {movie.Categories?.map((item) => (
             <span
               key={item}
               className="rounded-full font-bold bg-slate-100 px-4 py-1 text-sm text-slate-500"
