@@ -7,7 +7,10 @@ import logoutIcon from "../assets/images/logout.png";
 import SweetAlert from "@/components/ui/SweetAlert";
 import { getProfile } from "../redux/slice/profileSlice";
 import { FourSquare } from "react-loading-indicators";
-import env from "@/utils/env";
+import {
+  DEFAULT_PROFILE_PHOTO,
+  getProfilePhotoSrc,
+} from "@/utils/profilePhoto";
 
 function NavbarImage() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -15,25 +18,15 @@ function NavbarImage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user, loading } = useSelector((state) => state.auth);
-  const [imageUrl, setImageUrl] = useState("");
+  const { dataProfile } = useSelector((state) => state.profile);
+  const imageUrl = getProfilePhotoSrc(dataProfile?.photo || user?.photo);
 
   useEffect(() => {
-    async function getProfileImage() {
-      try {
-        const res = await dispatch(getProfile()).unwrap();
-        const photo = res?.data?.photo;
-        // console.log(res?.data?.photo);
-        setImageUrl(
-          photo ? env.baseAPI + photo : "/assets/default-profile.webp",
-        );
-      } catch (error) {
-        console.error("Failed to fetch image:", error);
-        setImageUrl("/assets/default-profile.webp");
-      }
+    if (!dataProfile) {
+      dispatch(getProfile());
     }
+  }, [dataProfile, dispatch]);
 
-    getProfileImage();
-  }, [dispatch]);
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -93,6 +86,10 @@ function NavbarImage() {
           <img
             src={imageUrl}
             alt="Profile"
+            onError={(event) => {
+              event.currentTarget.onerror = null;
+              event.currentTarget.src = DEFAULT_PROFILE_PHOTO;
+            }}
             className="h-8 w-8 rounded-full object-cover md:h-10 md:w-10"
           />
         </button>

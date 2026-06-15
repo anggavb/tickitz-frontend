@@ -3,7 +3,10 @@ import { FiCamera } from "react-icons/fi";
 import { useProfileEdit } from "../../context/profileEditContext";
 import { useDispatch, useSelector } from "react-redux";
 import { getProfile } from "../../redux/slice/profileSlice";
-import env from "@/utils/env";
+import {
+  DEFAULT_PROFILE_PHOTO,
+  getProfilePhotoSrc,
+} from "@/utils/profilePhoto";
 
 function SideProfile() {
   const { dataProfile: user } = useSelector((state) => state.profile);
@@ -19,8 +22,18 @@ function SideProfile() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(getProfile());
-  }, [dispatch]);
+    if (!user) {
+      dispatch(getProfile());
+    }
+  }, [dispatch, user]);
+
+  useEffect(() => {
+    return () => {
+      if (previewPhoto?.startsWith("blob:")) {
+        URL.revokeObjectURL(previewPhoto);
+      }
+    };
+  }, [previewPhoto]);
 
   const name = user
     ? `${user.first_name || ""} ${user.last_name || ""}`.trim()
@@ -46,6 +59,8 @@ function SideProfile() {
     setPreviewPhoto(URL.createObjectURL(file));
   };
 
+  const photoSrc = getProfilePhotoSrc(previewPhoto || user?.photo);
+
   return (
     <section className="py-4 px-4 flex flex-col bg-white rounded-2xl shadow-sm">
       <div className="flex justify-between items-center">
@@ -64,11 +79,12 @@ function SideProfile() {
       <div className="flex flex-col items-center mt-4">
         <div className="relative group">
           <img
-            src={
-              env.baseAPI +
-              (user?.photo?.trim() || "/assets/default-profile.webp")
-            }
+            src={photoSrc}
             alt="Profile"
+            onError={(event) => {
+              event.currentTarget.onerror = null;
+              event.currentTarget.src = DEFAULT_PROFILE_PHOTO;
+            }}
             className="h-36 w-36 md:h-44 md:w-44 rounded-full object-cover shadow-md"
           />
 

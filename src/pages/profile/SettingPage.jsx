@@ -62,8 +62,6 @@ function SettingPage() {
     });
   }, [user, reset]);
 
-  console.log(user);
-
   const password = watch("password");
   const confirmPassword = watch("confirmPassword");
 
@@ -109,7 +107,6 @@ function SettingPage() {
 
       await dispatch(updateProfile(formData)).unwrap();
 
-      // optional: refresh data biar sinkron
       await dispatch(getProfile());
 
       setSelectedPhoto(null);
@@ -119,8 +116,6 @@ function SettingPage() {
       setShowEditModal(false);
     } catch (error) {
       console.error("Update profile error:", error);
-    } finally {
-      window.location.reload();
     }
   };
 
