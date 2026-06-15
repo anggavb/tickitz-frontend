@@ -49,7 +49,7 @@ The frontend is built with a focus on:
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/your-organization/tickitz-frontend.git
+git clone https://github.com/anggavb/tickitz-frontend.git
 cd tickitz-frontend
 ```
 
@@ -133,7 +133,7 @@ src/
 2. Clone your fork.
 
 ```bash
-git clone https://github.com/your-username/tickitz-frontend.git
+git clone https://github.com/your-username/tickitz-frontend.git 
 ```
 
 3. Create a new branch.
