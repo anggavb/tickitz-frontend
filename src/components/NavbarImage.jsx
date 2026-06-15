@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router";
 import searchIcon from "../assets/images/search1.png";
-import profileImage from "../assets/images/profile.png";
 import { logoutUser } from "../redux/slice/authSlice";
 import logoutIcon from "../assets/images/logout.png";
 import SweetAlert from "@/components/ui/SweetAlert";
@@ -24,10 +23,12 @@ function NavbarImage() {
         const res = await dispatch(getProfile()).unwrap();
         const photo = res?.data?.photo;
         // console.log(res?.data?.photo);
-        setImageUrl(photo ? env.baseAPI + photo : profileImage);
+        setImageUrl(
+          photo ? env.baseAPI + photo : "/assets/default-profile.png",
+        );
       } catch (error) {
         console.error("Failed to fetch image:", error);
-        setImageUrl(profileImage);
+        setImageUrl("/assets/default-profile.png");
       }
     }
 
