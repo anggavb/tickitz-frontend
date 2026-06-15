@@ -66,7 +66,7 @@ function SideProfile() {
           <img
             src={
               env.baseAPI +
-              (user?.photo?.trim() || "/assets/default-profile.png")
+              (user?.photo?.trim() || "/assets/default-profile.webp")
             }
             alt="Profile"
             className="h-36 w-36 md:h-44 md:w-44 rounded-full object-cover shadow-md"

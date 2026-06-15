@@ -24,11 +24,11 @@ function NavbarImage() {
         const photo = res?.data?.photo;
         // console.log(res?.data?.photo);
         setImageUrl(
-          photo ? env.baseAPI + photo : "/assets/default-profile.png",
+          photo ? env.baseAPI + photo : "/assets/default-profile.webp",
         );
       } catch (error) {
         console.error("Failed to fetch image:", error);
-        setImageUrl("/assets/default-profile.png");
+        setImageUrl("/assets/default-profile.webp");
       }
     }
 
@@ -59,7 +59,10 @@ function NavbarImage() {
 
       await dispatch(logoutUser()).unwrap();
       setIsDropdownOpen(false);
-      SweetAlert.success({ title: "Logged out", text: "You have been logged out." });
+      SweetAlert.success({
+        title: "Logged out",
+        text: "You have been logged out.",
+      });
       navigate("/");
     } catch (error) {
       console.error("Logout error:", error);
