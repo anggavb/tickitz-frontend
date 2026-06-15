@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router';
 
-const images = ['/assets/auth/backgrounds/daredevil.jpg', '/assets/auth/backgrounds/ironheart.jpg', '/assets/auth/backgrounds/marvel.png'];
+const images = ['/assets/auth/backgrounds/daredevil.webp', '/assets/auth/backgrounds/ironheart.webp', '/assets/auth/backgrounds/marvel.webp'];
 
 export default function AuthLayout({ children }) {
   const { isAuthenticated } = useSelector((state) => state.auth);
