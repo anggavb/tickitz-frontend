@@ -6,6 +6,7 @@ import Toast from "../../components/ui/Toast";
 import env from "@/utils/env";
 
 const API_BASE_URL = env.baseAPI;
+const MAX_IMAGE_SIZE = 3 * 1024 * 1024; // 3MB
 
 function AddMoviePage({ viewOnly = false }) {
   const { token } = useSelector((state) => state.auth);
@@ -13,8 +14,7 @@ function AddMoviePage({ viewOnly = false }) {
   const [image, setImage] = useState(null);
   const [name, setName] = useState("");
   const [releaseDate, setReleaseDate] = useState("");
-  const [durationHour, setDurationHour] = useState("");
-  const [durationMinute, setDurationMinute] = useState("");
+  const [durationInMinutes, setDurationInMinutes] = useState("");
   const [directorName, setDirectorName] = useState("");
   const [synopsis, setSynopsis] = useState("");
   const [categoryInput, setCategoryInput] = useState("");
@@ -92,8 +92,7 @@ function AddMoviePage({ viewOnly = false }) {
         setName(movie.name || "");
         setReleaseDate(movie.release_date || "");
         const totalDuration = movie.duration_in_minute || 0;
-        setDurationHour(String(Math.floor(totalDuration / 60)));
-        setDurationMinute(String(totalDuration % 60));
+        setDurationInMinutes(String(totalDuration));
         setDirectorName(movie.director_name || "");
         setSynopsis(movie.synopsis || "");
         setCategories(Array.isArray(movie.categories) ? movie.categories : []);
@@ -123,9 +122,19 @@ function AddMoviePage({ viewOnly = false }) {
     if (viewOnly) return;
     const file = event.target.files[0];
 
-    if (file) {
-      setImage(file);
+    if (!file) {
+      return;
     }
+
+    if (file.size > MAX_IMAGE_SIZE) {
+      setToastType("error");
+      setToastMessage("Image must be 3MB or smaller.");
+      setImage(null);
+      event.target.value = null;
+      return;
+    }
+
+    setImage(file);
   };
 
   const addCategory = (value) => {
@@ -184,15 +193,62 @@ function AddMoviePage({ viewOnly = false }) {
 
     if (viewOnly) return;
 
-    const hours = parseInt(durationHour || "0", 10);
-    const minutes = parseInt(durationMinute || "0", 10);
-    const totalDuration = hours * 60 + minutes;
+    const totalDuration = Number(durationInMinutes);
+    const isValidDuration = Number.isInteger(totalDuration) && totalDuration > 0;
+    const isValidReleaseDate = releaseDate && !Number.isNaN(Date.parse(releaseDate));
+    const hasImage = Boolean(image || existingImageUrl);
 
-    if (!name || !releaseDate || totalDuration <= 0) {
+    if (!name.trim()) {
       setToastType("error");
-      setToastMessage(
-        "Please fill in the movie name, release date, and duration.",
-      );
+      setToastMessage("Movie name is required.");
+      return;
+    }
+
+    if (!isValidReleaseDate) {
+      setToastType("error");
+      setToastMessage("Please select a valid release date.");
+      return;
+    }
+
+    if (!isValidDuration) {
+      setToastType("error");
+      setToastMessage("Duration must be a whole number of minutes greater than 0.");
+      return;
+    }
+
+    if (!hasImage) {
+      setToastType("error");
+      setToastMessage("Please upload a movie image.");
+      return;
+    }
+
+    if (image && image.size > MAX_IMAGE_SIZE) {
+      setToastType("error");
+      setToastMessage("Image must be 3MB or smaller.");
+      return;
+    }
+
+    if (!directorName.trim()) {
+      setToastType("error");
+      setToastMessage("Director name is required.");
+      return;
+    }
+
+    if (!synopsis.trim()) {
+      setToastType("error");
+      setToastMessage("Synopsis is required.");
+      return;
+    }
+
+    if (categories.length === 0) {
+      setToastType("error");
+      setToastMessage("Please add at least one category.");
+      return;
+    }
+
+    if (casts.length === 0) {
+      setToastType("error");
+      setToastMessage("Please add at least one cast member.");
       return;
     }
 
@@ -392,30 +448,18 @@ function AddMoviePage({ viewOnly = false }) {
 
               <div>
                 <label className="mb-2 block text-sm text-slate-500">
-                  Duration (hours / minutes)
+                  Duration (minutes)
                 </label>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <input
-                    type="number"
-                    min="0"
-                    value={durationHour}
-                    onChange={(event) => setDurationHour(event.target.value)}
-                    placeholder="2"
-                    readOnly={viewOnly}
-                    className="rounded-md border border-slate-200 px-4 py-3 text-center outline-none focus:border-primary"
-                  />
-
-                  <input
-                    type="number"
-                    min="0"
-                    value={durationMinute}
-                    onChange={(event) => setDurationMinute(event.target.value)}
-                    placeholder="13"
-                    readOnly={viewOnly}
-                    className="rounded-md border border-slate-200 px-4 py-3 text-center outline-none focus:border-primary"
-                  />
-                </div>
+                <input
+                  type="number"
+                  min="0"
+                  value={durationInMinutes}
+                  onChange={(event) => setDurationInMinutes(event.target.value)}
+                  placeholder="133"
+                  readOnly={viewOnly}
+                  className="w-full rounded-md border border-slate-200 px-4 py-3 outline-none focus:border-primary"
+                />
               </div>
             </div>
 

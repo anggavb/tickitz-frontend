@@ -6,110 +6,167 @@
 
 # Tickitz Frontend
 
+<p align="center">
+  <img src="./src/assets/logo.png" alt="Tickitz Logo" width="250"/>
+</p>
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue)](https://opensource.org/license/mit)
+<br>
+Frontend application for Tickitz, an online movie ticket booking platform. This application allows users to browse movies, view schedules, select seats, make bookings, and manage their accounts through an intuitive and responsive interface.
 
-Tickitz Frontend is a movie ticket booking web application built with **Vite, React, and Tailwind CSS**.
-This project provides a user interface for browsing movies, viewing movie details, selecting schedules, booking tickets, managing user profiles, and accessing an admin dashboard.
+## Tech Stacks
 
-## Preview
-
-### Home Page
-
-![Home Page](./src/assets/home.png)
-
-### Movie Detail Page
-
-![Movie Detail Page](./src/assets/movie-detail.png)
-
-### Admin Dashboard
-
-![Admin Dashboard](./src/assets/admin-dashboard.png)
+- [![React](https://img.shields.io/badge/React-v18.2.0-blue?logo=react&logoColor=white)](https://react.dev/)
+- [![Vite](https://img.shields.io/badge/Vite-v7.0.0-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+- [![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-latest-764ABC?logo=redux&logoColor=white)](https://redux-toolkit.js.org/)
+- [![React Router](https://img.shields.io/badge/React_Router-v7-CA4245?logo=reactrouter&logoColor=white)](https://reactrouter.com/)
+- [![Axios](https://img.shields.io/badge/Axios-latest-5A29E4?logo=axios&logoColor=white)](https://axios-http.com/)
+- [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+- [![SweetAlert2](https://img.shields.io/badge/SweetAlert2-latest-FF69B4)](https://sweetalert2.github.io/)
 
 ## Design Philosophy
 
-* Component-driven structure with reusable UI components.
-* Mobile-first responsive layout for better user experience across devices.
-* Clean and simple interface focused on a fast movie booking flow.
-* Consistent styling using Tailwind CSS.
+The frontend is built with a focus on:
 
-## Tech Stack
-
-![React](https://img.shields.io/badge/React-Frontend-blue?logo=react\&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-Build%20Tool-blueviolet?logo=vite\&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-Styling-38B2AC?logo=tailwindcss\&logoColor=white)
-![Recharts](https://img.shields.io/badge/Recharts-Charting-orange)
+- User-friendly experience
+- Responsive design across devices
+- Component reusability
+- Maintainable code structure
+- Efficient state management
+- Scalable feature development
 
 ## Features
 
-* Movie list page
-* Movie detail page
-* Schedule and cinema selection
-* Ticket booking flow
-* Payment page
-* User profile page
-* Admin dashboard
-* Movie management for admin
-* Responsive layout for mobile and desktop
+- User Authentication (Login & Register)
+- Browse Movies
+- View Movie Details
+- Search Movies
+- Ticket Booking
+- Seat Selection
+- Payment Integration
+- User Profile Management
+- Booking History
+- Admin Dashboard
+- Movie Management
+- Responsive Design
 
-## Project Structure
+## How to Setup
+
+### 1. Clone Repository
 
 ```bash
-src/
-├── assets/
-├── components/
-├── layouts/
-├── pages/
-├── redux/
-├── routes/
-└── utils/
+git clone https://github.com/anggavb/tickitz-frontend.git
+cd tickitz-frontend
 ```
 
-## Environment Variables
+### 2. Install Dependencies
 
-Create a `.env` file in the root project folder.
+```bash
+npm install
+```
+
+### 3. Configure Environment Variables
+
+Copy the `.env` file or create one in the project root:
+
+```bash
+cp .env.example .env
+```
+
+Then set the backend API URL:
 
 ```env
 VITE_API_URL=http://localhost:8081
 ```
 
-## How to Setup
-
-Make sure you have installed:
-
-* Node.js v16 or higher
-* npm
-
-## Quickstart
+### 4. Run Development Server
 
 ```bash
-# clone repository
-git clone https://github.com/anggavb/tickitz-frontend.git
-
-# go to project folder
-cd tickitz-frontend
-
-# install dependencies
-npm install
-
-# run development server
 npm run dev
+```
 
-# build for production
+Application will run at:
+
+```text
+http://localhost:5173
+```
+
+### 5. Build for Production
+
+```bash
 npm run build
 ```
 
-## Related Project
+### 6. Preview Production Build
+
+```bash
+npm run preview
+```
+
+## Project Structure
+
+```text
+src/
+├── assets/
+├── components/
+├── config/
+├── context/
+├── data/
+├── hooks/
+├── layouts/
+├── pages/
+├── redux/
+├── styles/
+├── utils/
+├── AppRouter.jsx
+└── main.jsx
+```
+
+## Preview
+
+### Home Page
+![Home](./src/assets/home.png)
+
+### Movie Detail
+![Movie Detail](./src/assets/movie-detail.png)
 
 * [Tickitz Backend](https://github.com/anggavb/tickitz-backend.git)
 
 ## How to Contribute
 
 1. Fork this repository.
-2. Create a new feature branch.
-3. Commit your changes.
-4. Push your branch.
-5. Create a pull request.
+2. Clone your fork.
+
+```bash
+git clone https://github.com/your-username/tickitz-frontend.git 
+```
+
+3. Create a new branch.
+
+```bash
+git checkout -b feature/your-feature-name
+```
+
+4. Make your changes.
+
+5. Commit your changes.
+
+```bash
+git commit -m "feat: add movie management page"
+```
+
+6. Push your branch.
+
+```bash
+git push origin feature/your-feature-name
+```
+
+7. Create a Pull Request.
 
 ## License
 
 This project is licensed under the MIT License.
+
+## Related Projects
+
+[Backend](https://github.com/anggavb/tickitz-backend.git)

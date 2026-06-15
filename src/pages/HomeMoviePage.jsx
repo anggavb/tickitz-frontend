@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from "react";
 import MovieCard from "../components/MovieCard";
-import background from "../assets/images/background.png";
 import searchIcon from "../assets/images/Search.png";
 import Newsletter from "../components/Newsletter";
-import sliderIndicator from "../assets/images/slider-indicator.png";
 import Pagination from "../components/Pagination";
 import HomeLayout from "../layouts/HomeLayout";
 import { useDispatch, useSelector } from "react-redux";
 import { getMovie } from "../redux/slice/movieSlice";
 import { useDebounce } from "../hooks/useDebounce";
+
+const backgroundSlides = [
+  "/assets/auth/backgrounds/marvel.png",
+  "/assets/auth/backgrounds/daredevil.jpg",
+  "/assets/auth/backgrounds/ironheart.jpg",
+];
 
 function HomeMoviePage() {
   const dispatch = useDispatch();
@@ -17,6 +21,7 @@ function HomeMoviePage() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [slideIndex, setSlideIndex] = useState(0);
   const debouncedSearch = useDebounce(search, 500);
 
   useEffect(() => {
@@ -30,18 +35,28 @@ function HomeMoviePage() {
     );
   }, [dispatch, debouncedSearch, selectedCategory, page]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSlideIndex((prevIndex) => (prevIndex + 1) % backgroundSlides.length);
+    }, 8000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const moviesData = dataMovies?.data;
 
   const categories = ["Thriller", "Horror", "Romantic", "Adventure", "Sci-Fi"];
+
   return (
     <HomeLayout>
       <section
         className="relative bg-cover bg-center bg-no-repeat px-6 py-12 text-left text-white sm:py-20 lg:py-32"
         style={{
-          backgroundImage: `url(${background})`,
+          backgroundImage: `url(${backgroundSlides[slideIndex]})`,
         }}
       >
-        <div className="mx-auto max-w-7xl lg:px-4">
+        <div className="pointer-events-none absolute inset-0 bg-black/30" />
+        <div className="relative mx-auto max-w-7xl lg:px-4">
           <div className="lg:max-w-xl">
             <p className="mb-4 text-xs uppercase tracking-[0.3em] text-slate-200 sm:text-sm">
               LIST MOVIE OF THE WEEK
@@ -52,8 +67,20 @@ function HomeMoviePage() {
             </h1>
           </div>
         </div>
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
-          <img src={sliderIndicator} alt="Slider Indicator" className="h-1.5" />
+
+        <div className="absolute inset-x-0 bottom-6 flex items-center justify-center gap-3">
+          {backgroundSlides.map((_, index) => (
+            <button
+              key={index}
+              type="button"
+              onClick={() => setSlideIndex(index)}
+              className={`h-3 w-3 rounded-full transition ${
+                index === slideIndex
+                  ? "bg-white shadow-lg shadow-white/40"
+                  : "bg-white/50 hover:bg-white"
+              }`}
+            />
+          ))}
         </div>
       </section>
 

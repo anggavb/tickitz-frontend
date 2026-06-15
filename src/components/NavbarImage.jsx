@@ -47,13 +47,23 @@ function NavbarImage() {
 
   const handleLogout = async () => {
     try {
+      const confirmed = await SweetAlert.confirm({
+        title: "Logout",
+        text: "Are you sure you want to logout?",
+        confirmButtonText: "Logout",
+        cancelButtonText: "Cancel",
+        reverseButtons: false,
+      });
+
+      if (!confirmed) return;
+
       await dispatch(logoutUser()).unwrap();
       setIsDropdownOpen(false);
-      SweetAlert.success("Logged out successfully.");
+      SweetAlert.success({ title: "Logged out", text: "You have been logged out." });
       navigate("/");
     } catch (error) {
       console.error("Logout error:", error);
-      SweetAlert.error("Failed to logout. Please try again.");
+      SweetAlert.error({ text: "Failed to logout. Please try again." });
     }
   };
 
