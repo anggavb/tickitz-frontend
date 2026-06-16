@@ -10,6 +10,7 @@ import {
 } from "@/components/movie-detail/MovieDetailStates";
 import SelectedSchedulePicker from "@/components/movie-detail/SelectedSchedulePicker";
 import SweetAlert from "@/components/ui/SweetAlert";
+import usePageTitle from "@/hooks/usePageTitle";
 import HomeLayout from "@/layouts/HomeLayout";
 import {
   createMovieDetailOrder,
@@ -43,6 +44,8 @@ function MovieDetailContent({ slug, auth }) {
     error,
     bookingLoading,
   } = schedule;
+
+  usePageTitle(movie?.title || "Movie Detail");
 
   useEffect(() => {
     if (!slug) return undefined;
