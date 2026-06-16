@@ -6,7 +6,7 @@ import Toast from "../../components/ui/Toast";
 import env from "@/utils/env";
 
 const API_BASE_URL = env.baseAPI;
-const MAX_IMAGE_SIZE = 3 * 1024 * 1024; // 3MB
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
 
 function AddMoviePage({ viewOnly = false }) {
   const { token } = useSelector((state) => state.auth);
@@ -128,7 +128,7 @@ function AddMoviePage({ viewOnly = false }) {
 
     if (file.size > MAX_IMAGE_SIZE) {
       setToastType("error");
-      setToastMessage("Image must be 3MB or smaller.");
+      setToastMessage("Image must be 5MB or smaller.");
       setImage(null);
       event.target.value = null;
       return;
@@ -224,7 +224,7 @@ function AddMoviePage({ viewOnly = false }) {
 
     if (image && image.size > MAX_IMAGE_SIZE) {
       setToastType("error");
-      setToastMessage("Image must be 3MB or smaller.");
+      setToastMessage("Image must be 5MB or smaller.");
       return;
     }
 

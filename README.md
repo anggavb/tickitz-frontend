@@ -1,9 +1,3 @@
-## Logo
-
-<p align="center">
-  <img src="./src/assets/logo.png" width="200" alt="Tickitz Logo" />
-</p>
-
 # Tickitz Frontend
 
 <p align="center">
@@ -130,7 +124,8 @@ src/
 ### Movie Detail
 ![Movie Detail](./src/assets/movie-detail.png)
 
-* [Tickitz Backend](https://github.com/anggavb/tickitz-backend.git)
+### Admin Dashboard
+![Admin Dashboard](./src/assets/admin-dashboard.png)
 
 ## How to Contribute
 

@@ -9,9 +9,9 @@ import { getMovie } from "../redux/slice/movieSlice";
 import { useDebounce } from "../hooks/useDebounce";
 
 const backgroundSlides = [
-  "/assets/auth/backgrounds/marvel.png",
-  "/assets/auth/backgrounds/daredevil.jpg",
-  "/assets/auth/backgrounds/ironheart.jpg",
+  "/assets/auth/backgrounds/marvel.webp",
+  "/assets/auth/backgrounds/daredevil.webp",
+  "/assets/auth/backgrounds/ironheart.webp",
 ];
 
 function HomeMoviePage() {
@@ -38,7 +38,7 @@ function HomeMoviePage() {
   useEffect(() => {
     const interval = setInterval(() => {
       setSlideIndex((prevIndex) => (prevIndex + 1) % backgroundSlides.length);
-    }, 8000);
+    }, 3000);
 
     return () => clearInterval(interval);
   }, []);
