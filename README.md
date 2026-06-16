@@ -1,9 +1,3 @@
-## Logo
-
-<p align="center">
-  <img src="./src/assets/logo.png" width="200" alt="Tickitz Logo" />
-</p>
-
 # Tickitz Frontend
 
 <p align="center">
