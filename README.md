@@ -8,18 +8,6 @@
 
 Tickitz Frontend is a React application for an online movie ticket booking platform. Users can browse movies, view schedules, select seats, complete the order payment flow, and manage their profiles. Admin users can manage movies, cinema schedules, and dashboard data.
 
-## Tech Stack
-
-- [![React](https://img.shields.io/badge/React-v19.2.6-blue?logo=react&logoColor=white)](https://react.dev/)
-- [![Vite](https://img.shields.io/badge/Vite-v8.0.12-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
-- [![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-v2.12.0-764ABC?logo=redux&logoColor=white)](https://redux-toolkit.js.org/)
-- [![React Router](https://img.shields.io/badge/React_Router-v7.17.0-CA4245?logo=reactrouter&logoColor=white)](https://reactrouter.com/)
-- [![Axios](https://img.shields.io/badge/Axios-v1.17.0-5A29E4?logo=axios&logoColor=white)](https://axios-http.com/)
-- [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4.3.0-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-- [![React Hook Form](https://img.shields.io/badge/React_Hook_Form-v7.77.0-FF69B4?logo=reacthookform&logoColor=white)](https://react-hook-form.com/)
-- [![Recharts](https://img.shields.io/badge/Recharts-v3.8.1-00C4CC?logo=recharts&logoColor=white)](https://recharts.org/)
-- [![SweetAlert2](https://img.shields.io/badge/SweetAlert2-v11.26.25-FF69B4?logo=sweetalert2&logoColor=white)](https://sweetalert2.github.io/)
-
 ## Preview
 
 ### Home Page
@@ -44,6 +32,18 @@ The frontend is built with a focus on:
 - Maintainable code structure
 - Efficient state management
 - Scalable feature development
+
+## Tech Stack
+
+- [![React](https://img.shields.io/badge/React-v19.2.6-blue?logo=react&logoColor=white)](https://react.dev/)
+- [![Vite](https://img.shields.io/badge/Vite-v8.0.12-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+- [![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-v2.12.0-764ABC?logo=redux&logoColor=white)](https://redux-toolkit.js.org/)
+- [![React Router](https://img.shields.io/badge/React_Router-v7.17.0-CA4245?logo=reactrouter&logoColor=white)](https://reactrouter.com/)
+- [![Axios](https://img.shields.io/badge/Axios-v1.17.0-5A29E4?logo=axios&logoColor=white)](https://axios-http.com/)
+- [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4.3.0-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+- [![React Hook Form](https://img.shields.io/badge/React_Hook_Form-v7.77.0-FF69B4?logo=reacthookform&logoColor=white)](https://react-hook-form.com/)
+- [![Recharts](https://img.shields.io/badge/Recharts-v3.8.1-00C4CC?logo=recharts&logoColor=white)](https://recharts.org/)
+- [![SweetAlert2](https://img.shields.io/badge/SweetAlert2-v11.26.25-FF69B4?logo=sweetalert2&logoColor=white)](https://sweetalert2.github.io/)
 
 ## Features
 
