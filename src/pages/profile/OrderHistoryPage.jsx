@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router";
-import { useDispatch, useSelector } from "react-redux";
-import { FiChevronDown, FiChevronUp } from "react-icons/fi";
-import { getOrderHistory } from "../../redux/slice/orderSlice";
-import { getOrderQr } from "../../utils/api/seatBookingApi";
-import { FourSquare } from "react-loading-indicators";
-import env from "@/utils/env";
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router';
+import { useDispatch, useSelector } from 'react-redux';
+import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import { getOrderHistory } from '../../redux/slice/orderSlice';
+import { getOrderQr } from '../../utils/api/seatBookingApi';
+import { FourSquare } from 'react-loading-indicators';
+import env from '@/utils/env';
 
 function OrderHistoryPage() {
   const dispatch = useDispatch();
@@ -50,7 +50,7 @@ function OrderHistoryPage() {
   if (loadingHistory) {
     return (
       <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center">
-        <FourSquare color={["#bb2d00", "#ee3900", "#ff5722", "#ff7e55"]} />
+        <FourSquare color={['#bb2d00', '#ee3900', '#ff5722', '#ff7e55']} />
       </div>
     );
   }
@@ -76,23 +76,23 @@ function OrderHistoryPage() {
         [orderId]: imageUrl,
       }));
     } catch (error) {
-      console.error("Failed to load QR", error);
+      console.error('Failed to load QR', error);
     }
   };
 
   function formatDateTime(dateString) {
     const date = new Date(dateString);
 
-    const datePart = date.toLocaleDateString("en-US", {
-      weekday: "long",
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
+    const datePart = date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
     });
 
-    const timePart = date.toLocaleTimeString("en-GB", {
-      hour: "2-digit",
-      minute: "2-digit",
+    const timePart = date.toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
       hour12: false,
     });
 
@@ -106,139 +106,120 @@ function OrderHistoryPage() {
           {/* HEADER */}
           <div className="flex justify-between items-start p-4 sm:p-5 border-b border-gray-300">
             <div>
-              <p className="text-[10px] sm:text-xs text-gray-400 mb-1">
-                {formatDateTime(order.order_date)}
-              </p>
+              <p className="text-[10px] sm:text-xs text-gray-400 mb-1">{formatDateTime(order.order_date)}</p>
 
-              <h2 className="text-sm sm:text-lg font-semibold">
-                {order.movie_name}
-              </h2>
+              <h2 className="text-sm sm:text-lg font-semibold">{order.movie_name}</h2>
             </div>
 
             {/* <p className="font-bold text-xs sm:text-sm text-gray-700">
               {order.cinema_name}
             </p> */}
-            <img
-              src={env.baseAPI + order.cinema_logo}
-              alt={order.cinema_name}
-            />
+            <img src={env.baseAPI + order.cinema_logo} alt={order.cinema_name} />
           </div>
 
           {/* STATUS */}
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-0 justify-between items-stretch sm:items-center p-4 sm:p-5">
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-slate-50 border-t border-slate-100">
+            <div className="flex flex-wrap gap-2">
               <span
-                className={`w-full sm:w-auto text-center px-3 py-1 sm:px-5 sm:py-2 rounded-md text-[10px] sm:text-sm ${
-                  order.payment_status === "paid"
-                    ? "bg-primary/20 text-primary"
-                    : "bg-red-200 text-red-500"
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium ${
+                  order.ticket_status === 'used' ? 'bg-slate-200 text-slate-700' : 'bg-emerald-100 text-emerald-700'
                 }`}
               >
-                {order.payment_status === "paid" ? "Paid" : "Not Paid"}
+                <div className={`w-2 h-2 rounded-full ${order.ticket_status === 'used' ? 'bg-slate-500' : 'bg-emerald-500'}`} />
+                {order.ticket_status === 'used' ? 'Ticket is Used' : 'Ticket is Active'}
+              </span>
+
+              <span
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium ${
+                  order.payment_status === 'paid' ? 'bg-orange-100 text-orange-700' : 'bg-red-100 text-red-700'
+                }`}
+              >
+                <div className={`w-2 h-2 rounded-full ${order.payment_status === 'paid' ? 'bg-orange-500' : 'bg-red-500'}`} />
+                {order.payment_status === 'paid' ? 'Paid' : 'Unpaid'}
               </span>
             </div>
 
             <button
               onClick={() => toggleDetail(order.id)}
-              className="w-full sm:w-auto flex justify-center items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-400 hover:text-orange-500 mt-1 sm:mt-0"
+              className="group flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-600 hover:text-primary hover:border-primary hover:shadow-sm transition-all"
             >
-              Show Details
-              {openId === order.id ? <FiChevronUp /> : <FiChevronDown />}
+              {openId === order.id ? 'Hide Details' : 'Show Details'}
+
+              <span className={`transition-transform duration-300 ${openId === order.id ? 'rotate-180' : ''}`}>
+                <FiChevronDown />
+              </span>
             </button>
           </div>
-
           {/* DETAIL */}
           {openId === order.id && (
             <div className="px-4 sm:px-5 pb-4 sm:pb-5">
               {/* UNPAID */}
-              {order.payment_status !== "paid" && (
+              {order.payment_status !== 'paid' && (
                 <div className="pt-4 sm:pt-5">
-                  <h3 className="text-sm font-semibold mb-4">
-                    Ticket Information
-                  </h3>
+                  <h3 className="text-sm font-semibold mb-4">Ticket Information</h3>
 
                   {/* CARD */}
                   <div className="space-y-4">
                     {/* VA ROW */}
                     <div className="flex justify-between items-center">
-                      <p className="text-gray-400 text-xs sm:text-sm">
-                        No. Rekening Virtual :
-                      </p>
+                      <p className="text-gray-400 text-xs sm:text-sm">No. Rekening Virtual :</p>
 
                       <div className="flex items-center gap-3">
-                        <p className="font-semibold text-xs sm:text-sm text-gray-800">
-                          {order.payment_reference}
-                        </p>
+                        <p className="font-semibold text-xs sm:text-sm text-gray-800">{order.payment_reference}</p>
 
                         <button
-                          onClick={() =>
-                            handleCopy(order.payment_reference, order.id)
-                          }
+                          onClick={() => handleCopy(order.payment_reference, order.id)}
                           className={`px-3 py-1 rounded border text-xs transition ${
                             copiedId === order.id
-                              ? "bg-gray-200 text-gray-500 border-gray-300"
-                              : "border-primary text-primary hover:bg-primary hover:text-white"
+                              ? 'bg-gray-200 text-gray-500 border-gray-300'
+                              : 'border-primary text-primary hover:bg-primary hover:text-white'
                           }`}
                         >
-                          {copiedId === order.id ? "Copied" : "Copy"}
+                          {copiedId === order.id ? 'Copied' : 'Copy'}
                         </button>
                       </div>
                     </div>
 
                     {/* TOTAL ROW */}
                     <div className="flex justify-between items-center">
-                      <p className="text-gray-400 text-xs sm:text-sm">
-                        Total Payment :
-                      </p>
+                      <p className="text-gray-400 text-xs sm:text-sm">Total Payment :</p>
 
-                      <p className="text-primary font-bold text-sm sm:text-base">
-                        Rp. {order.total_payment?.toLocaleString("id-ID")}
-                      </p>
+                      <p className="text-primary font-bold text-sm sm:text-base">Rp. {order.total_payment?.toLocaleString('id-ID')}</p>
                     </div>
 
                     {/* DEADLINE INFO */}
                     <p className="text-gray-400 text-xs sm:text-sm leading-relaxed">
-                      Pay this payment bill before it is due, on{" "}
-                      <span className="text-red-500 font-medium">
-                        {formatDateTime(order.expired_at)}
-                      </span>
-                      . If the bill has not been paid by the specified time, it
-                      will be forfeited
+                      Pay this payment bill before it is due, on <span className="text-red-500 font-medium">{formatDateTime(order.expired_at)}</span>.
+                      If the bill has not been paid by the specified time, it will be forfeited
                     </p>
 
                     {/* BUTTON */}
                     <Link to={`/orders/${order.id}/payment`}>
-                      <button className="bg-primary text-white px-5 py-2 rounded text-sm hover:bg-orange-500 transition">
-                        Cek Pembayaran
-                      </button>
+                      <button className="bg-primary text-white px-5 py-2 rounded text-sm hover:bg-orange-500 transition">Cek Pembayaran</button>
                     </Link>
                   </div>
                 </div>
               )}
 
               {/* PAID */}
-              {order.payment_status === "paid" && (
+              {order.payment_status === 'paid' && (
                 <div className="pt-4 sm:pt-5">
-                  <h3 className="text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
-                    Ticket Information
-                  </h3>
+                  <h3 className="text-xs sm:text-sm font-semibold mb-3 sm:mb-4">Ticket Information</h3>
 
                   <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+                    {/* QR */}
                     <div className="w-24 h-24 sm:w-28 sm:h-28">
                       {qrImages[order.id] ? (
-                        <img
-                          src={qrImages[order.id]}
-                          alt="QR Code"
-                          className="w-full h-full object-contain"
-                        />
+                        <img src={qrImages[order.id]} alt="QR Code" className="w-full h-full object-contain" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">
-                          Loading...
-                        </div>
+                        <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">Loading...</div>
                       )}
                     </div>
+
+                    {/* INFO */}
                     <div className="flex-1">
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-xs sm:text-sm mb-3 sm:mb-4">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-5 text-xs sm:text-sm">
+                        {/* Row 1 */}
                         <div>
                           <p className="text-gray-400">Time</p>
                           <p>{order.show_time}</p>
@@ -246,18 +227,15 @@ function OrderHistoryPage() {
 
                         <div>
                           <p className="text-gray-400">Seats</p>
-                          <p>{order.seats || "-"}</p>
+                          <p>{order.seats || '-'}</p>
                         </div>
 
                         <div>
                           <p className="text-gray-400">Total</p>
-                          <p className="font-semibold">
-                            Rp. {order.total_payment?.toLocaleString("id-ID")}
-                          </p>
+                          <p className="font-semibold">Rp. {order.total_payment?.toLocaleString('id-ID')}</p>
                         </div>
-                      </div>
 
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 text-xs sm:text-sm">
+                        {/* Row 2 */}
                         <div>
                           <p className="text-gray-400">Movie</p>
                           <p>{order.movie_name}</p>
@@ -265,11 +243,7 @@ function OrderHistoryPage() {
 
                         <div>
                           <p className="text-gray-400">Date</p>
-                          <p>
-                            {new Date(order.show_date).toLocaleDateString(
-                              "id-ID",
-                            )}
-                          </p>
+                          <p>{new Date(order.show_date).toLocaleDateString('id-ID')}</p>
                         </div>
 
                         <div>
