@@ -8,7 +8,7 @@ function MovieCard({ movie, showDate = false }) {
   return (
     <div className="group">
       {/* Poster */}
-      <div className="relative rounded-lg border border-slate-200 bg-white">
+      <div className="relative aspect-2/3 rounded-lg border border-slate-200 bg-white">
         {movie.recommended && (
           <div className="absolute -left-2 top-1 z-20 md:top-4">
             <div className="relative">
@@ -20,10 +20,11 @@ function MovieCard({ movie, showDate = false }) {
             </div>
           </div>
         )}
+
         <img
           src={env.baseAPI + movie.Image}
           alt={movie.title}
-          className="h-95 w-full object-cover"
+          className="h-full w-full object-cover"
         />
 
         {/* Hover Overlay */}
