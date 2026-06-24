@@ -10,7 +10,7 @@ import youtube from "../assets/images/youtube.png";
 
 function Footer() {
   return (
-    <footer className="bg-white px-25 py-12 print:hidden sm:py-16">
+    <footer className="bg-white px-10 py-10 print:hidden sm:px-8 sm:py-14 lg:px-16 xl:px-25">
       <div className="mx-auto grid max-w-7xl gap-8 sm:gap-12 grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
         {/* Logo */}
         <div>
@@ -21,12 +21,11 @@ function Footer() {
             quietly.
           </p>
         </div>
-
         {/* Explore */}
         <div>
           <h3 className="mb-4 font-semibold text-slate-900 sm:mb-6">Explore</h3>
 
-          <ul className="space-y-2 text-sm text-slate-500 sm:space-y-3">
+          <ul className="grid grid-cols-3 gap-x-6 gap-y-4 text-sm text-slate-500 sm:block sm:space-y-3">
             <li>
               <a href="#" className="hover:text-slate-700">
                 Cinemas
@@ -39,58 +38,64 @@ function Footer() {
             </li>
             <li>
               <a href="#" className="hover:text-slate-700">
-                My Ticket
+                Notification
               </a>
             </li>
             <li>
               <a href="#" className="hover:text-slate-700">
-                Notification
+                My Ticket
               </a>
             </li>
           </ul>
         </div>
-
         {/* Sponsor */}
         <div>
           <h3 className="mb-4 font-semibold text-slate-900 sm:mb-6">
             Our Sponsor
           </h3>
 
-          <div className="flex flex-col gap-3 sm:gap-5">
-            <img src={ebuId} alt="ebv.id" className="h-8 w-fit sm:h-10" />
-            <img src={cineOne} alt="CineOne21" className="h-7 w-fit sm:h-8" />
-            <img src={hiflix} alt="Hiflix" className="h-7 w-fit sm:h-8" />
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-4 sm:flex-col sm:items-start sm:gap-5">
+            <img src={ebuId} alt="ebv.id" className="h-7 w-auto sm:h-10" />
+            <img src={cineOne} alt="CineOne21" className="h-6 w-auto sm:h-8" />
+            <img src={hiflix} alt="Hiflix" className="h-7 w-auto sm:h-8" />
           </div>
         </div>
-
         {/* Social Media */}
         <div>
           <h3 className="mb-4 font-semibold text-slate-900 sm:mb-6">
             Follow us
           </h3>
 
-          <div className="space-y-3 sm:space-y-4">
-            <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-4 sm:flex-col sm:items-start sm:gap-4">
+            <a href="#" className="flex items-center gap-2 sm:gap-3">
               <img src={facebook} alt="Facebook" className="h-5 w-5" />
-              <span className="text-sm text-slate-500">Tickitz Cinema id</span>
-            </div>
+              <span className="hidden text-sm text-slate-500 sm:inline">
+                Tickitz Cinema id
+              </span>
+            </a>
 
-            <div className="flex items-center gap-2 sm:gap-3">
+            <a href="#" className="flex items-center gap-2 sm:gap-3">
               <img src={instagram} alt="Instagram" className="h-5 w-5" />
-              <span className="text-sm text-slate-500">tickitz.id</span>
-            </div>
+              <span className="hidden text-sm text-slate-500 sm:inline">
+                tickitz.id
+              </span>
+            </a>
 
-            <div className="flex items-center gap-2 sm:gap-3">
+            <a href="#" className="flex items-center gap-2 sm:gap-3">
               <img src={twitter} alt="Twitter" className="h-5 w-5" />
-              <span className="text-sm text-slate-500">tickitz.id</span>
-            </div>
+              <span className="hidden text-sm text-slate-500 sm:inline">
+                tickitz.id
+              </span>
+            </a>
 
-            <div className="flex items-center gap-2 sm:gap-3">
+            <a href="#" className="flex items-center gap-2 sm:gap-3">
               <img src={youtube} alt="Youtube" className="h-5 w-5" />
-              <span className="text-sm text-slate-500">Tickitz Cinema Id</span>
-            </div>
+              <span className="hidden text-sm text-slate-500 sm:inline">
+                Tickitz Cinema Id
+              </span>
+            </a>
           </div>
-        </div>
+        </div>{" "}
       </div>
 
       <p className="mt-12 text-center text-sm text-slate-500 sm:mt-16">
